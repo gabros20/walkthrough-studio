@@ -1,5 +1,7 @@
 # Delivery package
 
+*Mode: reference (structure, encodes, written material) with a how-to (Commands) and a checklist. Script flags: [`delivery/README.md`](../delivery/README.md); the workflow: skill `deliver-package`.*
+
 The package is what the owner sends to the person who talks to the client. That person may forward the film
 as it is, or reuse pieces in a deck, a web page or a live presentation, without us in the room. Everything is
 named so it can be dropped into a slide, and explained in a README that opens on double-click.

@@ -1,5 +1,7 @@
 # Lessons
 
+*Mode: explanation. A record of what went wrong on the first film and where each fix now lives; read it before planning.*
+
 What went wrong or nearly wrong on the first full run (Kleber Content AI, 6-9 November 2026), and the fix
 that is now built into the kit or its rules. Each entry is problem → fix → where it lives now.
 Read this before planning a new film. Agents: when one of these applies to your step, follow the fix
@@ -29,7 +31,7 @@ without asking.
 | # | Problem | Fix | Where it lives |
 |---|---|---|---|
 | E1 | The settings scene's camera zoomed to the wrong box: the clicked control sat at or above the top edge of the frame while the camera held on the preview. The owner caught it after delivery. | Frame the camera on the clicked control's logged box (its whole row) together with the thing that changes; at every click both must be fully in frame. The critic checks every click frame for "is the clicked control in frame". | skill `build-film`, agent `film-critic` checklist |
-| E2 | A frozen hold of almost 2 s at 1:03 looked like a stall. 18 such holds were found across the film once someone looked. | Run `film/scripts/holds.py` (from `film/`) after every build before picture lock; trim static holds over about 1 s unless the moment is the point (then spotlight it). | skill `review-film` |
+| E2 | A frozen hold of almost 2 s at 1:03 looked like a stall. 18 such holds were found across the film once someone looked. | Run `$KIT/film/scripts/holds.py` (from the film's project folder; also part of `build.mjs --audit`) after every build before picture lock; trim static holds over about 1 s unless the moment is the point (then spotlight it). | skill `review-film` |
 | E3 | The pointer jumped 340-485 px across nine hard cuts. | Treat each cut: fade or slide the pointer off before the cut and bring it in from the nearest edge after; or end the outgoing shot on a punch-in that leaves the pointer out of frame; or replace the cut with a push or whip where the story has a break. Avoid nine identical treatments. | `film/`, skill `build-film` |
 | E4 | The status line "Noting that for next time…", the point of its scene, was on screen for 0.8 s. | Play that stretch slowed (about 0.4x) with a spotlight and the caption landing on it, pointer at rest. A slow-down carries no time-lapse tag; slow nothing else. | storyboard `rate`, skill `build-film` |
 | E5 | The dealer logo was invisible on a red creative, so the caption "Your logo first" claimed something the viewer could not see. A later option showed the dealer logo over lettering in the artwork for about 3 s. | A caption is cut or rewritten when its claim is not visibly true. Add "logo over lettering / logo unreadable on its background" to the frame review list; fix the app (agent `app-fixer`) or cut the moment. | honesty rules, agent `film-critic` |

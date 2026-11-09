@@ -1,5 +1,7 @@
 # storyboard.json
 
+*Mode: reference. The "Drafting and auditing" section at the end is how-to; a worked run of both is in [`TUTORIAL-first-site-tour.md`](TUTORIAL-first-site-tour.md).*
+
 The storyboard is the film's edit decision list. `film/build.mjs` reads it together with the take
 folders (`events.json` + `master.mp4` per take, see `docs/CONTRACT.md`) and writes the whole
 HyperFrames project: one pre-cut clip per scene, one composition per scene, the title and end cards,

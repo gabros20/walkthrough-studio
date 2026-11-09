@@ -1,5 +1,7 @@
 # Roadmap: from one film to a recording studio for coding agents
 
+*Mode: explanation. What is planned, not built. Shipped changes are in [`CHANGELOG.md`](CHANGELOG.md).*
+
 What the kit does today was built for one film of one app. This file lists what would make it a
 general screen-recording studio that an agent can point at any app or website and get a touring
 or walkthrough video back, with captions or an ElevenLabs voiceover. Items are grouped by value
@@ -73,7 +75,7 @@ per effort. "Folded in" items were added during the extraction (2026-11-09); the
 ## Suggested order
 
 1. `doctor` + one CLI (removes most setup friction for a new project).
-2. Declarative scenes + tour map (makes "any website" real without writing JS).
+2. Tour map (declarative scenes are folded in; the map makes "any website" real without guessing labels).
 3. Caption drafting + pointer bridging + golden test (finishes the editing-cost work).
 4. Per-line VO cache + listening proxy (makes the voiceover twin cheap to iterate).
 5. Aspect presets + package presets (new outputs from the same takes).

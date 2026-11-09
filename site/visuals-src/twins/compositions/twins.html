@@ -1,0 +1,477 @@
+<template id="twins-template">
+  <style>
+    @font-face { font-family: "Archivo"; src: url("assets/fonts/Archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: block; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Archivo", Helvetica, Arial, sans-serif; }
+    #tw-ground { position: absolute; inset: 0; background: #141414; }
+    .tw-panel { position: absolute; width: 870px; height: 561px; overflow: hidden; border-radius: 12px; box-shadow: 0 0 0 2px #2E2E2E; }
+    .tw-inner { position: absolute; left: -88.29px; top: -10.9px; width: 1920px; height: 1080px; transform: scale(0.545); transform-origin: 0 0; }
+    .tw-lbl { position: absolute; top: 72px; display: flex; align-items: baseline; gap: 22px; white-space: nowrap; }
+    .tw-lbl b { font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 48px; font-weight: 800; letter-spacing: -0.015em; font-variation-settings: "wdth" 112; color: #FFFFFF; }
+    .tw-lbl span { font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 28px; color: #A3A8A4; }
+    .cap-text { font-size: 48px !important; }
+    #tl-ground { position: absolute; inset: 0; background: #141414; }
+    #tl-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #tl-win { position: absolute; left: 192px; top: 36px; width: 1536px; height: 864px; border-radius: 16px; overflow: hidden; box-shadow: 0 28px 70px rgba(0,0,0,.45); background: #FFFFFF; }
+    #tl-video { position: absolute; left: 0; top: 0; width: 1536px; height: 864px; object-fit: cover; }
+    #tl-ovl { position: absolute; left: 192px; top: 36px; width: 1536px; height: 864px; }
+    #tl-band { position: absolute; left: 0; top: 900px; width: 1920px; height: 180px; background: #141414; opacity: 0; }
+    #tl-mask { position: absolute; left: 0; top: 0; width: 1536px; height: 864px; border-radius: 16px; overflow: hidden; }
+    
+    
+    #tl-ptr { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 30; opacity: 0; }
+    #tl-ptr-arc, #tl-ptr-press { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    #tl-ptr .ptr-shape { position: absolute; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0,0,0,.32)); }
+    .tl-ptr-disc { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; z-index: 29; }
+    .tl-ptr-disc > div { width: 64px; height: 64px; border-radius: 50%; background: #141414; opacity: 0; }
+
+
+
+    
+
+
+    
+    #tl-app { position: absolute; left: 0; top: 0; width: 1440px; height: 810px; transform: scale(1.0666666666666667); transform-origin: 0 0; background: #FFFFFF; color: #141414; font-family: "Archivo", Helvetica, Arial, sans-serif; overflow: hidden; }
+    #tl-app .bar { position: absolute; left: 0; top: 0; width: 100%; height: 96px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; padding: 0 28px; gap: 16px; }
+    #tl-app .glyph { width: 44px; height: 44px; border-radius: 11px; background: #141414; flex: none; }
+    #tl-app .brand { font-size: 44px; font-weight: 700; letter-spacing: -0.01em; }
+    #tl-app .share { margin-left: auto; height: 64px; padding: 0 28px; border: 2px solid #D3D7D2; border-radius: 8px; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #tl-app .avatar { width: 60px; height: 60px; border-radius: 50%; background: #8E9A8C; flex: none; }
+    #tl-app .side { position: absolute; left: 0; top: 96px; width: 112px; bottom: 0; background: #F0F2EF; border-right: 2px solid #D3D7D2; padding: 32px 16px; }
+    #tl-app .nav { height: 76px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 0px; font-size: 24px; font-weight: 500; color: #5A605C; margin-bottom: 8px; }
+    #tl-app .nav i { width: 32px; height: 32px; border: 4px solid currentColor; border-radius: 8px; flex: none; }
+    #tl-app .nav.on { background: #FFFFFF; color: #141414; font-weight: 700; box-shadow: 0 0 0 2px #D3D7D2; }
+    #tl-app .nav.bottom { position: absolute; left: 16px; right: 16px; bottom: 24px; margin: 0; }
+    #tl-app .h1 { position: absolute; left: 160px; top: 124px; font-size: 64px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variation-settings: "wdth" 112; }
+    #tl-app .count { position: absolute; right: 48px; top: 136px; font-size: 44px; color: #5A605C; }
+    #tl-app .comp { position: absolute; left: 160px; top: 196px; width: 1232px; height: 120px; border: 2px solid #D3D7D2; border-radius: 12px; display: flex; align-items: center; padding-left: 28px; font-size: 44px; }
+    #tl-btn { position: absolute; left: 1146px; top: 212px; width: 230px; height: 88px; border-radius: 8px; background: #141414; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700; }
+    #tl-app .card { position: absolute; top: 360px; width: 391.3333333333333px; height: 430px; border: 2px solid #D3D7D2; border-radius: 12px; background: #FFFFFF; overflow: hidden; }
+    #tl-app .img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; overflow: hidden; }
+    #tl-app .ttl { position: absolute; left: 18px; top: 336px; font-size: 44px; font-weight: 700; line-height: 1; white-space: nowrap; letter-spacing: -0.01em; }
+    #tl-app .meta { position: absolute; left: 18px; top: 394px; font-size: 0px; color: #5A605C; white-space: nowrap; }
+    #tl-app .sk { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
+    #tl-app .sk-img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; background: #E3E6E2; overflow: hidden; }
+    #tl-app .sk-hi { position: absolute; top: 0; left: 0; width: 180px; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.75), rgba(255,255,255,0)); }
+    #tl-app .sk-bar { position: absolute; left: 18px; height: 40px; border-radius: 6px; background: #E3E6E2; }
+    #tl-ring { position: absolute; left: -10px; top: -9px; right: -12px; bottom: -9px; border: 2.5px solid #141414; border-radius: 6px; opacity: 0; }
+    #tl-caretw { display: inline-block; position: relative; width: 0; height: 1em; vertical-align: top; }
+    #tl-caret { position: absolute; left: 0; top: -0.12em; width: 2.5px; height: 1.24em; background: #141414; opacity: 0; }
+    #tl-main { position: absolute; inset: 0; }
+    #tl-set { position: absolute; left: 112px; top: 96px; right: 0; bottom: 0; background: #FFFFFF; opacity: 0; }
+    #tl-set .row { position: absolute; left: 48px; right: 48px; height: 120px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #tl-set .sw { margin-left: auto; width: 104px; height: 56px; border-radius: 999px; background: #D3D7D2; position: relative; }
+    #tl-set .sw b { position: absolute; top: 6px; left: 6px; width: 44px; height: 44px; border-radius: 50%; background: #fff; }
+    #tl-set .sw.on { background: #141414; }
+
+    .cap { position: absolute; inset: 0; pointer-events: none; }
+    .cap-row { position: absolute; left: 0; right: 0; top: 953px; height: 64px; display: flex; justify-content: center; }
+    .cap-plate { position: relative; height: 64px; display: flex; align-items: center; padding: 0 38px 0 64px; }
+    .cap-bgw { position: absolute; inset: 0; transform-origin: 0% 50%; }
+    .cap-bg { position: absolute; inset: 0; background: #1F1F1F; transform: skewX(-16deg); border-radius: 3px; }
+    .cap-tickw { position: absolute; left: 26px; top: 16px; width: 10px; height: 32px; transform-origin: 50% 100%; }
+    .cap-tick { position: absolute; inset: 0; background: #00B140; transform: skewX(-16deg); }
+    .cap-text { position: relative; font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 44px; font-weight: 700; line-height: 1; letter-spacing: -0.005em; color: #FFFFFF; white-space: nowrap; }
+    .cap-text .w { display: inline-block; }
+
+    #tr-ground { position: absolute; inset: 0; background: #141414; }
+    #tr-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #tr-win { position: absolute; left: 192px; top: 36px; width: 1536px; height: 864px; border-radius: 16px; overflow: hidden; box-shadow: 0 28px 70px rgba(0,0,0,.45); background: #FFFFFF; }
+    #tr-video { position: absolute; left: 0; top: 0; width: 1536px; height: 864px; object-fit: cover; }
+    #tr-ovl { position: absolute; left: 192px; top: 36px; width: 1536px; height: 864px; }
+    #tr-band { position: absolute; left: 0; top: 900px; width: 1920px; height: 180px; background: #141414; opacity: 0; }
+    #tr-mask { position: absolute; left: 0; top: 0; width: 1536px; height: 864px; border-radius: 16px; overflow: hidden; }
+    
+    
+    #tr-ptr { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 30; opacity: 0; }
+    #tr-ptr-arc, #tr-ptr-press { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    #tr-ptr .ptr-shape { position: absolute; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0,0,0,.32)); }
+    .tr-ptr-disc { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; z-index: 29; }
+    .tr-ptr-disc > div { width: 64px; height: 64px; border-radius: 50%; background: #141414; opacity: 0; }
+
+
+
+    
+
+
+    
+    #tr-app { position: absolute; left: 0; top: 0; width: 1440px; height: 810px; transform: scale(1.0666666666666667); transform-origin: 0 0; background: #FFFFFF; color: #141414; font-family: "Archivo", Helvetica, Arial, sans-serif; overflow: hidden; }
+    #tr-app .bar { position: absolute; left: 0; top: 0; width: 100%; height: 96px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; padding: 0 28px; gap: 16px; }
+    #tr-app .glyph { width: 44px; height: 44px; border-radius: 11px; background: #141414; flex: none; }
+    #tr-app .brand { font-size: 44px; font-weight: 700; letter-spacing: -0.01em; }
+    #tr-app .share { margin-left: auto; height: 64px; padding: 0 28px; border: 2px solid #D3D7D2; border-radius: 8px; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #tr-app .avatar { width: 60px; height: 60px; border-radius: 50%; background: #8E9A8C; flex: none; }
+    #tr-app .side { position: absolute; left: 0; top: 96px; width: 112px; bottom: 0; background: #F0F2EF; border-right: 2px solid #D3D7D2; padding: 32px 16px; }
+    #tr-app .nav { height: 76px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 0px; font-size: 24px; font-weight: 500; color: #5A605C; margin-bottom: 8px; }
+    #tr-app .nav i { width: 32px; height: 32px; border: 4px solid currentColor; border-radius: 8px; flex: none; }
+    #tr-app .nav.on { background: #FFFFFF; color: #141414; font-weight: 700; box-shadow: 0 0 0 2px #D3D7D2; }
+    #tr-app .nav.bottom { position: absolute; left: 16px; right: 16px; bottom: 24px; margin: 0; }
+    #tr-app .h1 { position: absolute; left: 160px; top: 124px; font-size: 64px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variation-settings: "wdth" 112; }
+    #tr-app .count { position: absolute; right: 48px; top: 136px; font-size: 44px; color: #5A605C; }
+    #tr-app .comp { position: absolute; left: 160px; top: 196px; width: 1232px; height: 120px; border: 2px solid #D3D7D2; border-radius: 12px; display: flex; align-items: center; padding-left: 28px; font-size: 44px; }
+    #tr-btn { position: absolute; left: 1146px; top: 212px; width: 230px; height: 88px; border-radius: 8px; background: #141414; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700; }
+    #tr-app .card { position: absolute; top: 360px; width: 391.3333333333333px; height: 430px; border: 2px solid #D3D7D2; border-radius: 12px; background: #FFFFFF; overflow: hidden; }
+    #tr-app .img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; overflow: hidden; }
+    #tr-app .ttl { position: absolute; left: 18px; top: 336px; font-size: 44px; font-weight: 700; line-height: 1; white-space: nowrap; letter-spacing: -0.01em; }
+    #tr-app .meta { position: absolute; left: 18px; top: 394px; font-size: 0px; color: #5A605C; white-space: nowrap; }
+    #tr-app .sk { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
+    #tr-app .sk-img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; background: #E3E6E2; overflow: hidden; }
+    #tr-app .sk-hi { position: absolute; top: 0; left: 0; width: 180px; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.75), rgba(255,255,255,0)); }
+    #tr-app .sk-bar { position: absolute; left: 18px; height: 40px; border-radius: 6px; background: #E3E6E2; }
+    #tr-ring { position: absolute; left: -10px; top: -9px; right: -12px; bottom: -9px; border: 2.5px solid #141414; border-radius: 6px; opacity: 0; }
+    #tr-caretw { display: inline-block; position: relative; width: 0; height: 1em; vertical-align: top; }
+    #tr-caret { position: absolute; left: 0; top: -0.12em; width: 2.5px; height: 1.24em; background: #141414; opacity: 0; }
+    #tr-main { position: absolute; inset: 0; }
+    #tr-set { position: absolute; left: 112px; top: 96px; right: 0; bottom: 0; background: #FFFFFF; opacity: 0; }
+    #tr-set .row { position: absolute; left: 48px; right: 48px; height: 120px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #tr-set .sw { margin-left: auto; width: 104px; height: 56px; border-radius: 999px; background: #D3D7D2; position: relative; }
+    #tr-set .sw b { position: absolute; top: 6px; left: 6px; width: 44px; height: 44px; border-radius: 50%; background: #fff; }
+    #tr-set .sw.on { background: #141414; }
+
+    #tr-wv { position: absolute; left: 550px; top: 953px; width: 820px; height: 64px; overflow: hidden; z-index: 40; }
+    #tr-wvs { position: absolute; left: 0; top: 0; }
+    #tr-wvh { position: absolute; left: 409px; top: 0; width: 3px; height: 64px; background: #FFFFFF; }
+
+    .tw-row { position: absolute; left: 60px; height: 40px; display: flex; align-items: center; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 28px; color: #A3A8A4; }
+    .tw-span { position: absolute; height: 34px; }
+    .tw-span.c { background: #1F1F1F; border-left: 6px solid #00B140; }
+    .tw-span.v { background: repeating-linear-gradient(90deg, #A3A8A4 0 4px, transparent 4px 9px); opacity: 0.55; }
+    #tw-rule { position: absolute; left: 300px; top: 829px; width: 1560px; height: 2px; background: #2E2E2E; }
+    .tw-cut { position: absolute; top: 756px; width: 4px; height: 142px; margin-left: -2px; background: #2E2E2E; }
+    .tw-cutl { position: absolute; top: 910px; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 28px; color: #A3A8A4; white-space: nowrap; transform: translateX(-50%); }
+    #tw-head { position: absolute; left: 300px; top: 748px; width: 2px; height: 158px; margin-left: -1px; background: #FFFFFF; }
+  </style>
+  <div id="root" data-composition-id="twins" data-start="0" data-duration="8" data-width="1920" data-height="1080">
+    <div id="tw-ground"></div>
+    <div class="tw-panel" id="tl-panel" style="left:60px; top:150px" data-layout-allow-overflow>
+      <div class="tw-inner" data-layout-allow-overflow data-layout-ignore>
+    <div id="tl-ground"></div>
+    <div id="tl-cam" data-layout-allow-overflow>
+      <div id="tl-win">
+        <div id="tl-app">
+          <div class="bar"><div class="glyph"></div><div class="brand">Workspace</div><div class="share">Share</div><div class="avatar"></div></div>
+          <div class="side"><div class="nav"><i></i></div><div class="nav on"><i></i></div><div class="nav"><i></i></div><div class="nav bottom"><i></i></div></div>
+          <div id="tl-main">
+          <div class="h1">Drafts</div>
+          <div class="count">3 ready</div>
+          <div class="comp">A poster for the spring market</div>
+          <div id="tl-btn"><span id="tl-btnl">Generate</span></div>
+          <div class="card" id="tl-card0" style="left:160px">
+            <div id="tl-cc0">
+              <div class="img" style="background:#2F3A34"><div style="position:absolute;left:52%;top:18%;width:150px;height:150px;border-radius:50%;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:14%;width:58%;height:22px;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:24%;width:36%;height:22px;background:#8E9A8C"></div></div>
+              <div class="ttl" id="tl-ttl0"><div id="tl-ring"></div><span id="tl-w0">Spring</span><span id="tl-caretw"><span id="tl-caret"></span></span> market</div>
+            </div>
+            <div class="sk" id="tl-sk0">
+              <div class="sk-img"><div class="sk-hi" id="tl-skhi0"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="tl-card1" style="left:580.3333333333333px">
+            <div id="tl-cc1">
+              <div class="img" style="background:#C9CFC6"><div style="position:absolute;left:-20%;top:38%;width:140%;height:70px;background:#141414;transform:rotate(-16deg)"></div><div style="position:absolute;left:12%;top:12%;width:70px;height:70px;background:#FFFFFF"></div></div>
+              <div class="ttl" id="tl-ttl1">Market day</div>
+            </div>
+            <div class="sk" id="tl-sk1">
+              <div class="sk-img"><div class="sk-hi" id="tl-skhi1"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="tl-card2" style="left:1000.6666666666666px">
+            <div id="tl-cc2">
+              <div class="img" style="background:#8E9A8C"><div style="position:absolute;left:12%;top:14%;width:46%;height:46%;background:#FFFFFF"></div><div style="position:absolute;left:38%;top:40%;width:46%;height:46%;background:#141414"></div></div>
+              <div class="ttl" id="tl-ttl2">Fresh this week</div>
+            </div>
+            <div class="sk" id="tl-sk2">
+              <div class="sk-img"><div class="sk-hi" id="tl-skhi2"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          </div>
+          <div id="tl-set">
+            <div class="h1" style="left:48px; top:28px">Settings</div>
+            <div class="row" style="top:120px">Auto-save<div class="sw on" id="tl-sw0"><b id="tl-sw0k" style="left:auto; right:6px"></b></div></div>
+            <div class="row" style="top:240px">Share link<div class="sw" id="tl-sw1"><div id="tl-sw1f" style="position:absolute;inset:0;border-radius:999px;background:#141414;opacity:0"></div><b id="tl-sw1k"></b></div></div>
+            <div class="row" style="top:360px">Default size<span style="margin-left:auto; color:#5A605C; font-weight:500">4:5</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="tl-ovl" data-layout-allow-overflow data-layout-allow-occlusion>
+        <div id="tl-mask" data-layout-ignore>
+        </div>
+        <div id="tl-ptr"><div id="tl-ptr-arc"><div id="tl-ptr-press">
+          <svg id="tl-ptr-arrow" class="ptr-shape" viewBox="-1.5 -1.5 20.5 31" style="left:-2.315789px; top:-2.315789px; width:31.649123px; height:47.859649px; opacity:1"><path d="M0,0 L0,24.2 L5.7,18.9 L9.5,27.6 L13.2,26 L9.5,17.5 L17.2,17.3 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+          <svg id="tl-ptr-hand" class="ptr-shape" viewBox="-9.5 -1.5 26.5 30.5" style="left:-14.666667px; top:-2.315789px; width:40.912281px; height:47.087719px; opacity:0"><path d="M0,0.2 C1.5,0.2 2.5,1.2 2.5,2.7 L2.5,9.6 C2.5,8.4 3.5,7.6 4.7,7.6 C5.9,7.6 6.9,8.4 6.9,9.6 L6.9,10.6 C6.9,9.5 7.9,8.8 9,8.8 C10.2,8.8 11.1,9.6 11.1,10.8 L11.1,11.8 C11.1,10.8 12,10.2 13,10.2 C14.1,10.2 15,11 15,12.2 L15,18.2 C15,23.2 12,27.2 7,27.2 L4,27.2 C1,27.2 -0.9,26 -2.5,23.8 L-7.3,17 C-8.1,15.9 -7.9,14.5 -6.9,13.8 C-5.9,13.1 -4.5,13.3 -3.7,14.3 L-2.5,15.8 L-2.5,2.7 C-2.5,1.3 -1.5,0.2 0,0.2 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/><path d="M2.5,10.6 L2.5,16.4 M6.9,11.4 L6.9,16.4 M11.1,12.4 L11.1,16.4" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round"/></svg>
+          <svg id="tl-ptr-ibeam" class="ptr-shape" viewBox="-6.5 -14 13 28" style="left:-10.035088px; top:-21.614035px; width:20.070175px; height:43.22807px; opacity:0"><path d="M-4.5,-12 L-1.6,-12 C-0.9,-12 -0.3,-11.7 0,-11.3 C0.3,-11.7 0.9,-12 1.6,-12 L4.5,-12 L4.5,-10 L2,-10 C1.4,-10 1,-9.6 1,-9 L1,9 C1,9.6 1.4,10 2,10 L4.5,10 L4.5,12 L1.6,12 C0.9,12 0.3,11.7 0,11.3 C-0.3,11.7 -0.9,12 -1.6,12 L-4.5,12 L-4.5,10 L-2,10 C-1.4,10 -1,9.6 -1,9 L-1,-9 C-1,-9.6 -1.4,-10 -2,-10 L-4.5,-10 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+        </div></div></div>
+        <div id="tl-ptr-disc-0" class="tl-ptr-disc clip" data-start="1.133333" data-duration="0.36" style="left:1345.066667px; top:273.066667px"><div id="tl-ptr-disc-0-in"></div></div>
+        <div id="tl-ptr-disc-1" class="tl-ptr-disc clip" data-start="6.533333" data-duration="0.36" style="left:1429.333333px; top:422.4px"><div id="tl-ptr-disc-1-in"></div></div>
+
+      </div>
+    </div>
+    <div id="tl-band"></div>
+
+    <div id="cap-0" class="cap clip" data-start="0.5" data-duration="2.1" data-layout-allow-caption-zone>
+      <div class="cap-row">
+        <div id="cap-0-plate" class="cap-plate">
+          <div id="cap-0-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
+          <div id="cap-0-tickw" class="cap-tickw"><div class="cap-tick"></div></div>
+          <div id="cap-0-text" class="cap-text"><span class="w" id="cap-0-w0">Generate</span> <span class="w" id="cap-0-w1">from</span> <span class="w" id="cap-0-w2">one</span> <span class="w" id="cap-0-w3">prompt</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="cap-1" class="cap clip" data-start="2.85" data-duration="2.35" data-layout-allow-caption-zone>
+      <div class="cap-row">
+        <div id="cap-1-plate" class="cap-plate">
+          <div id="cap-1-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
+          <div id="cap-1-tickw" class="cap-tickw"><div class="cap-tick"></div></div>
+          <div id="cap-1-text" class="cap-text"><span class="w" id="cap-1-w0">Every</span> <span class="w" id="cap-1-w1">card</span> <span class="w" id="cap-1-w2">loads</span> <span class="w" id="cap-1-w3">in</span> <span class="w" id="cap-1-w4">place</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="cap-2" class="cap clip" data-start="5.45" data-duration="2.45" data-layout-allow-caption-zone>
+      <div class="cap-row">
+        <div id="cap-2-plate" class="cap-plate">
+          <div id="cap-2-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
+          <div id="cap-2-tickw" class="cap-tickw"><div class="cap-tick"></div></div>
+          <div id="cap-2-text" class="cap-text"><span class="w" id="cap-2-w0">Turn</span> <span class="w" id="cap-2-w1">on</span> <span class="w" id="cap-2-w2">a</span> <span class="w" id="cap-2-w3">share</span> <span class="w" id="cap-2-w4">link</span></div>
+        </div>
+      </div>
+    </div>
+
+      </div>
+    </div>
+    <div class="tw-panel" id="tr-panel" style="left:990px; top:150px" data-layout-allow-overflow>
+      <div class="tw-inner" data-layout-allow-overflow data-layout-ignore>
+    <div id="tr-ground"></div>
+    <div id="tr-cam" data-layout-allow-overflow>
+      <div id="tr-win">
+        <div id="tr-app">
+          <div class="bar"><div class="glyph"></div><div class="brand">Workspace</div><div class="share">Share</div><div class="avatar"></div></div>
+          <div class="side"><div class="nav"><i></i></div><div class="nav on"><i></i></div><div class="nav"><i></i></div><div class="nav bottom"><i></i></div></div>
+          <div id="tr-main">
+          <div class="h1">Drafts</div>
+          <div class="count">3 ready</div>
+          <div class="comp">A poster for the spring market</div>
+          <div id="tr-btn"><span id="tr-btnl">Generate</span></div>
+          <div class="card" id="tr-card0" style="left:160px">
+            <div id="tr-cc0">
+              <div class="img" style="background:#2F3A34"><div style="position:absolute;left:52%;top:18%;width:150px;height:150px;border-radius:50%;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:14%;width:58%;height:22px;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:24%;width:36%;height:22px;background:#8E9A8C"></div></div>
+              <div class="ttl" id="tr-ttl0"><div id="tr-ring"></div><span id="tr-w0">Spring</span><span id="tr-caretw"><span id="tr-caret"></span></span> market</div>
+            </div>
+            <div class="sk" id="tr-sk0">
+              <div class="sk-img"><div class="sk-hi" id="tr-skhi0"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="tr-card1" style="left:580.3333333333333px">
+            <div id="tr-cc1">
+              <div class="img" style="background:#C9CFC6"><div style="position:absolute;left:-20%;top:38%;width:140%;height:70px;background:#141414;transform:rotate(-16deg)"></div><div style="position:absolute;left:12%;top:12%;width:70px;height:70px;background:#FFFFFF"></div></div>
+              <div class="ttl" id="tr-ttl1">Market day</div>
+            </div>
+            <div class="sk" id="tr-sk1">
+              <div class="sk-img"><div class="sk-hi" id="tr-skhi1"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="tr-card2" style="left:1000.6666666666666px">
+            <div id="tr-cc2">
+              <div class="img" style="background:#8E9A8C"><div style="position:absolute;left:12%;top:14%;width:46%;height:46%;background:#FFFFFF"></div><div style="position:absolute;left:38%;top:40%;width:46%;height:46%;background:#141414"></div></div>
+              <div class="ttl" id="tr-ttl2">Fresh this week</div>
+            </div>
+            <div class="sk" id="tr-sk2">
+              <div class="sk-img"><div class="sk-hi" id="tr-skhi2"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          </div>
+          <div id="tr-set">
+            <div class="h1" style="left:48px; top:28px">Settings</div>
+            <div class="row" style="top:120px">Auto-save<div class="sw on" id="tr-sw0"><b id="tr-sw0k" style="left:auto; right:6px"></b></div></div>
+            <div class="row" style="top:240px">Share link<div class="sw" id="tr-sw1"><div id="tr-sw1f" style="position:absolute;inset:0;border-radius:999px;background:#141414;opacity:0"></div><b id="tr-sw1k"></b></div></div>
+            <div class="row" style="top:360px">Default size<span style="margin-left:auto; color:#5A605C; font-weight:500">4:5</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="tr-ovl" data-layout-allow-overflow data-layout-allow-occlusion>
+        <div id="tr-mask" data-layout-ignore>
+        </div>
+        <div id="tr-ptr"><div id="tr-ptr-arc"><div id="tr-ptr-press">
+          <svg id="tr-ptr-arrow" class="ptr-shape" viewBox="-1.5 -1.5 20.5 31" style="left:-2.315789px; top:-2.315789px; width:31.649123px; height:47.859649px; opacity:1"><path d="M0,0 L0,24.2 L5.7,18.9 L9.5,27.6 L13.2,26 L9.5,17.5 L17.2,17.3 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+          <svg id="tr-ptr-hand" class="ptr-shape" viewBox="-9.5 -1.5 26.5 30.5" style="left:-14.666667px; top:-2.315789px; width:40.912281px; height:47.087719px; opacity:0"><path d="M0,0.2 C1.5,0.2 2.5,1.2 2.5,2.7 L2.5,9.6 C2.5,8.4 3.5,7.6 4.7,7.6 C5.9,7.6 6.9,8.4 6.9,9.6 L6.9,10.6 C6.9,9.5 7.9,8.8 9,8.8 C10.2,8.8 11.1,9.6 11.1,10.8 L11.1,11.8 C11.1,10.8 12,10.2 13,10.2 C14.1,10.2 15,11 15,12.2 L15,18.2 C15,23.2 12,27.2 7,27.2 L4,27.2 C1,27.2 -0.9,26 -2.5,23.8 L-7.3,17 C-8.1,15.9 -7.9,14.5 -6.9,13.8 C-5.9,13.1 -4.5,13.3 -3.7,14.3 L-2.5,15.8 L-2.5,2.7 C-2.5,1.3 -1.5,0.2 0,0.2 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/><path d="M2.5,10.6 L2.5,16.4 M6.9,11.4 L6.9,16.4 M11.1,12.4 L11.1,16.4" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round"/></svg>
+          <svg id="tr-ptr-ibeam" class="ptr-shape" viewBox="-6.5 -14 13 28" style="left:-10.035088px; top:-21.614035px; width:20.070175px; height:43.22807px; opacity:0"><path d="M-4.5,-12 L-1.6,-12 C-0.9,-12 -0.3,-11.7 0,-11.3 C0.3,-11.7 0.9,-12 1.6,-12 L4.5,-12 L4.5,-10 L2,-10 C1.4,-10 1,-9.6 1,-9 L1,9 C1,9.6 1.4,10 2,10 L4.5,10 L4.5,12 L1.6,12 C0.9,12 0.3,11.7 0,11.3 C-0.3,11.7 -0.9,12 -1.6,12 L-4.5,12 L-4.5,10 L-2,10 C-1.4,10 -1,9.6 -1,9 L-1,-9 C-1,-9.6 -1.4,-10 -2,-10 L-4.5,-10 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+        </div></div></div>
+        <div id="tr-ptr-disc-0" class="tr-ptr-disc clip" data-start="1.133333" data-duration="0.36" style="left:1345.066667px; top:273.066667px"><div id="tr-ptr-disc-0-in"></div></div>
+        <div id="tr-ptr-disc-1" class="tr-ptr-disc clip" data-start="6.533333" data-duration="0.36" style="left:1429.333333px; top:422.4px"><div id="tr-ptr-disc-1-in"></div></div>
+
+      </div>
+    </div>
+    <div id="tr-band"></div>
+
+
+    <div id="tr-wv" data-layout-allow-caption-zone><svg id="tr-wvs" width="2020" height="64" viewBox="0 0 2020 64" fill="#A3A8A4"><rect x="0" y="30.5" width="5" height="3" rx="2.5"/><rect x="9" y="30.5" width="5" height="3" rx="2.5"/><rect x="18" y="30.5" width="5" height="3" rx="2.5"/><rect x="27" y="30.5" width="5" height="3" rx="2.5"/><rect x="36" y="30.5" width="5" height="3" rx="2.5"/><rect x="45" y="30.5" width="5" height="3" rx="2.5"/><rect x="54" y="30.5" width="5" height="3" rx="2.5"/><rect x="63" y="30.5" width="5" height="3" rx="2.5"/><rect x="72" y="30.5" width="5" height="3" rx="2.5"/><rect x="81" y="30.5" width="5" height="3" rx="2.5"/><rect x="90" y="30.5" width="5" height="3" rx="2.5"/><rect x="99" y="30.5" width="5" height="3" rx="2.5"/><rect x="108" y="30.5" width="5" height="3" rx="2.5"/><rect x="117" y="30.5" width="5" height="3" rx="2.5"/><rect x="126" y="30.5" width="5" height="3" rx="2.5"/><rect x="135" y="30.5" width="5" height="3" rx="2.5"/><rect x="144" y="30.5" width="5" height="3" rx="2.5"/><rect x="153" y="30.5" width="5" height="3" rx="2.5"/><rect x="162" y="30.5" width="5" height="3" rx="2.5"/><rect x="171" y="30.5" width="5" height="3" rx="2.5"/><rect x="180" y="30.5" width="5" height="3" rx="2.5"/><rect x="189" y="30.5" width="5" height="3" rx="2.5"/><rect x="198" y="30.5" width="5" height="3" rx="2.5"/><rect x="207" y="30.5" width="5" height="3" rx="2.5"/><rect x="216" y="30.5" width="5" height="3" rx="2.5"/><rect x="225" y="30.5" width="5" height="3" rx="2.5"/><rect x="234" y="30.5" width="5" height="3" rx="2.5"/><rect x="243" y="30.5" width="5" height="3" rx="2.5"/><rect x="252" y="30.5" width="5" height="3" rx="2.5"/><rect x="261" y="30.5" width="5" height="3" rx="2.5"/><rect x="270" y="30.5" width="5" height="3" rx="2.5"/><rect x="279" y="30.5" width="5" height="3" rx="2.5"/><rect x="288" y="30.5" width="5" height="3" rx="2.5"/><rect x="297" y="30.5" width="5" height="3" rx="2.5"/><rect x="306" y="30.5" width="5" height="3" rx="2.5"/><rect x="315" y="30.5" width="5" height="3" rx="2.5"/><rect x="324" y="30.5" width="5" height="3" rx="2.5"/><rect x="333" y="30.5" width="5" height="3" rx="2.5"/><rect x="342" y="30.5" width="5" height="3" rx="2.5"/><rect x="351" y="30.5" width="5" height="3" rx="2.5"/><rect x="360" y="30.5" width="5" height="3" rx="2.5"/><rect x="369" y="30.5" width="5" height="3" rx="2.5"/><rect x="378" y="30.5" width="5" height="3" rx="2.5"/><rect x="387" y="30.5" width="5" height="3" rx="2.5"/><rect x="396" y="30.5" width="5" height="3" rx="2.5"/><rect x="405" y="30.5" width="5" height="3" rx="2.5"/><rect x="414" y="30.5" width="5" height="3" rx="2.5"/><rect x="423" y="30.5" width="5" height="3" rx="2.5"/><rect x="432" y="30.5" width="5" height="3" rx="2.5"/><rect x="441" y="30.5" width="5" height="3" rx="2.5"/><rect x="450" y="30.5" width="5" height="3" rx="2.5"/><rect x="459" y="30.5" width="5" height="3" rx="2.5"/><rect x="468" y="30.5" width="5" height="3" rx="2.5"/><rect x="477" y="30.5" width="5" height="3" rx="2.5"/><rect x="486" y="30" width="5" height="4" rx="2.5"/><rect x="495" y="22.68288" width="5" height="18.634241" rx="2.5"/><rect x="504" y="19.584475" width="5" height="24.831049" rx="2.5"/><rect x="513" y="27.360266" width="5" height="9.279468" rx="2.5"/><rect x="522" y="19.227992" width="5" height="25.544016" rx="2.5"/><rect x="531" y="22.957501" width="5" height="18.084998" rx="2.5"/><rect x="540" y="22.192968" width="5" height="19.614064" rx="2.5"/><rect x="549" y="11.062539" width="5" height="41.874922" rx="2.5"/><rect x="558" y="21.440008" width="5" height="21.119983" rx="2.5"/><rect x="567" y="18.732261" width="5" height="26.535478" rx="2.5"/><rect x="576" y="13.198416" width="5" height="37.603168" rx="2.5"/><rect x="585" y="8.287967" width="5" height="47.424066" rx="2.5"/><rect x="594" y="14.491623" width="5" height="35.016754" rx="2.5"/><rect x="603" y="11.331843" width="5" height="41.336314" rx="2.5"/><rect x="612" y="10.898915" width="5" height="42.20217" rx="2.5"/><rect x="621" y="23.139167" width="5" height="17.721666" rx="2.5"/><rect x="630" y="16.283638" width="5" height="31.432724" rx="2.5"/><rect x="639" y="21.751442" width="5" height="20.497116" rx="2.5"/><rect x="648" y="15.848689" width="5" height="32.302623" rx="2.5"/><rect x="657" y="15.181918" width="5" height="33.636164" rx="2.5"/><rect x="666" y="15.736813" width="5" height="32.526374" rx="2.5"/><rect x="675" y="21.36457" width="5" height="21.270861" rx="2.5"/><rect x="684" y="20.454035" width="5" height="23.09193" rx="2.5"/><rect x="693" y="23.330709" width="5" height="17.338582" rx="2.5"/><rect x="702" y="23.402586" width="5" height="17.194828" rx="2.5"/><rect x="711" y="23.032324" width="5" height="17.935352" rx="2.5"/><rect x="720" y="21.532248" width="5" height="20.935503" rx="2.5"/><rect x="729" y="29.176835" width="5" height="5.64633" rx="2.5"/><rect x="738" y="30" width="5" height="4" rx="2.5"/><rect x="747" y="30" width="5" height="4" rx="2.5"/><rect x="756" y="30" width="5" height="4" rx="2.5"/><rect x="765" y="30" width="5" height="4" rx="2.5"/><rect x="774" y="30.5" width="5" height="3" rx="2.5"/><rect x="783" y="30.5" width="5" height="3" rx="2.5"/><rect x="792" y="30.5" width="5" height="3" rx="2.5"/><rect x="801" y="30.5" width="5" height="3" rx="2.5"/><rect x="810" y="30.5" width="5" height="3" rx="2.5"/><rect x="819" y="30.5" width="5" height="3" rx="2.5"/><rect x="828" y="30.5" width="5" height="3" rx="2.5"/><rect x="837" y="30.5" width="5" height="3" rx="2.5"/><rect x="846" y="24.074676" width="5" height="15.850648" rx="2.5"/><rect x="855" y="23.043072" width="5" height="17.913855" rx="2.5"/><rect x="864" y="24.166302" width="5" height="15.667396" rx="2.5"/><rect x="873" y="19.843326" width="5" height="24.313349" rx="2.5"/><rect x="882" y="18.554398" width="5" height="26.891204" rx="2.5"/><rect x="891" y="18.91335" width="5" height="26.1733" rx="2.5"/><rect x="900" y="21.931709" width="5" height="20.136582" rx="2.5"/><rect x="909" y="20.233442" width="5" height="23.533116" rx="2.5"/><rect x="918" y="20.163122" width="5" height="23.673755" rx="2.5"/><rect x="927" y="15.266501" width="5" height="33.466998" rx="2.5"/><rect x="936" y="18.361059" width="5" height="27.277881" rx="2.5"/><rect x="945" y="19.983405" width="5" height="24.033191" rx="2.5"/><rect x="954" y="16.032266" width="5" height="31.935468" rx="2.5"/><rect x="963" y="13.738825" width="5" height="36.52235" rx="2.5"/><rect x="972" y="18.135316" width="5" height="27.729368" rx="2.5"/><rect x="981" y="8.960952" width="5" height="46.078096" rx="2.5"/><rect x="990" y="13.264691" width="5" height="37.470618" rx="2.5"/><rect x="999" y="21.742636" width="5" height="20.514728" rx="2.5"/><rect x="1008" y="22.498008" width="5" height="19.003984" rx="2.5"/><rect x="1017" y="9.286381" width="5" height="45.427239" rx="2.5"/><rect x="1026" y="15.645843" width="5" height="32.708313" rx="2.5"/><rect x="1035" y="19.17158" width="5" height="25.65684" rx="2.5"/><rect x="1044" y="18.238355" width="5" height="27.523289" rx="2.5"/><rect x="1053" y="20.054768" width="5" height="23.890465" rx="2.5"/><rect x="1062" y="14.703407" width="5" height="34.593186" rx="2.5"/><rect x="1071" y="16.567571" width="5" height="30.864858" rx="2.5"/><rect x="1080" y="20.550971" width="5" height="22.898058" rx="2.5"/><rect x="1089" y="21.662219" width="5" height="20.675561" rx="2.5"/><rect x="1098" y="20.195255" width="5" height="23.609491" rx="2.5"/><rect x="1107" y="26.108019" width="5" height="11.783962" rx="2.5"/><rect x="1116" y="29.57235" width="5" height="4.8553" rx="2.5"/><rect x="1125" y="30" width="5" height="4" rx="2.5"/><rect x="1134" y="30" width="5" height="4" rx="2.5"/><rect x="1143" y="30" width="5" height="4" rx="2.5"/><rect x="1152" y="30" width="5" height="4" rx="2.5"/><rect x="1161" y="30.5" width="5" height="3" rx="2.5"/><rect x="1170" y="30.5" width="5" height="3" rx="2.5"/><rect x="1179" y="30.5" width="5" height="3" rx="2.5"/><rect x="1188" y="30.5" width="5" height="3" rx="2.5"/><rect x="1197" y="30.5" width="5" height="3" rx="2.5"/><rect x="1206" y="30.5" width="5" height="3" rx="2.5"/><rect x="1215" y="30.5" width="5" height="3" rx="2.5"/><rect x="1224" y="30.5" width="5" height="3" rx="2.5"/><rect x="1233" y="27.612357" width="5" height="8.775286" rx="2.5"/><rect x="1242" y="25.654086" width="5" height="12.691827" rx="2.5"/><rect x="1251" y="25.678547" width="5" height="12.642907" rx="2.5"/><rect x="1260" y="21.974834" width="5" height="20.050332" rx="2.5"/><rect x="1269" y="19.603145" width="5" height="24.79371" rx="2.5"/><rect x="1278" y="24.45859" width="5" height="15.082819" rx="2.5"/><rect x="1287" y="16.123865" width="5" height="31.75227" rx="2.5"/><rect x="1296" y="22.779918" width="5" height="18.440164" rx="2.5"/><rect x="1305" y="17.801469" width="5" height="28.397062" rx="2.5"/><rect x="1314" y="15.822411" width="5" height="32.355179" rx="2.5"/><rect x="1323" y="21.661121" width="5" height="20.677757" rx="2.5"/><rect x="1332" y="21.11675" width="5" height="21.7665" rx="2.5"/><rect x="1341" y="18.288977" width="5" height="27.422047" rx="2.5"/><rect x="1350" y="20.625152" width="5" height="22.749697" rx="2.5"/><rect x="1359" y="12.713625" width="5" height="38.57275" rx="2.5"/><rect x="1368" y="11.167915" width="5" height="41.664169" rx="2.5"/><rect x="1377" y="13.654151" width="5" height="36.691698" rx="2.5"/><rect x="1386" y="15.385728" width="5" height="33.228543" rx="2.5"/><rect x="1395" y="14.198642" width="5" height="35.602717" rx="2.5"/><rect x="1404" y="16.509508" width="5" height="30.980984" rx="2.5"/><rect x="1413" y="13.044398" width="5" height="37.911204" rx="2.5"/><rect x="1422" y="16.035686" width="5" height="31.928628" rx="2.5"/><rect x="1431" y="18.457275" width="5" height="27.085449" rx="2.5"/><rect x="1440" y="19.461894" width="5" height="25.076211" rx="2.5"/><rect x="1449" y="17.975928" width="5" height="28.048145" rx="2.5"/><rect x="1458" y="16.320138" width="5" height="31.359725" rx="2.5"/><rect x="1467" y="20.783346" width="5" height="22.433308" rx="2.5"/><rect x="1476" y="19.495981" width="5" height="25.008037" rx="2.5"/><rect x="1485" y="19.723161" width="5" height="24.553678" rx="2.5"/><rect x="1494" y="22.251457" width="5" height="19.497086" rx="2.5"/><rect x="1503" y="22.872936" width="5" height="18.254127" rx="2.5"/><rect x="1512" y="25.90476" width="5" height="12.19048" rx="2.5"/><rect x="1521" y="30" width="5" height="4" rx="2.5"/><rect x="1530" y="30" width="5" height="4" rx="2.5"/><rect x="1539" y="30" width="5" height="4" rx="2.5"/><rect x="1548" y="30" width="5" height="4" rx="2.5"/><rect x="1557" y="30" width="5" height="4" rx="2.5"/><rect x="1566" y="30.5" width="5" height="3" rx="2.5"/><rect x="1575" y="30.5" width="5" height="3" rx="2.5"/><rect x="1584" y="30.5" width="5" height="3" rx="2.5"/><rect x="1593" y="30.5" width="5" height="3" rx="2.5"/><rect x="1602" y="30.5" width="5" height="3" rx="2.5"/><rect x="1611" y="30.5" width="5" height="3" rx="2.5"/><rect x="1620" y="30.5" width="5" height="3" rx="2.5"/><rect x="1629" y="30.5" width="5" height="3" rx="2.5"/><rect x="1638" y="30.5" width="5" height="3" rx="2.5"/><rect x="1647" y="30.5" width="5" height="3" rx="2.5"/><rect x="1656" y="30.5" width="5" height="3" rx="2.5"/><rect x="1665" y="30.5" width="5" height="3" rx="2.5"/><rect x="1674" y="30.5" width="5" height="3" rx="2.5"/><rect x="1683" y="30.5" width="5" height="3" rx="2.5"/><rect x="1692" y="30.5" width="5" height="3" rx="2.5"/><rect x="1701" y="30.5" width="5" height="3" rx="2.5"/><rect x="1710" y="30.5" width="5" height="3" rx="2.5"/><rect x="1719" y="30.5" width="5" height="3" rx="2.5"/><rect x="1728" y="30.5" width="5" height="3" rx="2.5"/><rect x="1737" y="30.5" width="5" height="3" rx="2.5"/><rect x="1746" y="30.5" width="5" height="3" rx="2.5"/><rect x="1755" y="30.5" width="5" height="3" rx="2.5"/><rect x="1764" y="30.5" width="5" height="3" rx="2.5"/><rect x="1773" y="30.5" width="5" height="3" rx="2.5"/><rect x="1782" y="30.5" width="5" height="3" rx="2.5"/><rect x="1791" y="30.5" width="5" height="3" rx="2.5"/><rect x="1800" y="30.5" width="5" height="3" rx="2.5"/><rect x="1809" y="30.5" width="5" height="3" rx="2.5"/><rect x="1818" y="30.5" width="5" height="3" rx="2.5"/><rect x="1827" y="30.5" width="5" height="3" rx="2.5"/><rect x="1836" y="30.5" width="5" height="3" rx="2.5"/><rect x="1845" y="30.5" width="5" height="3" rx="2.5"/><rect x="1854" y="30.5" width="5" height="3" rx="2.5"/><rect x="1863" y="30.5" width="5" height="3" rx="2.5"/><rect x="1872" y="30.5" width="5" height="3" rx="2.5"/><rect x="1881" y="30.5" width="5" height="3" rx="2.5"/><rect x="1890" y="30.5" width="5" height="3" rx="2.5"/><rect x="1899" y="30.5" width="5" height="3" rx="2.5"/><rect x="1908" y="30.5" width="5" height="3" rx="2.5"/><rect x="1917" y="30.5" width="5" height="3" rx="2.5"/><rect x="1926" y="30.5" width="5" height="3" rx="2.5"/><rect x="1935" y="30.5" width="5" height="3" rx="2.5"/><rect x="1944" y="30.5" width="5" height="3" rx="2.5"/><rect x="1953" y="30.5" width="5" height="3" rx="2.5"/><rect x="1962" y="30.5" width="5" height="3" rx="2.5"/><rect x="1971" y="30.5" width="5" height="3" rx="2.5"/><rect x="1980" y="30.5" width="5" height="3" rx="2.5"/><rect x="1989" y="30.5" width="5" height="3" rx="2.5"/><rect x="1998" y="30.5" width="5" height="3" rx="2.5"/><rect x="2007" y="30.5" width="5" height="3" rx="2.5"/><rect x="2016" y="30.5" width="5" height="3" rx="2.5"/></svg><div id="tr-wvh"></div></div>
+
+      </div>
+    </div>
+    <div class="tw-lbl" style="left:60px"><b>Captions</b><span>build.mjs</span></div>
+    <div class="tw-lbl" style="left:990px"><b>Voiceover</b><span>build.mjs --no-captions</span></div>
+    <div class="tw-row" style="top:762px">captions</div>
+    <div class="tw-row" style="top:852px">voice</div>
+    <div id="tw-rule"></div>
+    <div class="tw-span c" style="left:397.5px; top:765px; width:409.5px"></div>
+    <div class="tw-span v" style="left:397.5px; top:855px; width:370.5px"></div>
+    <div class="tw-span c" style="left:855.75px; top:765px; width:458.25px"></div>
+    <div class="tw-span v" style="left:855.75px; top:855px; width:419.25px"></div>
+    <div class="tw-span c" style="left:1362.75px; top:765px; width:477.75px"></div>
+    <div class="tw-span v" style="left:1362.75px; top:855px; width:438.75px"></div>
+    <div class="tw-cut" id="tw-cut0" style="left:826.5px"></div>
+    <div class="tw-cutl" id="tw-cutl0" style="left:826.5px">cut 2.7 s</div>
+    <div class="tw-cut" id="tw-cut1" style="left:1333.5px"></div>
+    <div class="tw-cutl" id="tw-cutl1" style="left:1333.5px">cut 5.3 s</div>
+    <div id="tw-head"></div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const HF = {};
+    HF.p3 = function (p) {
+  return p < 0.5 ? 8 * p * p * p * p : 1 - (-2 * p + 2) ** 4 / 2;
+};
+    HF.arcA = (u) => { const p = HF.p3(u / 2); return 4 * p * (1 - p); };
+    HF.arcB = (v) => { const p = HF.p3(0.5 + v / 2); return 1 - 4 * p * (1 - p); };
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#tl-cam", { scale: 1, x: 0, y: 0, transformOrigin: "0 0" }, 0);
+    tl.fromTo("#tl-cam", { scale: 1, x: 0, y: 0, transformOrigin: "0 0" }, { scale: 1.34, x: -257.28, y: -302.901333, duration: 0.001, ease: "power2.inOut", transformOrigin: "0 0" }, 2.7);
+    tl.fromTo("#tl-cam", { scale: 1.34, x: -257.28, y: -302.901333, transformOrigin: "0 0" }, { scale: 1, x: 0, y: 0, duration: 0.001, ease: "power2.inOut", transformOrigin: "0 0", immediateRender: false }, 5.3);
+    tl.fromTo("#tl-sk0", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tl-cc0", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tl-skhi0", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.26);
+    tl.set("#tl-cc0", { opacity: 1 }, 3.15);
+    tl.fromTo("#tl-sk0", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.15);
+    tl.fromTo("#tl-ttl0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 3.25);
+    tl.fromTo("#tl-sk1", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.266667);
+    tl.fromTo("#tl-cc1", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.266667);
+    tl.fromTo("#tl-skhi1", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.326667);
+    tl.set("#tl-cc1", { opacity: 1 }, 3.55);
+    tl.fromTo("#tl-sk1", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.55);
+    tl.fromTo("#tl-ttl1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 3.65);
+    tl.fromTo("#tl-sk2", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.3);
+    tl.fromTo("#tl-cc2", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.3);
+    tl.fromTo("#tl-skhi2", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.36);
+    tl.set("#tl-cc2", { opacity: 1 }, 3.95);
+    tl.fromTo("#tl-sk2", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.95);
+    tl.fromTo("#tl-ttl2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 4.05);
+    tl.fromTo("#tl-btnl", { opacity: 1 }, { opacity: 0.5, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tl-btnl", { opacity: 0.5 }, { opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 4.15);
+    tl.set("#tl-set", { opacity: 1 }, 5.3);
+    tl.set("#tl-main", { opacity: 0 }, 5.3);
+    tl.fromTo("#tl-sw1k", { x: 0 }, { x: 48, duration: 0.3, ease: "expo.out" }, 6.573333);
+    tl.fromTo("#tl-sw1f", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 6.573333);
+    tl.set("#tl-ptr", { x: 1706.666667, y: 960 }, 0);
+    tl.set("#tl-ptr-arc", { x: 0, y: 0 }, 0);
+    tl.set("#tl-ptr", { opacity: 1 }, 0);
+    tl.fromTo("#tl-ptr", { x: 1706.666667, y: 960 }, { x: 1345.066667, y: 273.066667, duration: 0.666667, ease: HF.p3 }, 0.3);
+    tl.fromTo("#tl-ptr-arc", { x: 0, y: 0 }, { x: 27.477333, y: -14.464, duration: 0.333333, ease: HF.arcA }, 0.3);
+    tl.fromTo("#tl-ptr-arc", { x: 27.477333, y: -14.464 }, { x: 0, y: 0, duration: 0.333333, ease: HF.arcB, immediateRender: false }, 0.633333);
+    tl.set("#tl-ptr-arrow", { opacity: 0 }, 0.966667);
+    tl.set("#tl-ptr-hand", { opacity: 1 }, 0.966667);
+    tl.set("#tl-ptr-ibeam", { opacity: 0 }, 0.966667);
+    tl.set("#tl-ptr", { x: 917.333333, y: 682.666667 }, 5.3);
+    tl.set("#tl-ptr-arc", { x: 0, y: 0 }, 5.3);
+    tl.set("#tl-ptr-arrow", { opacity: 1 }, 5.3);
+    tl.set("#tl-ptr-hand", { opacity: 0 }, 5.3);
+    tl.set("#tl-ptr-ibeam", { opacity: 0 }, 5.3);
+    tl.fromTo("#tl-ptr", { x: 917.333333, y: 682.666667 }, { x: 1429.333333, y: 422.4, duration: 0.566667, ease: HF.p3, immediateRender: false }, 5.766667);
+    tl.fromTo("#tl-ptr-arc", { x: 0, y: 0 }, { x: -10.410667, y: -20.48, duration: 0.283333, ease: HF.arcA, immediateRender: false }, 5.766667);
+    tl.fromTo("#tl-ptr-arc", { x: -10.410667, y: -20.48 }, { x: 0, y: 0, duration: 0.283333, ease: HF.arcB, immediateRender: false }, 6.05);
+    tl.set("#tl-ptr-arrow", { opacity: 0 }, 6.333333);
+    tl.set("#tl-ptr-hand", { opacity: 1 }, 6.333333);
+    tl.set("#tl-ptr-ibeam", { opacity: 0 }, 6.333333);
+    tl.fromTo("#tl-ptr-press", { scale: 1 }, { scale: 0.86, duration: 0.09, ease: "power2.out" }, 1.133333);
+    tl.fromTo("#tl-ptr-press", { scale: 0.86 }, { scale: 1, duration: 0.09, ease: "power2.out", immediateRender: false }, 1.223333);
+    tl.fromTo("#tl-ptr-disc-0-in", { scale: 0.4375, opacity: 0.28 }, { scale: 1, opacity: 0, duration: 0.35, ease: "power2.out" }, 1.133333);
+    tl.fromTo("#tl-ptr-press", { scale: 1 }, { scale: 0.86, duration: 0.09, ease: "power2.out", immediateRender: false }, 6.533333);
+    tl.fromTo("#tl-ptr-press", { scale: 0.86 }, { scale: 1, duration: 0.09, ease: "power2.out", immediateRender: false }, 6.623333);
+    tl.fromTo("#tl-ptr-disc-1-in", { scale: 0.4375, opacity: 0.28 }, { scale: 1, opacity: 0, duration: 0.35, ease: "power2.out" }, 6.533333);
+    tl.fromTo("#cap-0-bgw", { clipPath: "inset(-4px 100% -4px -40px)" }, { clipPath: "inset(-4px -40px -4px -40px)", duration: 0.45, ease: "expo.out" }, 0.5);
+    tl.fromTo("#cap-0-tickw", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "expo.out" }, 0.58);
+    tl.fromTo("#cap-0-text", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "expo.out" }, 0.6);
+    tl.fromTo("#cap-0-plate", { opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(6px)", duration: 0.18, ease: "power3.in" }, 2.42);
+    tl.set("#cap-0-plate", { visibility: "hidden" }, 2.6);
+    tl.fromTo("#cap-1-bgw", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 2.85);
+    tl.fromTo("#cap-1-tickw", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "expo.out" }, 2.85);
+    tl.fromTo("#cap-1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out" }, 2.91);
+    tl.fromTo("#cap-1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out" }, 2.977);
+    tl.fromTo("#cap-1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out" }, 3.044);
+    tl.fromTo("#cap-1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out" }, 3.111);
+    tl.fromTo("#cap-1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out" }, 3.178);
+    tl.fromTo("#cap-1-plate", { opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(6px)", duration: 0.18, ease: "power3.in" }, 5.02);
+    tl.set("#cap-1-plate", { visibility: "hidden" }, 5.2);
+    tl.fromTo("#cap-2-tickw", { x: -28, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "expo.out" }, 5.45);
+    tl.fromTo("#cap-2-bgw", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, 5.51);
+    tl.fromTo("#cap-2-w0", { opacity: 0, color: "rgba(255,255,255,0.0)" }, { opacity: 1, color: "rgba(255,255,255,1)", duration: 0.16, ease: "power2.out" }, 5.59);
+    tl.fromTo("#cap-2-w1", { opacity: 0, color: "rgba(255,255,255,0.0)" }, { opacity: 1, color: "rgba(255,255,255,1)", duration: 0.16, ease: "power2.out" }, 5.65);
+    tl.fromTo("#cap-2-w2", { opacity: 0, color: "rgba(255,255,255,0.0)" }, { opacity: 1, color: "rgba(255,255,255,1)", duration: 0.16, ease: "power2.out" }, 5.71);
+    tl.fromTo("#cap-2-w3", { opacity: 0, color: "rgba(255,255,255,0.0)" }, { opacity: 1, color: "rgba(255,255,255,1)", duration: 0.16, ease: "power2.out" }, 5.77);
+    tl.fromTo("#cap-2-w4", { opacity: 0, color: "rgba(255,255,255,0.0)" }, { opacity: 1, color: "rgba(255,255,255,1)", duration: 0.16, ease: "power2.out" }, 5.83);
+    tl.fromTo("#cap-2-plate", { opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(6px)", duration: 0.18, ease: "power3.in" }, 7.72);
+    tl.set("#cap-2-plate", { visibility: "hidden" }, 7.9);
+    tl.set("#tr-cam", { scale: 1, x: 0, y: 0, transformOrigin: "0 0" }, 0);
+    tl.fromTo("#tr-cam", { scale: 1, x: 0, y: 0, transformOrigin: "0 0" }, { scale: 1.34, x: -257.28, y: -302.901333, duration: 0.001, ease: "power2.inOut", transformOrigin: "0 0" }, 2.7);
+    tl.fromTo("#tr-cam", { scale: 1.34, x: -257.28, y: -302.901333, transformOrigin: "0 0" }, { scale: 1, x: 0, y: 0, duration: 0.001, ease: "power2.inOut", transformOrigin: "0 0", immediateRender: false }, 5.3);
+    tl.fromTo("#tr-sk0", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tr-cc0", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tr-skhi0", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.26);
+    tl.set("#tr-cc0", { opacity: 1 }, 3.15);
+    tl.fromTo("#tr-sk0", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.15);
+    tl.fromTo("#tr-ttl0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 3.25);
+    tl.fromTo("#tr-sk1", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.266667);
+    tl.fromTo("#tr-cc1", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.266667);
+    tl.fromTo("#tr-skhi1", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.326667);
+    tl.set("#tr-cc1", { opacity: 1 }, 3.55);
+    tl.fromTo("#tr-sk1", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.55);
+    tl.fromTo("#tr-ttl1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 3.65);
+    tl.fromTo("#tr-sk2", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 1.3);
+    tl.fromTo("#tr-cc2", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power2.out" }, 1.3);
+    tl.fromTo("#tr-skhi2", { x: -200 }, { x: 411.333333, duration: 0.6, ease: "power1.inOut", repeat: 2 }, 1.36);
+    tl.set("#tr-cc2", { opacity: 1 }, 3.95);
+    tl.fromTo("#tr-sk2", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.5, ease: "expo.out", immediateRender: false }, 3.95);
+    tl.fromTo("#tr-ttl2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out", immediateRender: false }, 4.05);
+    tl.fromTo("#tr-btnl", { opacity: 1 }, { opacity: 0.5, duration: 0.12, ease: "power2.out" }, 1.2);
+    tl.fromTo("#tr-btnl", { opacity: 0.5 }, { opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 4.15);
+    tl.set("#tr-set", { opacity: 1 }, 5.3);
+    tl.set("#tr-main", { opacity: 0 }, 5.3);
+    tl.fromTo("#tr-sw1k", { x: 0 }, { x: 48, duration: 0.3, ease: "expo.out" }, 6.573333);
+    tl.fromTo("#tr-sw1f", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 6.573333);
+    tl.set("#tr-ptr", { x: 1706.666667, y: 960 }, 0);
+    tl.set("#tr-ptr-arc", { x: 0, y: 0 }, 0);
+    tl.set("#tr-ptr", { opacity: 1 }, 0);
+    tl.fromTo("#tr-ptr", { x: 1706.666667, y: 960 }, { x: 1345.066667, y: 273.066667, duration: 0.666667, ease: HF.p3 }, 0.3);
+    tl.fromTo("#tr-ptr-arc", { x: 0, y: 0 }, { x: 27.477333, y: -14.464, duration: 0.333333, ease: HF.arcA }, 0.3);
+    tl.fromTo("#tr-ptr-arc", { x: 27.477333, y: -14.464 }, { x: 0, y: 0, duration: 0.333333, ease: HF.arcB, immediateRender: false }, 0.633333);
+    tl.set("#tr-ptr-arrow", { opacity: 0 }, 0.966667);
+    tl.set("#tr-ptr-hand", { opacity: 1 }, 0.966667);
+    tl.set("#tr-ptr-ibeam", { opacity: 0 }, 0.966667);
+    tl.set("#tr-ptr", { x: 917.333333, y: 682.666667 }, 5.3);
+    tl.set("#tr-ptr-arc", { x: 0, y: 0 }, 5.3);
+    tl.set("#tr-ptr-arrow", { opacity: 1 }, 5.3);
+    tl.set("#tr-ptr-hand", { opacity: 0 }, 5.3);
+    tl.set("#tr-ptr-ibeam", { opacity: 0 }, 5.3);
+    tl.fromTo("#tr-ptr", { x: 917.333333, y: 682.666667 }, { x: 1429.333333, y: 422.4, duration: 0.566667, ease: HF.p3, immediateRender: false }, 5.766667);
+    tl.fromTo("#tr-ptr-arc", { x: 0, y: 0 }, { x: -10.410667, y: -20.48, duration: 0.283333, ease: HF.arcA, immediateRender: false }, 5.766667);
+    tl.fromTo("#tr-ptr-arc", { x: -10.410667, y: -20.48 }, { x: 0, y: 0, duration: 0.283333, ease: HF.arcB, immediateRender: false }, 6.05);
+    tl.set("#tr-ptr-arrow", { opacity: 0 }, 6.333333);
+    tl.set("#tr-ptr-hand", { opacity: 1 }, 6.333333);
+    tl.set("#tr-ptr-ibeam", { opacity: 0 }, 6.333333);
+    tl.fromTo("#tr-ptr-press", { scale: 1 }, { scale: 0.86, duration: 0.09, ease: "power2.out" }, 1.133333);
+    tl.fromTo("#tr-ptr-press", { scale: 0.86 }, { scale: 1, duration: 0.09, ease: "power2.out", immediateRender: false }, 1.223333);
+    tl.fromTo("#tr-ptr-disc-0-in", { scale: 0.4375, opacity: 0.28 }, { scale: 1, opacity: 0, duration: 0.35, ease: "power2.out" }, 1.133333);
+    tl.fromTo("#tr-ptr-press", { scale: 1 }, { scale: 0.86, duration: 0.09, ease: "power2.out", immediateRender: false }, 6.533333);
+    tl.fromTo("#tr-ptr-press", { scale: 0.86 }, { scale: 1, duration: 0.09, ease: "power2.out", immediateRender: false }, 6.623333);
+    tl.fromTo("#tr-ptr-disc-1-in", { scale: 0.4375, opacity: 0.28 }, { scale: 1, opacity: 0, duration: 0.35, ease: "power2.out" }, 6.533333);
+    tl.fromTo("#tr-wvs", { x: 0 }, { x: -1200, duration: 8, ease: "none" }, 0);
+    tl.fromTo("#tw-head", { x: 0 }, { x: 1560, duration: 8, ease: "none" }, 0);
+    tl.set("#tw-cut0", { backgroundColor: "#00B140" }, 2.7);
+    tl.set("#tw-cutl0", { color: "#FFFFFF" }, 2.7);
+    tl.set("#tw-cut1", { backgroundColor: "#00B140" }, 5.3);
+    tl.set("#tw-cutl1", { color: "#FFFFFF" }, 5.3);
+    window.__timelines["twins"] = tl;
+  </script>
+</template>

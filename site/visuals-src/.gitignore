@@ -1,0 +1,7 @@
+.hyperframes/
+renders/
+node_modules/
+assets/footage/
+snaps/
+# copied from fonts/ by build.mjs
+*/assets/fonts/

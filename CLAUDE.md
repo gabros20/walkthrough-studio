@@ -9,7 +9,7 @@ It is used against *other* projects' apps. The rules below protect those project
 |---|---|
 | `skills/<name>/SKILL.md` | workflows; start with `skills/walkthrough-film` |
 | `agents/<name>.md` | specialised agent roles with their model tier |
-| `docs/` | `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md` |
+| `docs/` | `README.md` (index by purpose), `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md`, `ROADMAP.md` (planned, not built), `adr/` (decisions: do not re-litigate without a superseding ADR), `CHANGELOG.md`, `TUTORIAL-first-site-tour.md` |
 | `studio/` | isolated app instance scripts (clone, ports, checkpoints) |
 | `recorder/` | Playwright capture, invisible-mouse driving, `events.json` take format, take runner |
 | `film/` | HyperFrames film kit: `build.mjs`, components, review scripts |
@@ -44,6 +44,7 @@ It is used against *other* projects' apps. The rules below protect those project
 - Changed `skills/`, `agents/` or `.claude-plugin/`: `claude plugin validate .` must pass.
 - Changed `delivery/`: `KLEBER_REPO=<kleber-content-ai checkout> python3 -I delivery/clips.py examples/kleber-content-ai/delivery/package.config.json --dry`
   (needs the example's source films; otherwise test on any film with an `edl.json`); every script answers `--help`.
-- Changed `film/`: `node film/build.mjs --dry` on the example storyboard when takes are available, and
-  `npx hyperframes@0.9.16 check` in `film/`.
+- Changed `film/`: `node film/build.mjs <storyboard.json> --takes <takes> --dry --audit` on a real storyboard
+  and its takes (the example's, or a draft from `film/scripts/draft-storyboard.mjs`; a bare
+  `node film/build.mjs --dry` in the kit finds no storyboard), and `npx hyperframes@0.9.16 check` in `film/`.
 - Grep your diff for secrets and personal data (`@gmail`, `sk-`, `token`, `link.txt` contents) before committing.

@@ -1,5 +1,7 @@
 # Capture test
 
+*Mode: explanation (why this capture method; the measurements) with a reference pass table and a short how-to (Reproduce). The decision itself: [ADR-002](adr/002-cdp-screencast-capture.md).*
+
 How the capture method was chosen, the checks a capture method must pass, and how to re-run them on a new machine or a new Chromium. Measured 2026-11-06 on an Apple M3 Pro (11 cores), macOS 26.3, Node 24.16, ffmpeg 8.0.1, `playwright-core@1.62.1`, Chromium 151.0.7922.34 (build 1234).
 
 ## Result

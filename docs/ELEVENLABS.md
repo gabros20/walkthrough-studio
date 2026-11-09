@@ -1,5 +1,7 @@
 # ElevenLabs: music and voice
 
+*Mode: how-to. Generating the music take and the voiceover take, by connector or API key. Paths: `$P` is the film's project folder, `$KIT` the kit. What happens to the files next: `sound/README.md`, `voiceover/README.md`.*
+
 How the first film's music bed and voiceover were generated, and how to do the same without the connector.
 The lead makes every generation call itself, one call per asset. Sub-agents cannot reach the claude.ai
 connector, and each call costs credits. The sound designer and the voiceover producer work only with the
@@ -40,10 +42,11 @@ Tool names are those of the connector. Which models exist varies by workspace, s
    read the error before doing anything else.
 7. Download the result URL at once, then measure its real length (it may be short):
    ```bash
-   curl -L -o film/assets/audio/music-take1.mp3 "<result url>"
-   ffprobe -v error -show_entries format=duration -of csv=p=0 film/assets/audio/music-take1.mp3
+   curl -L -o $P/music-take1.mp3 "<result url>"
+   ffprobe -v error -show_entries format=duration -of csv=p=0 $P/music-take1.mp3
    ```
-   Then write `film/music.json` (template: `sound/music.example.json`).
+   Then write `$P/music.json` beside it (template: `$KIT/sound/music.example.json`; its `"file"` is
+   relative to it).
 
 ### Speech (voiceover)
 
@@ -57,7 +60,7 @@ Tool names are those of the connector. Which models exist varies by workspace, s
    keep the others' ids in your notes.
 4. Download at once:
    ```bash
-   curl -L -o film/voiceover/vo-take1.mp3 "<result url>"
+   curl -L -o $P/voiceover/vo-take1.mp3 "<result url>"
    ```
    Then hand the path to the voiceover producer for transcription and placement (skill `voiceover`).
 
@@ -79,15 +82,15 @@ curl -s "https://api.elevenlabs.io/v2/voices?search=emily&page_size=20" \
 curl -s -X POST "https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
   -d '{"prompt": "<music direction>", "music_length_ms": 197000, "force_instrumental": true, "model_id": "<current music model>"}' \
-  -o film/assets/audio/music-take1.mp3
+  -o $P/music-take1.mp3
 
 # speech: returns audio bytes
 curl -s -X POST "https://api.elevenlabs.io/v1/text-to-speech/<voice_id>?output_format=mp3_44100_128" \
   -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d "$(python3 -I -c 'import json,sys; print(json.dumps({"text": open(sys.argv[1]).read(), "model_id": "eleven_v4"}))' film/voiceover/script.txt)" \
-  -o film/voiceover/vo-take1.mp3
+  -d "$(python3 -I -c 'import json,sys; print(json.dumps({"text": open(sys.argv[1]).read(), "model_id": "eleven_v4"}))' $P/voiceover/script.txt)" \
+  -o $P/voiceover/vo-take1.mp3
 ```
 
 Check each response before using it. A JSON error body saved as `.mp3` is a common failure; confirm with
-`file film/voiceover/vo-take1.mp3` or `ffprobe`. Long scripts may exceed the per-request character limit
+`file $P/voiceover/vo-take1.mp3` or `ffprobe`. Long scripts may exceed the per-request character limit
 of the chosen model; if so, split at paragraph boundaries and keep the takes in order.

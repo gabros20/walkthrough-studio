@@ -1,0 +1,42 @@
+<template id="captions-template">
+  <style>
+    @font-face { font-family: "Archivo"; src: url("assets/fonts/Archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: block; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Archivo", Helvetica, Arial, sans-serif; }
+    .cap { position: absolute; inset: 0; pointer-events: none; }
+    .cap-row { position: absolute; left: 0; right: 0; top: 953px; height: 64px; display: flex; justify-content: center; }
+    .cap-plate { position: relative; height: 64px; display: flex; align-items: center; padding: 0 38px 0 64px; }
+    .cap-bgw { position: absolute; inset: 0; transform-origin: 0% 50%; }
+    .cap-bg { position: absolute; inset: 0; background: #1F1F1F; transform: skewX(-16deg); border-radius: 3px; }
+    .cap-tickw { position: absolute; left: 26px; top: 16px; width: 10px; height: 32px; transform-origin: 50% 100%; }
+    .cap-tick { position: absolute; inset: 0; background: #00B140; transform: skewX(-16deg); }
+    .cap-text { position: relative; font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 44px; font-weight: 700; line-height: 1; letter-spacing: -0.005em; color: #FFFFFF; white-space: nowrap; }
+    .cap-text .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="captions" data-start="0" data-duration="10" data-width="1920" data-height="1080">
+    <div id="cap-0" class="cap clip" data-start="2" data-duration="2.366667" data-layout-allow-caption-zone>
+      <div class="cap-row">
+        <div id="cap-0-plate" class="cap-plate">
+          <div id="cap-0-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
+          <div id="cap-0-tickw" class="cap-tickw"><div class="cap-tick"></div></div>
+          <div id="cap-0-text" class="cap-text"><span class="w" id="cap-0-w0">Click</span> <span class="w" id="cap-0-w1">any</span> <span class="w" id="cap-0-w2">text</span> <span class="w" id="cap-0-w3">to</span> <span class="w" id="cap-0-w4">edit</span> <span class="w" id="cap-0-w5">it</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const HF = {};
+    HF.p3 = function (p) {
+  return p < 0.5 ? 8 * p * p * p * p : 1 - (-2 * p + 2) ** 4 / 2;
+};
+    HF.arcA = (u) => { const p = HF.p3(u / 2); return 4 * p * (1 - p); };
+    HF.arcB = (v) => { const p = HF.p3(0.5 + v / 2); return 1 - 4 * p * (1 - p); };
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cap-0-bgw", { clipPath: "inset(-4px 100% -4px -40px)" }, { clipPath: "inset(-4px -40px -4px -40px)", duration: 0.45, ease: "expo.out" }, 2);
+    tl.fromTo("#cap-0-tickw", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "expo.out" }, 2.08);
+    tl.fromTo("#cap-0-text", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "expo.out" }, 2.1);
+    tl.fromTo("#cap-0-plate", { opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(6px)", duration: 0.18, ease: "power3.in" }, 4.186667);
+    tl.set("#cap-0-plate", { visibility: "hidden" }, 4.366667);
+    window.__timelines["captions"] = tl;
+  </script>
+</template>

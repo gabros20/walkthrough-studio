@@ -1,5 +1,7 @@
 # Pipeline
 
+*Mode: explanation. The shape of a job and the numbers that worked. Exact commands live in the skills and the folder READMEs; the reasons behind the big choices are in [`adr/`](adr/).*
+
 How a walkthrough film is made with this kit, start to finish, with the numbers that worked. The worked
 example is `examples/kleber-content-ai/PLAN.md` (the approved plan of the first film); this page is its
 generic part. Interfaces between stages are in `docs/CONTRACT.md` (takes), `docs/STORYBOARD.md` (edit),

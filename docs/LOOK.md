@@ -1,5 +1,7 @@
 # The look
 
+*Mode: reference (the numbers, from `film/lib/config.mjs`). "Banned in this film" and "Honesty" are rules; "Roadmap: 9:16 and 1:1" is planning, not built.*
+
 The design system of a walkthrough film. The numbers are the defaults in `film/lib/config.mjs`;
 colours, type, the slant and the lockup come from the project's brand file (`brand.json`), layout numbers
 from its `look` section or the storyboard's. The film is a real recording of a real app, framed and

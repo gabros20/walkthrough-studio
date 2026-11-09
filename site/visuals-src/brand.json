@@ -1,0 +1,21 @@
+{
+  "note": "The site's palette and type (site/DESIGN.md) as a kit brand file, so film/lib renders the site visuals in the page's colours: ink #141414, plate #1F1F1F, key green #00B140 as the one accent, Archivo.",
+  "name": "walkthrough-studio",
+  "colors": {
+    "ink": "#141414",
+    "paper": "#FFFFFF",
+    "accent": "#00B140",
+    "text": "#FFFFFF",
+    "muted": "#A3A8A4",
+    "plate": "#1F1F1F",
+    "ghost": "#2E2E2E"
+  },
+  "font": {
+    "family": "Archivo",
+    "fallback": "Helvetica, Arial, sans-serif",
+    "captionCharEm": 0.5
+  },
+  "look": {
+    "pointer": { "size": 44, "fill": "#141414", "edge": "#fff", "disc": "#141414" }
+  }
+}

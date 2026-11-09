@@ -1,0 +1,267 @@
+<template id="pipeline-template">
+  <style>
+    @font-face { font-family: "Archivo"; src: url("assets/fonts/Archivo.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: block; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Archivo", Helvetica, Arial, sans-serif; }
+    #pl-ground { position: absolute; inset: 0; background: #141414; }
+    #pl-track { position: absolute; left: 0; top: 0; width: 9120px; height: 1080px; }
+    .st { position: absolute; top: 0; height: 1080px; }
+    .hd { position: absolute; left: 0; top: 190px; display: flex; align-items: baseline; gap: 28px; white-space: nowrap; }
+    .hd b { font-family: "Archivo", Helvetica, Arial, sans-serif; font-weight: 800; font-size: 88px; letter-spacing: -0.02em; font-variation-settings: "wdth" 112; color: #FFFFFF; line-height: 1; }
+    .hd span { font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 32px; color: #A3A8A4; }
+    .note { position: absolute; left: 0; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 28px; color: #A3A8A4; white-space: nowrap; }
+    
+    .st .ln { position: absolute; left: 0; white-space: pre; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 30px; line-height: 1; }
+    .st .ky, .st .pu { color: #A3A8A4; }
+    .st .vl { color: #FFFFFF; }
+    .st .rf { color: #FFFFFF; }
+    #pl-thread { position: absolute; left: 0; top: 0; overflow: visible; }
+    #pr-app { position: absolute; left: 0; top: 0; width: 1440px; height: 810px; transform: scale(0.7222222222222222); transform-origin: 0 0; background: #FFFFFF; color: #141414; font-family: "Archivo", Helvetica, Arial, sans-serif; overflow: hidden; }
+    #pr-app .bar { position: absolute; left: 0; top: 0; width: 100%; height: 96px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; padding: 0 28px; gap: 16px; }
+    #pr-app .glyph { width: 44px; height: 44px; border-radius: 11px; background: #141414; flex: none; }
+    #pr-app .brand { font-size: 44px; font-weight: 700; letter-spacing: -0.01em; }
+    #pr-app .share { margin-left: auto; height: 64px; padding: 0 28px; border: 2px solid #D3D7D2; border-radius: 8px; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #pr-app .avatar { width: 60px; height: 60px; border-radius: 50%; background: #8E9A8C; flex: none; }
+    #pr-app .side { position: absolute; left: 0; top: 96px; width: 112px; bottom: 0; background: #F0F2EF; border-right: 2px solid #D3D7D2; padding: 32px 16px; }
+    #pr-app .nav { height: 76px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 0px; font-size: 24px; font-weight: 500; color: #5A605C; margin-bottom: 8px; }
+    #pr-app .nav i { width: 32px; height: 32px; border: 4px solid currentColor; border-radius: 8px; flex: none; }
+    #pr-app .nav.on { background: #FFFFFF; color: #141414; font-weight: 700; box-shadow: 0 0 0 2px #D3D7D2; }
+    #pr-app .nav.bottom { position: absolute; left: 16px; right: 16px; bottom: 24px; margin: 0; }
+    #pr-app .h1 { position: absolute; left: 160px; top: 124px; font-size: 64px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variation-settings: "wdth" 112; }
+    #pr-app .count { position: absolute; right: 48px; top: 136px; font-size: 44px; color: #5A605C; }
+    #pr-app .comp { position: absolute; left: 160px; top: 196px; width: 1232px; height: 120px; border: 2px solid #D3D7D2; border-radius: 12px; display: flex; align-items: center; padding-left: 28px; font-size: 44px; }
+    #pr-btn { position: absolute; left: 1146px; top: 212px; width: 230px; height: 88px; border-radius: 8px; background: #141414; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700; }
+    #pr-app .card { position: absolute; top: 360px; width: 391.3333333333333px; height: 430px; border: 2px solid #D3D7D2; border-radius: 12px; background: #FFFFFF; overflow: hidden; }
+    #pr-app .img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; overflow: hidden; }
+    #pr-app .ttl { position: absolute; left: 18px; top: 336px; font-size: 44px; font-weight: 700; line-height: 1; white-space: nowrap; letter-spacing: -0.01em; }
+    #pr-app .meta { position: absolute; left: 18px; top: 394px; font-size: 0px; color: #5A605C; white-space: nowrap; }
+    #pr-app .sk { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
+    #pr-app .sk-img { position: absolute; left: 14px; top: 14px; right: 14px; height: 300px; border-radius: 8px; background: #E3E6E2; overflow: hidden; }
+    #pr-app .sk-hi { position: absolute; top: 0; left: 0; width: 180px; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.75), rgba(255,255,255,0)); }
+    #pr-app .sk-bar { position: absolute; left: 18px; height: 40px; border-radius: 6px; background: #E3E6E2; }
+    #pr-ring { position: absolute; left: -10px; top: -9px; right: -12px; bottom: -9px; border: 2.5px solid #141414; border-radius: 6px; opacity: 0; }
+    #pr-caretw { display: inline-block; position: relative; width: 0; height: 1em; vertical-align: top; }
+    #pr-caret { position: absolute; left: 0; top: -0.12em; width: 2.5px; height: 1.24em; background: #141414; opacity: 0; }
+    #pr-main { position: absolute; inset: 0; }
+    #pr-set { position: absolute; left: 112px; top: 96px; right: 0; bottom: 0; background: #FFFFFF; opacity: 0; }
+    #pr-set .row { position: absolute; left: 48px; right: 48px; height: 120px; border-bottom: 2px solid #D3D7D2; display: flex; align-items: center; font-size: 44px; font-weight: 600; }
+    #pr-set .sw { margin-left: auto; width: 104px; height: 56px; border-radius: 999px; background: #D3D7D2; position: relative; }
+    #pr-set .sw b { position: absolute; top: 6px; left: 6px; width: 44px; height: 44px; border-radius: 50%; background: #fff; }
+    #pr-set .sw.on { background: #141414; }
+    #pl-win { position: absolute; left: 0; top: 300px; width: 1040px; height: 585px; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 28px 70px rgba(0,0,0,.45); }
+    #pl-flash { position: absolute; inset: 0; border-radius: 16px; box-shadow: inset 0 0 0 12px #00B140; opacity: 0; }
+    #pl-hl { position: absolute; left: -22px; top: 563px; width: 1290px; height: 52px; background: #1F1F1F; transform-origin: 0 50%; }
+    #pl-hlbar { position: absolute; left: -22px; top: 563px; width: 6px; height: 52px; background: #00B140; }
+    #pl-s3 .rul { position: absolute; top: 350px; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 28px; color: #A3A8A4; }
+    #pl-s3 .fr { position: absolute; top: 400px; width: 243.5px; height: 137px; border-radius: 8px; background: #fff; overflow: hidden; }
+    #pl-s3 .fr i { position: absolute; display: block; }
+    #pl-s3 .lane { position: absolute; left: 230px; width: 1010px; height: 76px; border-bottom: 2px solid #2E2E2E; }
+    #pl-s3 .lbl { position: absolute; left: 0; height: 76px; display: flex; align-items: center; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 30px; color: #A3A8A4; }
+    #pl-s3 .clipb { position: absolute; top: 8px; height: 60px; background: #1F1F1F; border-left: 6px solid #00B140; display: flex; align-items: center; gap: 14px; padding: 0 20px; font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 30px; font-weight: 700; color: #FFFFFF; white-space: nowrap; }
+    #pl-s3 .ptrbox { position: relative; width: 26px; height: 40px; }
+    #pl-anc { position: absolute; left: 657px; top: 298px; width: 4px; height: 588px; background: #00B140; transform-origin: 50% 0; }
+    #pl-ancl { position: absolute; left: 675px; top: 294px; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 30px; color: #00B140; white-space: nowrap; }
+    #pl-ptr { position: absolute; left: 2px; top: -5px; width: 0; height: 0; z-index: 30; opacity: 0; }
+    #pl-ptr-arc, #pl-ptr-press { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    #pl-ptr .ptr-shape { position: absolute; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0,0,0,.32)); }
+    .pl-ptr-disc { position: absolute; width: 64px; height: 64px; margin: -32px 0 0 -32px; z-index: 29; }
+    .pl-ptr-disc > div { width: 64px; height: 64px; border-radius: 50%; background: #141414; opacity: 0; }
+    #pl-s4 .cmd { position: absolute; left: 0; top: 350px; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 34px; color: #FFFFFF; white-space: pre; }
+    #pl-s4 .row { position: absolute; left: 0; width: 1240px; height: 88px; border-bottom: 2px solid #2E2E2E; display: flex; align-items: center; white-space: nowrap; }
+    #pl-s4 .k { width: 260px; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 34px; font-weight: 700; color: #FFFFFF; }
+    #pl-s4 .d { font-family: "Archivo", Helvetica, Arial, sans-serif; font-size: 32px; color: #A3A8A4; }
+    #pl-s4 .ok { position: absolute; right: 0; font-family: "JetBrains Mono", "Source Code Pro", monospace; font-size: 34px; font-weight: 700; color: #00B140; }
+  </style>
+  <div id="root" data-composition-id="pipeline" data-start="0" data-duration="12.5" data-width="1920" data-height="1080">
+    <div id="pl-ground"></div>
+    <div id="pl-track" data-layout-allow-overflow>
+      <div class="st" id="pl-s0" style="left:440px; width:1040px">
+        <div class="hd" id="pl-h0"><b>Record</b><span>a Playwright take</span></div>
+        <div id="pl-win"><div id="pr-app">
+          <div class="bar"><div class="glyph"></div><div class="brand">Workspace</div><div class="share">Share</div><div class="avatar"></div></div>
+          <div class="side"><div class="nav"><i></i></div><div class="nav on"><i></i></div><div class="nav"><i></i></div><div class="nav bottom"><i></i></div></div>
+          <div id="pr-main">
+          <div class="h1">Drafts</div>
+          <div class="count">3 ready</div>
+          <div class="comp">A poster for the spring market</div>
+          <div id="pr-btn"><span id="pr-btnl">Generate</span></div>
+          <div class="card" id="pr-card0" style="left:160px">
+            <div id="pr-cc0">
+              <div class="img" style="background:#2F3A34"><div style="position:absolute;left:52%;top:18%;width:150px;height:150px;border-radius:50%;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:14%;width:58%;height:22px;background:#E3E6E2"></div><div style="position:absolute;left:10%;bottom:24%;width:36%;height:22px;background:#8E9A8C"></div></div>
+              <div class="ttl" id="pr-ttl0"><div id="pr-ring"></div><span id="pr-w0">Spring</span><span id="pr-caretw"><span id="pr-caret"></span></span> market</div>
+            </div>
+            <div class="sk" id="pr-sk0">
+              <div class="sk-img"><div class="sk-hi" id="pr-skhi0"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="pr-card1" style="left:580.3333333333333px">
+            <div id="pr-cc1">
+              <div class="img" style="background:#C9CFC6"><div style="position:absolute;left:-20%;top:38%;width:140%;height:70px;background:#141414;transform:rotate(-16deg)"></div><div style="position:absolute;left:12%;top:12%;width:70px;height:70px;background:#FFFFFF"></div></div>
+              <div class="ttl" id="pr-ttl1">Market day</div>
+            </div>
+            <div class="sk" id="pr-sk1">
+              <div class="sk-img"><div class="sk-hi" id="pr-skhi1"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          <div class="card" id="pr-card2" style="left:1000.6666666666666px">
+            <div id="pr-cc2">
+              <div class="img" style="background:#8E9A8C"><div style="position:absolute;left:12%;top:14%;width:46%;height:46%;background:#FFFFFF"></div><div style="position:absolute;left:38%;top:40%;width:46%;height:46%;background:#141414"></div></div>
+              <div class="ttl" id="pr-ttl2">Fresh this week</div>
+            </div>
+            <div class="sk" id="pr-sk2">
+              <div class="sk-img"><div class="sk-hi" id="pr-skhi2"></div></div>
+              <div class="sk-bar" style="top:336px; width:227px"></div>
+            </div>
+          </div>
+          </div>
+        </div><div id="pl-flash"></div></div>
+        <div class="note" id="pl-n0" style="top:911px">master.mp4 · 1440×810 · 60 fps · no cursor</div>
+      </div>
+      <div class="st" id="pl-s1" style="left:2140px; width:1240px">
+        <div class="hd" id="pl-h1"><b>Log</b><span>events.json</span></div>
+        <div id="pl-hl"></div><div id="pl-hlbar"></div>
+        <div class="ln" id="pl-e0" style="top:350px"><span class="pu"></span><span class="ky">"schema"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"walkthrough-take/1"</span><span class="pu">,</span></div>
+        <div class="ln" id="pl-e1" style="top:406px"><span class="pu"></span><span class="ky">"events"</span><span class="pu">:</span><span class="pu"> [</span></div>
+        <div class="ln" id="pl-e2" style="top:462px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"sync"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"start 3"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">0.95</span><span class="pu"> },</span></div>
+        <div class="ln" id="pl-e3" style="top:518px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"move"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"send"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">4.21</span><span class="pu">, </span><span class="ky">"tEnd"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">4.86</span><span class="pu"> },</span></div>
+        <div class="ln" id="pl-e4" style="top:574px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"down"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"send"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">5.04</span><span class="pu"> },</span></div>
+        <div class="ln" id="pl-e5" style="top:630px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"up"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"send"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">5.13</span><span class="pu"> },</span></div>
+        <div class="ln" id="pl-e6" style="top:686px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"waitStart"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"reply"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">5.31</span><span class="pu"> },</span></div>
+        <div class="ln" id="pl-e7" style="top:742px"><span class="pu">  { </span><span class="ky">"type"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"waitEnd"</span><span class="pu">, </span><span class="ky">"label"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"reply"</span><span class="pu">, </span><span class="ky">"t"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">61.2</span><span class="pu"> }</span></div>
+        <div class="ln" id="pl-e8" style="top:798px"><span class="pu">]</span></div>
+      </div>
+      <div class="st" id="pl-s2" style="left:3940px; width:1240px">
+        <div class="hd" id="pl-h2"><b>Anchor</b><span>storyboard.json</span></div>
+        <div class="ln" id="pl-b0" style="top:350px"><span class="pu"></span><span class="ky">"scenes"</span><span class="pu">:</span><span class="pu"> [{</span></div>
+        <div class="ln" id="pl-b1" style="top:406px"><span class="pu">  </span><span class="ky">"camera"</span><span class="pu">:</span><span class="pu"> [</span></div>
+        <div class="ln" id="pl-b2" style="top:462px"><span class="pu">    { </span><span class="ky">"at"</span><span class="pu">:</span><span class="pu"> { </span><span class="ky">"ref"</span><span class="pu">:</span><span class="pu"> </span><span class="vl rf" id="pl-rf0">"down:send"</span><span class="pu"> }, </span><span class="ky">"box"</span><span class="pu">:</span><span class="pu"> </span><span class="vl rf" id="pl-rf1">"down:send"</span><span class="pu"> }</span></div>
+        <div class="ln" id="pl-b3" style="top:518px"><span class="pu">  ],</span></div>
+        <div class="ln" id="pl-b4" style="top:574px"><span class="pu">  </span><span class="ky">"captions"</span><span class="pu">:</span><span class="pu"> [</span></div>
+        <div class="ln" id="pl-b5" style="top:630px"><span class="pu">    { </span><span class="ky">"text"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"Send the request"</span><span class="pu">, </span><span class="ky">"at"</span><span class="pu">:</span><span class="pu"> { </span><span class="ky">"ref"</span><span class="pu">:</span><span class="pu"> </span><span class="vl rf" id="pl-rf2">"down:send"</span><span class="pu"> } }</span></div>
+        <div class="ln" id="pl-b6" style="top:686px"><span class="pu">  ],</span></div>
+        <div class="ln" id="pl-b7" style="top:742px"><span class="pu">  </span><span class="ky">"pointer"</span><span class="pu">:</span><span class="pu"> { </span><span class="ky">"showAt"</span><span class="pu">:</span><span class="pu"> { </span><span class="ky">"ref"</span><span class="pu">:</span><span class="pu"> </span><span class="vl">"move:send"</span><span class="pu"> } }</span></div>
+        <div class="ln" id="pl-b8" style="top:798px"><span class="pu">}]</span></div>
+        <div class="note" id="pl-n2" style="top:884px">anchors are (type, label) pairs, never seconds</div>
+      </div>
+      <svg id="pl-thread" width="9120" height="1080" viewBox="0 0 9120 1080"><path id="pl-th" d="M 3410 589 H 3660 V 477 H 3910" fill="none" stroke="#00B140" stroke-width="4" stroke-dasharray="612" stroke-dashoffset="612"/>
+        <circle id="pl-thd" cx="3910" cy="477" r="8" fill="#00B140" opacity="0"/></svg>
+      <div class="st" id="pl-s3" style="left:5740px; width:1240px">
+        <div class="hd" id="pl-h3"><b>Build</b><span>build.mjs</span></div>
+        <div id="pl-rul"><div class="rul" id="pl-r0" style="left:230px">4.2</div><div class="rul" id="pl-r1" style="left:485.5px">4.7</div><div class="rul" id="pl-r2" style="left:741px">5.2</div><div class="rul" id="pl-r3" style="left:996.5px">5.7</div></div>
+        <div id="pl-frs"><div class="fr" id="pl-f0" style="left:230px"><i style="left:0.0px;top:0.0px;width:44.0px;height:137.0px;background:#F0F2EF"></i><i style="left:52.1px;top:28.4px;width:183.3px;height:16.2px;background:#E3E6E2"></i><i style="left:205.6px;top:31.1px;width:27.1px;height:10.1px;background:#5A605C"></i><i style="left:52.1px;top:50.7px;width:57.8px;height:50.7px;background:#2F3A34"></i><i style="left:114.8px;top:50.7px;width:57.8px;height:50.7px;background:#C9CFC6"></i><i style="left:177.6px;top:50.7px;width:57.8px;height:50.7px;background:#8E9A8C"></i></div><div class="fr" id="pl-f1" style="left:485.5px"><i style="left:0.0px;top:0.0px;width:44.0px;height:137.0px;background:#F0F2EF"></i><i style="left:52.1px;top:28.4px;width:183.3px;height:16.2px;background:#E3E6E2"></i><i style="left:205.6px;top:31.1px;width:27.1px;height:10.1px;background:#5A605C"></i><i style="left:52.1px;top:50.7px;width:57.8px;height:50.7px;background:#2F3A34"></i><i style="left:114.8px;top:50.7px;width:57.8px;height:50.7px;background:#C9CFC6"></i><i style="left:177.6px;top:50.7px;width:57.8px;height:50.7px;background:#8E9A8C"></i></div><div class="fr" id="pl-f2" style="left:741px"><i style="left:0.0px;top:0.0px;width:44.0px;height:137.0px;background:#F0F2EF"></i><i style="left:52.1px;top:28.4px;width:183.3px;height:16.2px;background:#E3E6E2"></i><i style="left:205.6px;top:31.1px;width:27.1px;height:10.1px;background:#141414"></i><i style="left:52.1px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i><i style="left:114.8px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i><i style="left:177.6px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i></div><div class="fr" id="pl-f3" style="left:996.5px"><i style="left:0.0px;top:0.0px;width:44.0px;height:137.0px;background:#F0F2EF"></i><i style="left:52.1px;top:28.4px;width:183.3px;height:16.2px;background:#E3E6E2"></i><i style="left:205.6px;top:31.1px;width:27.1px;height:10.1px;background:#141414"></i><i style="left:52.1px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i><i style="left:114.8px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i><i style="left:177.6px;top:50.7px;width:57.8px;height:50.7px;background:#E3E6E2"></i></div></div>
+        <div class="lbl" id="pl-l0" style="top:600px">pointer</div><div class="lane" id="pl-ln0" style="top:600px"></div>
+        <div class="lbl" id="pl-l1" style="top:700px">camera</div><div class="lane" id="pl-ln1" style="top:700px"></div>
+        <div class="lbl" id="pl-l2" style="top:800px">caption</div><div class="lane" id="pl-ln2" style="top:800px"></div>
+        <div id="pl-anc"></div>
+        <div id="pl-ancl">down:send</div>
+        <div class="clipb" id="pl-c0" style="left:659px; top:608px"><div class="ptrbox">
+        <div id="pl-ptr"><div id="pl-ptr-arc"><div id="pl-ptr-press">
+          <svg id="pl-ptr-arrow" class="ptr-shape" viewBox="-1.5 -1.5 20.5 31" style="left:-2.315789px; top:-2.315789px; width:31.649123px; height:47.859649px; opacity:1"><path d="M0,0 L0,24.2 L5.7,18.9 L9.5,27.6 L13.2,26 L9.5,17.5 L17.2,17.3 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+          <svg id="pl-ptr-hand" class="ptr-shape" viewBox="-9.5 -1.5 26.5 30.5" style="left:-14.666667px; top:-2.315789px; width:40.912281px; height:47.087719px; opacity:0"><path d="M0,0.2 C1.5,0.2 2.5,1.2 2.5,2.7 L2.5,9.6 C2.5,8.4 3.5,7.6 4.7,7.6 C5.9,7.6 6.9,8.4 6.9,9.6 L6.9,10.6 C6.9,9.5 7.9,8.8 9,8.8 C10.2,8.8 11.1,9.6 11.1,10.8 L11.1,11.8 C11.1,10.8 12,10.2 13,10.2 C14.1,10.2 15,11 15,12.2 L15,18.2 C15,23.2 12,27.2 7,27.2 L4,27.2 C1,27.2 -0.9,26 -2.5,23.8 L-7.3,17 C-8.1,15.9 -7.9,14.5 -6.9,13.8 C-5.9,13.1 -4.5,13.3 -3.7,14.3 L-2.5,15.8 L-2.5,2.7 C-2.5,1.3 -1.5,0.2 0,0.2 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/><path d="M2.5,10.6 L2.5,16.4 M6.9,11.4 L6.9,16.4 M11.1,12.4 L11.1,16.4" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round"/></svg>
+          <svg id="pl-ptr-ibeam" class="ptr-shape" viewBox="-6.5 -14 13 28" style="left:-10.035088px; top:-21.614035px; width:20.070175px; height:43.22807px; opacity:0"><path d="M-4.5,-12 L-1.6,-12 C-0.9,-12 -0.3,-11.7 0,-11.3 C0.3,-11.7 0.9,-12 1.6,-12 L4.5,-12 L4.5,-10 L2,-10 C1.4,-10 1,-9.6 1,-9 L1,9 C1,9.6 1.4,10 2,10 L4.5,10 L4.5,12 L1.6,12 C0.9,12 0.3,11.7 0,11.3 C-0.3,11.7 -0.9,12 -1.6,12 L-4.5,12 L-4.5,10 L-2,10 C-1.4,10 -1,9.6 -1,9 L-1,-9 C-1,-9.6 -1.4,-10 -2,-10 L-4.5,-10 Z" fill="#141414" stroke="#fff" stroke-width="2" stroke-linejoin="round" paint-order="stroke"/></svg>
+        </div></div></div></div>click</div>
+        <div class="clipb" id="pl-c1" style="left:659px; top:708px">punch-in 1.7×</div>
+        <div class="clipb" id="pl-c2" style="left:659px; top:808px">Send the request</div>
+      </div>
+      <div class="st" id="pl-s4" style="left:7540px; width:1240px">
+        <div class="hd" id="pl-h4"><b>Audit</b><span>before anyone watches it</span></div>
+        <div class="cmd" id="pl-cmd"><span style="color:#A3A8A4">$ </span>node build.mjs --audit</div>
+        <div class="row" id="pl-a0" style="top:430px"><span class="k">holds</span><span class="d">no still stretch over 1.0 s</span><span class="ok" id="pl-ok0">ok</span></div>
+        <div class="row" id="pl-a1" style="top:518px"><span class="k">jumps</span><span class="d">no pointer jump over 120 px at a cut</span><span class="ok" id="pl-ok1">ok</span></div>
+        <div class="row" id="pl-a2" style="top:606px"><span class="k">dead air</span><span class="d">nothing still after a caption ends</span><span class="ok" id="pl-ok2">ok</span></div>
+        <div class="row" id="pl-a3" style="top:694px"><span class="k">claims</span><span class="d">quoted text matches the logged mark</span><span class="ok" id="pl-ok3">ok</span></div>
+        <div class="note" id="pl-sum" style="top:822px">audit: 0 error(s), 0 warning(s)</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const HF = {};
+    HF.p3 = function (p) {
+  return p < 0.5 ? 8 * p * p * p * p : 1 - (-2 * p + 2) ** 4 / 2;
+};
+    HF.arcA = (u) => { const p = HF.p3(u / 2); return 4 * p * (1 - p); };
+    HF.arcB = (v) => { const p = HF.p3(0.5 + v / 2); return 1 - 4 * p * (1 - p); };
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#pl-h0", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.1);
+    tl.fromTo("#pl-win", { opacity: 0, scale: 1.04 }, { opacity: 1, scale: 1, duration: 0.6, ease: "expo.out" }, 0.2);
+    tl.set("#pl-flash", { opacity: 1 }, 0.866667);
+    tl.set("#pl-flash", { opacity: 0 }, 0.966667);
+    tl.set("#pl-flash", { opacity: 1 }, 1.2);
+    tl.set("#pl-flash", { opacity: 0 }, 1.3);
+    tl.set("#pl-flash", { opacity: 1 }, 1.566667);
+    tl.set("#pl-flash", { opacity: 0 }, 1.666667);
+    tl.fromTo("#pl-n0", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "expo.out" }, 0.9);
+    tl.fromTo("#pl-track", { x: 0 }, { x: -1800, duration: 0.85, ease: "power2.inOut" }, 2.2);
+    tl.fromTo("#pl-track", { x: -1800 }, { x: -3600, duration: 0.85, ease: "power2.inOut", immediateRender: false }, 4.7);
+    tl.fromTo("#pl-track", { x: -3600 }, { x: -5400, duration: 0.85, ease: "power2.inOut", immediateRender: false }, 7.2);
+    tl.fromTo("#pl-track", { x: -5400 }, { x: -7200, duration: 0.85, ease: "power2.inOut", immediateRender: false }, 9.2);
+    tl.fromTo("#pl-h1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 2.55);
+    tl.fromTo("#pl-e0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 2.766667);
+    tl.fromTo("#pl-e1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 2.866667);
+    tl.fromTo("#pl-e2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 2.966667);
+    tl.fromTo("#pl-e3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.066667);
+    tl.fromTo("#pl-e4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.166667);
+    tl.fromTo("#pl-e5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.266667);
+    tl.fromTo("#pl-e6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.366667);
+    tl.fromTo("#pl-e7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.466667);
+    tl.fromTo("#pl-e8", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 3.566667);
+    tl.fromTo("#pl-hl", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "expo.out" }, 3.8);
+    tl.fromTo("#pl-hlbar", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "expo.out" }, 3.8);
+    tl.fromTo("#pl-e0", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e1", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e2", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e3", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e5", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e6", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e7", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-e8", { opacity: 1 }, { opacity: 0.45, duration: 0.3, ease: "power2.out", immediateRender: false }, 3.85);
+    tl.fromTo("#pl-th", { strokeDashoffset: 612 }, { strokeDashoffset: 0, duration: 0.85, ease: "power2.inOut" }, 4.7);
+    tl.fromTo("#pl-thd", { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "expo.out" }, 5.4);
+    tl.fromTo("#pl-h2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 5.05);
+    tl.fromTo("#pl-b0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.266667);
+    tl.fromTo("#pl-b1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.333333);
+    tl.fromTo("#pl-b2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.4);
+    tl.fromTo("#pl-b3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.5);
+    tl.fromTo("#pl-b4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.566667);
+    tl.fromTo("#pl-b5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.666667);
+    tl.fromTo("#pl-b6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.733333);
+    tl.fromTo("#pl-b7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.8);
+    tl.fromTo("#pl-b8", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 5.9);
+    tl.fromTo("#pl-rf0", { color: "#FFFFFF" }, { color: "#00B140", duration: 0.2, ease: "power2.out" }, 6.066667);
+    tl.fromTo("#pl-rf1", { color: "#FFFFFF" }, { color: "#00B140", duration: 0.2, ease: "power2.out" }, 6.246667);
+    tl.fromTo("#pl-rf2", { color: "#FFFFFF" }, { color: "#00B140", duration: 0.2, ease: "power2.out" }, 6.426667);
+    tl.fromTo("#pl-n2", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "expo.out" }, 6.566667);
+    tl.fromTo("#pl-h3", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 7.55);
+    tl.fromTo("#pl-rul", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "expo.out" }, 7.65);
+    tl.fromTo("#pl-f0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 7.7);
+    tl.fromTo("#pl-f1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 7.766667);
+    tl.fromTo("#pl-f2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 7.833333);
+    tl.fromTo("#pl-f3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 7.866667);
+    tl.fromTo("#pl-l0", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.8);
+    tl.fromTo("#pl-ln0", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.8);
+    tl.fromTo("#pl-l1", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.85);
+    tl.fromTo("#pl-ln1", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.85);
+    tl.fromTo("#pl-l2", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.9);
+    tl.fromTo("#pl-ln2", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 7.9);
+    tl.fromTo("#pl-anc", { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "expo.out" }, 8.066667);
+    tl.fromTo("#pl-ancl", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 8.116667);
+    tl.set("#pl-ptr", { opacity: 1 }, 0);
+    tl.fromTo("#pl-c0", { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 8.366667);
+    tl.fromTo("#pl-c1", { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 8.5);
+    tl.fromTo("#pl-c2", { opacity: 0, x: 140 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 8.6);
+    tl.fromTo("#pl-h4", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 9.55);
+    tl.fromTo("#pl-cmd", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "expo.out" }, 9.7);
+    tl.fromTo("#pl-a0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, 9.8);
+    tl.fromTo("#pl-ok0", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 10.1);
+    tl.fromTo("#pl-a1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, 9.9);
+    tl.fromTo("#pl-ok1", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 10.233333);
+    tl.fromTo("#pl-a2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, 10);
+    tl.fromTo("#pl-ok2", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 10.366667);
+    tl.fromTo("#pl-a3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, 10.1);
+    tl.fromTo("#pl-ok3", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 10.533333);
+    tl.fromTo("#pl-sum", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "expo.out" }, 10.7);
+    window.__timelines["pipeline"] = tl;
+  </script>
+</template>

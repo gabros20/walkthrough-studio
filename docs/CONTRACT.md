@@ -1,5 +1,7 @@
 # Take contract (recorder → film build)
 
+*Mode: reference (sections 1-9). Section 10 is a short how-to for recording a take in code, and section 11 records what has been proven; the config, runner and site-mode steps are in [`recorder/README.md`](../recorder/README.md).*
+
 This file is everything the film build needs to know about a recorded take.
 
 **Schema id:** the recorder writes `"schema": "walkthrough-take/1"`. Takes recorded before the toolkit was extracted carry `"kleber-take/1"`; the structure is identical, and readers accept both ids.

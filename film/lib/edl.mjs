@@ -8,11 +8,8 @@ function gcd(a, b) {
 export const gridFps = (...fps) => fps.filter(Boolean).map(Math.round).reduce(gcd);
 export const snapTo = (t, fps) => Math.round(t * fps) / fps;
 
-/**
- * Take schema ids this reader accepts: "walkthrough-take/1" (current) and "kleber-take/1" (the same
- * contract under its first name; takes recorded before the rename). Both are read identically.
- */
-export const TAKE_SCHEMAS = Object.freeze(["walkthrough-take/1", "kleber-take/1"]);
+/** Take schema ids this reader accepts. Anything else is an error. */
+export const TAKE_SCHEMAS = Object.freeze(["walkthrough-take/1"]);
 export function checkTakeSchema(events, name = events?.take ?? "?") {
   if (!TAKE_SCHEMAS.includes(events?.schema))
     throw new Error(`take ${name}: unknown schema ${JSON.stringify(events?.schema)} (accepted: ${TAKE_SCHEMAS.join(", ")})`);

@@ -37,7 +37,7 @@ function Timeline() {
     <figure className="mt-16 md:mt-20" aria-labelledby="cut-caption">
       <figcaption id="cut-caption" className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
         <span className="heading text-heading">The cut of the first film</span>
-        <span className="font-mono text-label text-muted-ink">examples/kleber-content-ai · 3:02 · 1920×1080 · 60 fps</span>
+        <span className="font-mono text-label text-muted-ink">examples/brightpost · 3:02 · 1920×1080 · 60 fps</span>
       </figcaption>
 
       {/* Desktop: proportional EDL track */}

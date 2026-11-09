@@ -71,7 +71,7 @@ Python 3 with numpy, scipy and soundfile. Decode first:
 
 ### music.json
 
-`music.example.json` is the template; `examples/kleber-content-ai/music.json` is a measured one with
+`music.example.json` is the template; `examples/brightpost/music.json` is a measured one with
 its evidence.
 
 | Key | Meaning |

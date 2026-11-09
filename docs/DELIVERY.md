@@ -6,7 +6,7 @@ The package is what the owner sends to the person who talks to the client. That 
 as it is, or reuse pieces in a deck, a web page or a live presentation, without us in the room. Everything is
 named so it can be dropped into a slide, and explained in a README that opens on double-click.
 
-Worked example: `examples/kleber-content-ai/delivery/` (the real README, copy files, showcase README, a file
+Worked example: `examples/brightpost/delivery/` (the real README, copy files, showcase README, a file
 manifest, and the `package.config.json` that reproduces its films, clips and stills).
 
 ## Structure
@@ -101,7 +101,7 @@ State these plainly and without alarm:
       artwork lettering, no unreadable logo on its background.
 - [ ] Showcase sheets looked at full size and at slide size.
 - [ ] Every number in the copy traced to a source.
-- [ ] Known flaws in the films listed for the owner with times (for example "2:37-2:40 dealer logo over
+- [ ] Known flaws in the films listed for the owner with times (for example "2:37-2:40 shop logo over
       lettering in the artwork, about 3 s").
 - [ ] Listening checks handed to a human: the music start, any splice in the bed, the voice on the product
       name and on any line the transcription flagged, the level at the end card.

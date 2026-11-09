@@ -1,0 +1,52 @@
+{
+  "note": "The Brightpost brand as the final walkthrough used it. The logo files are not in this repo: set BRIGHTPOST_REPO to a checkout of the app, then node film/scripts/sync-assets.mjs --brand examples/brightpost/brand.json copies them into film/assets/brand (git-ignored).",
+  "name": "Brightpost",
+  "colors": {
+    "ink": "#141414",
+    "paper": "#F4F2EE",
+    "accent": "#0E7C86",
+    "text": "#FFFFFF",
+    "muted": "rgba(244,242,238,0.66)",
+    "plate": "#262626",
+    "ghost": "#3c3c3c"
+  },
+  "font": {
+    "family": "Roboto",
+    "fallback": "sans-serif",
+    "captionCharEm": 0.48863636363636365
+  },
+  "shape": {
+    "slantDeg": 16,
+    "wipeSlantDeg": 20,
+    "note": "16 deg = the brand button's lean (caption plate, tick, title/end column edge); 20 deg = the bars of the brand symbol (the accent wipe)"
+  },
+  "lockup": {
+    "logo": {
+      "onDark": "${BRIGHTPOST_REPO}/public/brand/brightpost-logo-white.png",
+      "onLight": "${BRIGHTPOST_REPO}/public/brand/brightpost-logo-black.png",
+      "aspect": 3.9408866995073892
+    },
+    "label": "Brightpost",
+    "divider": true,
+    "metrics": {
+      "row": 24,
+      "gap": 10,
+      "dividerWidth": 1,
+      "dividerHeight": 16,
+      "dividerDrop": 6,
+      "labelSize": 14,
+      "labelWeight": 500,
+      "labelTracking": "-0.01em",
+      "labelDrop": 10,
+      "labelEm": 0.495
+    },
+    "note": "Proportions from the app's own logo component at the sm breakpoint (logo 800x203 file at h 24). The logo is never placed on the accent colour: its symbol is in the accent colour."
+  },
+  "cards": {
+    "title": ["One sentence in.", "A ready-to-post campaign out."],
+    "end": ["From one sentence", "to every channel."]
+  },
+  "assets": {
+    "creatives": "creatives.json"
+  }
+}

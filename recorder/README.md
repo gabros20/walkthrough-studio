@@ -5,7 +5,7 @@ Records an app walkthrough as **takes**: cursor-free 2880x1620 / 60 fps footage 
 The core knows nothing about any app. A project supplies a config and scenes, and optionally an adapter (app helpers in code). Two ways to use it:
 
 - **Site mode** (any website or app you do not run yourself): a config with `baseUrl`, optional `storageState`, `blockUrls` and `dismiss`, and scenes as a JSON list of steps. No code, no studio. See "Site mode" below and `site-test/`.
-- **App mode** (an app you own, in a `../studio` sandbox): a config with a `studio` section, an adapter module and code scenes. The worked example is [`../examples/kleber-content-ai/`](../examples/kleber-content-ai/).
+- **App mode** (an app you own, in a `../studio` sandbox): a config with a `studio` section, an adapter module and code scenes. The worked example is [`../examples/brightpost/`](../examples/brightpost/).
 
 ## Install
 
@@ -160,7 +160,7 @@ A scene with `steps` instead of `run` needs no code. Scenes can live in a `.json
   "steps": [
     { "hold": 0.6 },
     { "mark": { "role": "heading", "name": "Pricing" }, "label": "headline" },
-    { "type": "winter tyres", "into": { "placeholder": "Search" }, "label": "query" },
+    { "type": "ridgeline", "into": { "placeholder": "Search" }, "label": "query" },
     { "click": { "role": "button", "name": "Search" }, "label": "search" },
     { "wait": "quiet", "label": "results" },
     { "hover": { "text": "Result 2" }, "label": "result 2", "hold": 0.8 },
@@ -193,7 +193,7 @@ What site mode adds to every take:
 
 ### Built-in waits and scrolling
 
-- **`take.waitQuiet(label, { network = true, dom = true, ms = 800, timeout = 30000, ignoreUrls = [] })`** (also `waitQuiet(take, label, opts)` from `takes/lib.mjs`): a logged wait that ends when no request has been in flight and no DOM mutation has happened for `ms`, or after `timeout`. Outcome `quiet`, or `timeout` with `inflight`, `pending` (up to three URLs) and `domQuietMs`. It is the fallback when a project has no app-specific end detection (an app adapter can do better, like the Kleber `waitForTurn` on `POST /api/chat`). EventSource, media and websocket requests never count; add long-polling URLs to `ignoreUrls`. The recorder's own flash, dot and heartbeat elements are not counted as mutations. A page with a constant animation that mutates the DOM (a ticking clock, a carousel) never goes quiet: use `dom: false` or a targeted wait.
+- **`take.waitQuiet(label, { network = true, dom = true, ms = 800, timeout = 30000, ignoreUrls = [] })`** (also `waitQuiet(take, label, opts)` from `takes/lib.mjs`): a logged wait that ends when no request has been in flight and no DOM mutation has happened for `ms`, or after `timeout`. Outcome `quiet`, or `timeout` with `inflight`, `pending` (up to three URLs) and `domQuietMs`. It is the fallback when a project has no app-specific end detection (an app adapter can do better, like the example adapter's `waitForTurn` on `POST /api/chat`). EventSource, media and websocket requests never count; add long-polling URLs to `ignoreUrls`. The recorder's own flash, dot and heartbeat elements are not counted as mutations. A page with a constant animation that mutates the DOM (a ticking clock, a carousel) never goes quiet: use `dom: false` or a targeted wait.
 - **`take.scrollIntoViewSafe(target, { marginTop, marginBottom, label })`** (also `scrollIntoViewSafe(take, target, opts)`): wheel-scrolls (logged, like a person) so the element sits at least `marginTop` px below the top and `marginBottom` px above the bottom of the viewport. Margins default to `safeArea.top` / `safeArea.bottom` (0 / 120). The film crops and scales the frame; a click target at the viewport bottom once lost 70 px of a card in the final cut. With `safeArea.on` containing `"click"`, every `take.click` does this first (scroll label `"<label> (safe)"`); with `"mark"`, every `take.mark` of an element that is partly on screen and fits the band does it too. Elements taller than the band are aligned to its top. When the page cannot scroll far enough the take gets a warning and the scroll event `short: <px>`.
 - **`take.hover(target, { label, at, hold = 0.6 })`**: a logged move with role `hover`, then a rest.
 - **`take.mark(label, target)`** logs the element's visible `text` (innerText, whitespace collapsed, at most 200 characters; for inputs their value) beside its `box`, so caption claims can be checked against what was on screen.
@@ -214,9 +214,9 @@ It opens one session and records the selected scenes in order. After each take i
 
 This is the loop that worked: an agent (or a person) reads the status and the contact sheet, then decides. `--auto` skips the go files: continue while takes pass, checkpoint where a scene names one, stop on the first failure. Values decided between takes go in `<runnerDir>/ctx-override.json` (merged into `ctx` before each take). The scenes module is re-imported before every take, so a script fix needs no restart. Starting at a later scene resumes with the saved `ctx.json` and reloads the app first.
 
-A take is `ok` when the scene did not throw, `masterSync.pass` is true and the longest capture gap outside waits is at most `gate.maxGapMs` (100 ms). On a real app, some re-layouts stall capture for 100-260 ms whatever you do (`docs/CAPTURE_TEST.md`); in the Kleber walkthrough seven of nine accepted takes had such a stall and were kept, with the stall listed in `takes/INDEX.md`. With go files a reviewer makes that call; with `--auto`, raise `gate.maxGapMs` or the run stops at the first such take.
+A take is `ok` when the scene did not throw, `masterSync.pass` is true and the longest capture gap outside waits is at most `gate.maxGapMs` (100 ms). On a real app, some re-layouts stall capture for 100-260 ms whatever you do (`docs/CAPTURE_TEST.md`); in the first client walkthrough seven of nine accepted takes had such a stall and were kept, with the stall listed in `takes/INDEX.md`. With go files a reviewer makes that call; with `--auto`, raise `gate.maxGapMs` or the run stops at the first such take.
 
-Standalone take scripts (one pickup take, no runner) use the same pieces directly; see `examples/kleber-content-ai/take-5b.mjs`.
+Standalone take scripts (one pickup take, no runner) use the same pieces directly; see `examples/brightpost/take-5b.mjs`.
 
 ## Driving rules (learned on a real app)
 

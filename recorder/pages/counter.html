@@ -10,9 +10,9 @@
   #bits i { width: 40px; height: 40px; display: block; background: #fff; }
   #bits i.on { background: #000; }
   #num { position: absolute; left: 1100px; top: 0; font: 700 34px/40px Menlo, monospace; color: #111; }
-  #red { position: absolute; left: 40px; top: 100px; width: 200px; height: 200px; background: #FD000D; }
+  #red { position: absolute; left: 40px; top: 100px; width: 200px; height: 200px; background: #F01020; }
   #mover { position: absolute; left: 300px; top: 120px; width: 120px; height: 120px; border-radius: 24px; background: #141414; }
-  #spinner { position: absolute; left: 1250px; top: 120px; width: 120px; height: 120px; border: 10px solid #ddd; border-top-color: #FD000D; border-radius: 50%; animation: spin 1s linear infinite; box-sizing: border-box; }
+  #spinner { position: absolute; left: 1250px; top: 120px; width: 120px; height: 120px; border: 10px solid #ddd; border-top-color: #F01020; border-radius: 50%; animation: spin 1s linear infinite; box-sizing: border-box; }
   @keyframes spin { to { transform: rotate(360deg); } }
   #load { position: absolute; left: 40px; top: 330px; right: 40px; bottom: 20px; display: none; gap: 16px; overflow: hidden; }
   #load > * { min-height: 0; overflow: hidden; }
@@ -83,7 +83,7 @@ if (location.hash === '#load') {
   })();
   // Streaming text, about 40 words per second.
   const stream = document.getElementById('stream');
-  const words = 'Winter tyres keep their grip below seven degrees because the compound stays soft and the sipes bite into snow and slush so braking distances stay short when the first frost arrives this weekend'.split(' ');
+  const words = 'Winter commuters keep riding below seven degrees because good lights stay bright and wide mudguards keep off the snow and slush so stopping distances stay short when the first frost arrives this weekend'.split(' ');
   let p = document.createElement('p'); stream.appendChild(p); let w = 0;
   setInterval(() => {
     p.textContent += (p.textContent ? ' ' : '') + words[w++ % words.length];

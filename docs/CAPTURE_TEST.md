@@ -20,7 +20,7 @@ Settings that matter for every method:
 
 - `--force-device-scale-factor=2` at launch. Without it the screencast sends 1440x810 frames even with `deviceScaleFactor: 2` in the context (measured: 1440x810 JPEGs). With it, frames are 2880x1620.
 - `--disable-background-timer-throttling`, `--disable-backgrounding-occluded-windows`, `--disable-renderer-backgrounding`, `--force-color-profile=srgb`.
-- JPEG frames at quality 90, converted to the master with accurate rounding: `scale=in_color_matrix=bt601:in_range=pc:out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int`. Without `accurate_rnd`, swscale's fast path shifts `#FD000D` to 250,0,10. A `setparams` filter is also needed, or the primaries and transfer tags are not written.
+- JPEG frames at quality 90, converted to the master with accurate rounding: `scale=in_color_matrix=bt601:in_range=pc:out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int`. Without `accurate_rnd`, swscale's fast path shifts the reference red `#F01020` to 239,17,31 (accurate: 241,16,31). A `setparams` filter is also needed, or the primaries and transfer tags are not written.
 - Master: H.264 CRF 12, preset medium, one keyframe per second, constant 60 fps.
 
 ## The pass table
@@ -32,7 +32,7 @@ Settings that matter for every method:
 | Longest gap in the master | ≤ 100 ms |
 | Drift between the start and end flashes | ≤ 1 frame |
 | Flash logged vs found in the decoded master | each flash group's median within 1 frame, no single flash more than 2 frames off |
-| Reference red `#FD000D` after decode | ±3 per channel (expect 252,0,12) |
+| Reference red `#F01020` after decode | ±3 per channel (expect 241,16,31) |
 | Recorder memory | bounded (flat over a 5-minute take) |
 | Raw frames on disk | bounded (at most one frame per 1/60 s slot) |
 
@@ -40,7 +40,7 @@ The take runner applies the same rules to every real take: `ok` = the scene did 
 
 ## Method
 
-The test page `recorder/pages/counter.html` writes its animation-frame number into every frame as 24 black/white blocks (plus a black and a white calibration block), and shows a static `#FD000D` patch, a moving block and a spinning ring. `#load` adds, all running at once:
+The test page `recorder/pages/counter.html` writes its animation-frame number into every frame as 24 black/white blocks (plus a black and a white calibration block), and shows a static `#F01020` patch, a moving block and a spinning ring. `#load` adds, all running at once:
 
 - 60 cards toggling CSS transitions (transform, opacity, shadow, colour) every 400 ms;
 - a new object URL of a 1600x1200 JPEG every 700 ms, forcing a decode;
@@ -54,7 +54,7 @@ Each run is a real take (`recorder/take.mjs`): sync flashes, hold, sync flashes,
 - **Unique frames per second:** distinct counter values in each 60-frame second of the master between the flashes.
 - **Longest gap:** the longest run of master frames showing the same counter value. "Delivery gap" is the longest interval between frames the browser actually sent.
 - **Drift:** change in the action-to-frame offset between the start and end flashes, in frames.
-- **Reference red:** the central 120x120 CSS px of the patch, decoded at full resolution from a mid-take frame with an accurate BT.709 conversion. Result is the mean and the largest per-pixel deviation from 253,0,13.
+- **Reference red:** the central 120x120 CSS px of the patch, decoded at full resolution from a mid-take frame with an accurate BT.709 conversion. Result is the mean and the largest per-pixel deviation from 240,16,32.
 
 The page renders at about 120 Hz, so with nothing slowing it, every 1/60 s slot gets a fresh frame.
 
@@ -70,12 +70,13 @@ The page renders at about 120 Hz, so with nothing slowing it, every 1/60 s slot 
 | Page's own frame rate | | 120 | 62.9 | 120 |
 | Drift between the two flashes | ≤ 1 frame | 0.08 | 0.82 | **0.02** (300.7 s apart) |
 | Flash logged vs found in master (start / end) | ≤ 1 frame | -0.45 / +0.11 | -0.81 / +0.28 | -0.30 / +0.03 |
-| Reference red after decode | ±3 per channel | 252,0,12, max dev 1 | 252,0,12, max dev 1 | 252,0,12, max dev 1 |
+| Reference red after decode | ±3 per channel | max dev 1 | max dev 1 | max dev 1 |
 | Recorder memory (RSS start → max) | bounded | 163 → 205 MB | 237 → 334 MB | 163 → 191 MB |
 | Raw frames on disk | bounded | 75.5 MB | 1407.6 MB | 739.6 MB |
 | master.mp4 | | 3.5 MB | 98.7 MB | 33.1 MB |
 
-All checks pass. Two more load runs measured median 50 (min 44, longest gap 83.3 ms) and median 51 (min 47, longest gap 66.7 ms). **The load margin is thin:** 51 against a threshold of 50. What limits the load case is the page, not the capture: under that load the page itself produced only 62.9 frames/s, and the 83 ms gap is a stretch where the main thread did not repaint the counter while the browser kept sending frames (the delivery gap never exceeded 29.5 ms). A real browser on a real screen would show the same stall.
+All checks pass. (These runs used an earlier reference red; the current `#F01020` patch re-checked with
+method (b), idle, on 2026-11-09 decodes to 241,16,31, max dev 1.) Two more load runs measured median 50 (min 44, longest gap 83.3 ms) and median 51 (min 47, longest gap 66.7 ms). **The load margin is thin:** 51 against a threshold of 50. What limits the load case is the page, not the capture: under that load the page itself produced only 62.9 frames/s, and the 83 ms gap is a stretch where the main thread did not repaint the counter while the browser kept sending frames (the delivery gap never exceeded 29.5 ms). A real browser on a real screen would show the same stall.
 
 ## Numbers, method (b), new headless, 2x, 60 fps (three flashes at each end)
 
@@ -86,7 +87,7 @@ All checks pass. Two more load runs measured median 50 (min 44, longest gap 83.3
 | Longest gap in master | ≤ 100 ms | **16.7 ms** | **66.7 ms** |
 | Delivery gap, max | | 29.8 ms | 30.5 ms |
 | Flash groups, median error start / end | ≤ 1 frame | -0.22 / -0.24 | -0.10 / +0.29 |
-| Reference red after decode | ±3 | 252,0,12, max dev 1 | 252,0,12, max dev 1 |
+| Reference red after decode | ±3 | max dev 1 | max dev 1 |
 | Recorder memory (RSS start → max) | bounded | 126 → 154 MB | 249 → 329 MB |
 
 The idle minimum of 48 unique/s is the window that holds the start flashes, where the counter is covered. The 5-minute drift run was done with method (a) only (0.02 frames). In real takes recorded with method (b), up to 140 s long, both flash groups land within 1 frame, and clock drift between browser and recorder stays under 3 ms.

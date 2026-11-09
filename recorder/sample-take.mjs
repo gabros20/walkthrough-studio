@@ -20,7 +20,7 @@ await page.waitForTimeout(800);
 const take = await session.startTake(name, { overwrite: true });
 await take.hold(0.6);
 await take.click("#prompt", { label: "prompt field", at: { x: 0.3, y: 0.5 } });
-await take.type("Winter tyre switch posts for this weekend", { label: "prompt text" });
+await take.type("Winter commuting posts for this weekend", { label: "prompt text" });
 await take.hold(0.3);
 await take.click("#send", { label: "send" });
 await take.wait("saved", async () => {

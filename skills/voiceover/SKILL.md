@@ -8,7 +8,7 @@ description: Make the voiceover version of a walkthrough or tour film (decided a
 The voiceover producer (`agents/voiceover-producer.md`, Opus) writes and places; the film editor renders the
 captionless twin; the sound designer mixes; you make the one TTS call. Read `docs/ELEVENLABS.md` (voice choice, the one speech call, download, costs) and `voiceover/` (`make_script.py`,
 `place.py`, `fitcheck.py`, `remap.py`, `compare-twins.py`; `voiceover/README.md`) and `docs/LESSONS.md` (E9, S3, S6). Example:
-`examples/kleber-content-ai/voiceover/{script.json,script.txt,placement.json,voiceover.srt}`.
+`examples/brightpost/voiceover/{script.json,script.txt,placement.json,voiceover.srt}`.
 
 ## Inputs
 

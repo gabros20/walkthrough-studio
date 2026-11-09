@@ -46,4 +46,4 @@ and stay on the poster under `prefers-reduced-motion`.
 ## Keeping it true
 
 Every number, file name and flag on the page comes from the repo (`README.md`, `docs/`,
-`examples/kleber-content-ai/README-film-notes.md`). When those change, update `lib/content.ts` to match.
+`examples/brightpost/README-film-notes.md`). When those change, update `lib/content.ts` to match.

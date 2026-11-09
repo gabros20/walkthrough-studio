@@ -4,7 +4,7 @@
 
 This file is everything the film build needs to know about a recorded take.
 
-**Schema id:** the recorder writes `"schema": "walkthrough-take/1"`. Takes recorded before the toolkit was extracted carry `"kleber-take/1"`; the structure is identical, and readers accept both ids.
+**Schema id:** the recorder writes `"schema": "walkthrough-take/1"`, and readers accept only that id; anything else is an error.
 
 A take is app footage with **no cursor in it**, plus `events.json`, a log of every pointer move, click, typed run, scroll, wait, navigation and named element box. The film draws the pointer, camera moves, spotlights and captions from the log.
 
@@ -46,7 +46,7 @@ Each take starts and ends with **three 100 ms full-screen green (#00FF00) flashe
 
 Takes recorded with `heartbeat: true` (the default in the runner) also carry a **1x1 CSS px heartbeat** in the top-left corner (grey at 2-6% opacity, compositor-animated). It makes the browser send a frame on every refresh, so capture gaps are measurable. The film's rounded window corner clips it.
 
-Reference red `#FD000D` decodes to 252,0,12 (BT.709 limited range, accurate conversion), within 1 per channel. The conversion that achieves this: Chrome's JPEGs are full-range BT.601, the master is limited-range BT.709, converted with `scale=in_color_matrix=bt601:in_range=pc:out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int+bicubic,format=yuv420p,setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709:range=tv`. Without `accurate_rnd` swscale's fast path shifts that red to 250,0,10; without `setparams` the primaries and transfer tags are not written.
+Reference red `#F01020` decodes to 241,16,31 (BT.709 limited range, accurate conversion), within 1 per channel. The conversion that achieves this: Chrome's JPEGs are full-range BT.601, the master is limited-range BT.709, converted with `scale=in_color_matrix=bt601:in_range=pc:out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int+bicubic,format=yuv420p,setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709:range=tv`. Without `accurate_rnd` swscale's fast path shifts that red to 239,17,31; without `setparams` the primaries and transfer tags are not written.
 
 ## 3. Clock and coordinates
 
@@ -141,7 +141,7 @@ Between moves the pointer rests at the previous move's `to` (or at `pointerStart
 
 ```json
 { "type": "type", "t": 2.3399, "tEnd": 5.9002, "label": "prompt text",
-  "text": "Winter tyre switch posts for this weekend", "method": "insert",
+  "text": "Winter commuting posts for this weekend", "method": "insert",
   "field": { "tag": "textarea", "id": "prompt" },
   "box": { "x": 47, "y": 691, "width": 788.87, "height": 72 },
   "boxEnd": { "x": 47, "y": 691, "width": 788.87, "height": 72 },
@@ -179,7 +179,7 @@ Always a pair with the same label. `waitEnd.outcome` is a short string; extra de
 { "type": "waitEnd", "t": 74.31, "label": "campaign reply", "outcome": "success",
   "requests": 2, "failedRequests": 0, "statuses": [200, 200], "seconds": 61.4, "uiInput": "pointer" }
 ```
-Generic outcomes: whatever the adapter's `classify()` returns, plus `not-sent` (no matching request started), `timeout`, and `failed` (the wait threw; `error` holds the message). `take.waitQuiet` (network idle and no DOM mutations for `ms`) ends `quiet` (with `seconds`) or `timeout` (with `inflight`, `pending` URLs and `domQuietMs`). The Kleber adapter's turn outcomes are `success`, `question`, `inline-question`, `error`, `stopped-or-limit` and `reply`. A wait range is where time-lapses go.
+Generic outcomes: whatever the adapter's `classify()` returns, plus `not-sent` (no matching request started), `timeout`, and `failed` (the wait threw; `error` holds the message). `take.waitQuiet` (network idle and no DOM mutations for `ms`) ends `quiet` (with `seconds`) or `timeout` (with `inflight`, `pending` URLs and `domQuietMs`). The example adapter's turn outcomes are `success`, `question`, `inline-question`, `error`, `stopped-or-limit` and `reply`. A wait range is where time-lapses go.
 
 ### `nav` — navigation
 
@@ -288,7 +288,7 @@ const session = await openSession({ heartbeat: true });     // new-headless (GPU
 await session.page.goto("http://localhost:3000/");          // off camera
 const take = guardKeys(await session.startTake("take-2"));  // screencast on, start flashes
 await take.click(locatorOrSelector, { label: "platform picker" });
-const w = await typeAndSend(take, { field, send, text: "First snow ...", label: "campaign", match: requestIs("POST", "/api/chat") });
+const w = await typeAndSend(take, { field, send, text: "First frost ...", label: "campaign", match: requestIs("POST", "/api/chat") });
 await waitForNetworkTurn(take, w, { label: "campaign reply", calm: async () => send.isVisible() });
 await take.mark("preview pane", '[data-pane="preview"]');
 const summary = await take.finish();                         // end flashes, encode, verify, write files
@@ -328,7 +328,7 @@ Take API (all methods await until the action is complete; every `label` is requi
 - The chip-row rest guard, on a synthetic row only.
 - The calibration dot check.
 
-**Proven on a real app** (the Kleber Content AI walkthrough, 2026-11-06, nine takes; see `examples/kleber-content-ai/README-recorder-notes.md`):
+**Proven on a real app** (the first client walkthrough, anonymised as Brightpost, 2026-11-06, nine takes; see `examples/brightpost/README-recorder-notes.md`):
 - Sending a chat message with the pointer and detecting the end of an agent turn from the network (`success` outcome, 23 turns).
 - Uploads through an intercepted file chooser, `guardKeys`, structural selectors.
 - Typing with `Input.insertText`: the app stayed in pointer mode on every turn.

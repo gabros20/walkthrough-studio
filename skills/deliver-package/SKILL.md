@@ -6,7 +6,7 @@ description: Build the delivery package for a finished walkthrough film - rename
 # Deliver the package
 
 Read `docs/DELIVERY.md` first (structure, naming, encodes, the README notes, the review checklist). The real
-package's README, copy and config are in `examples/kleber-content-ai/delivery/`.
+package's README, copy and config are in `examples/brightpost/delivery/`.
 
 ## Inputs
 
@@ -19,7 +19,7 @@ package's README, copy and config are in `examples/kleber-content-ai/delivery/`.
 
 - [ ] Confirm every film has sound: `ffprobe` shows an audio stream of full length (`delivery/verify.py`
   refuses silent videos). Never package a `*.picture-only.mp4`.
-- [ ] Write `package.config.json` from `examples/kleber-content-ai/delivery/package.config.json`: product
+- [ ] Write `package.config.json` from `examples/brightpost/delivery/package.config.json`: product
   prefix, out, brand, films (`variant`, `master`, `srt`, `edl`, `poster_t`, `speech: true` for the voiceover
   film), clips (name → scene ids), stills (`from` the captionless variant, times, crop modes).
 - [ ] Spawn two agents in one message (they own different folders):
@@ -65,6 +65,6 @@ for generated media, and that nothing was uploaded.
 - Stills from the captioned film carry a dead caption band (E11): take them from the captionless variant.
 - ffmpeg may lack `drawtext` (E12); the scripts use Pillow.
 - zsh aliases break `rm -f` and `zip` (A5); `zip.sh` uses absolute paths.
-- Curate the showcase hard: no logo over lettering, no unreadable logos, no third-party dealer logos of
+- Curate the showcase hard: no logo over lettering, no unreadable logos, no third-party shop logos of
   unknown status, no empty bands or text-only fallbacks.
 - ElevenLabs free-tier licence is an open check for the owner (S7), stated plainly in the README.

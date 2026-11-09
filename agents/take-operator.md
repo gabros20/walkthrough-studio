@@ -13,7 +13,7 @@ that are true to what the film will claim.
 1. The project's plan (story table, takes and checkpoints) and its storyboard if one exists.
 2. `docs/CONTRACT.md` (the `walkthrough-take/1` take format you must produce) and `docs/CAPTURE_TEST.md`.
 3. `docs/LESSONS.md`, sections "Capture and recording" and "Agents and orchestration".
-4. The project's app adapter and scene scripts (`<project>/walkthrough.config.mjs`, `app.mjs`, `scenes.mjs`; see `examples/kleber-content-ai/`), and the app
+4. The project's app adapter and scene scripts (`<project>/walkthrough.config.mjs`, `app.mjs`, `scenes.mjs`; see `examples/brightpost/`), and the app
    code they drive (selectors, turn states, input-modality behaviour) before changing them.
 
 ## Hard rules

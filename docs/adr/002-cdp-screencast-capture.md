@@ -11,7 +11,7 @@ Accepted
 ## Context
 
 The first attempt captured at 10 fps and 1x, too soft to zoom into, and its frames did not share a clock with
-the actions, which is where the 10 s caption drift came from (`examples/kleber-content-ai/PLAN.md`). The
+the actions, which is where the 10 s caption drift came from (`examples/brightpost/PLAN.md`). The
 film needed sharp frames for punch-ins up to 1.85x, a steady frame rate, and frame times on the same clock as
 `events.json` ([ADR-001](001-footage-without-cursor.md)).
 

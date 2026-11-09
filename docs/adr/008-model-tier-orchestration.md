@@ -55,7 +55,7 @@ The film is shown to clients, so what it claims has to be true.
 - The plan says which agent and model does each step ([`skills/walkthrough-film/SKILL.md`](../../skills/walkthrough-film/SKILL.md),
   [`docs/PIPELINE.md`](../PIPELINE.md), Model tiers); agent definitions carry their tier in `agents/*.md`.
 - The lead spends tokens on rulings and final checks, and must brief each agent fully (goal, paths, hard
-  rules, checks, report format); the real briefs are in `examples/kleber-content-ai/agent-briefs/`.
+  rules, checks, report format); the roles and what each brief must cover are in `agents/*.md`.
 - Some claims cannot be verified in-session (how the audio sounds, licence terms); they are handed to a human
   as open checks, never stated as done.
 - Lessons E6, E7, A1, A2 in [`docs/LESSONS.md`](../LESSONS.md) are the evidence for these rules.

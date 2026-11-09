@@ -10,14 +10,14 @@
         {
           "mark": {
             "role": "heading",
-            "name": "Find a tyre for this winter"
+            "name": "Find a bike for this spring"
           },
           "label": "headline"
         },
         {
-          "type": "winter",
+          "type": "ridgeline",
           "into": {
-            "placeholder": "Search tyres"
+            "placeholder": "Search bikes"
           },
           "label": "query"
         },

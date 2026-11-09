@@ -16,7 +16,7 @@ It is used against *other* projects' apps. The rules below protect those project
 | `sound/` | music bed, effects, mix, mux with `delivered:` |
 | `voiceover/` | script fitting, placement, re-timing fit check |
 | `delivery/` | package scripts: films, clips, stills, sheets, README html/pdf, verify, zip |
-| `examples/kleber-content-ai/` | the first real project: plan, configs, storyboard, voiceover, delivery copy, agent briefs |
+| `examples/brightpost/` | the first real project, anonymised: plan, configs, storyboard, voiceover, delivery copy |
 
 ## Guardrails
 
@@ -42,7 +42,7 @@ It is used against *other* projects' apps. The rules below protect those project
 
 - Changed a script: run it (or its `--dry`/`--help`) on real or sample input and read the output.
 - Changed `skills/`, `agents/` or `.claude-plugin/`: `claude plugin validate .` must pass.
-- Changed `delivery/`: `KLEBER_REPO=<kleber-content-ai checkout> python3 -I delivery/clips.py examples/kleber-content-ai/delivery/package.config.json --dry`
+- Changed `delivery/`: `BRIGHTPOST_REPO=<brightpost checkout> python3 -I delivery/clips.py examples/brightpost/delivery/package.config.json --dry`
   (needs the example's source films; otherwise test on any film with an `edl.json`); every script answers `--help`.
 - Changed `film/`: `node film/build.mjs <storyboard.json> --takes <takes> --dry --audit` on a real storyboard
   and its takes (the example's, or a draft from `film/scripts/draft-storyboard.mjs`; a bare

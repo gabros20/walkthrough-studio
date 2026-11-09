@@ -20,10 +20,7 @@ import { installRecorderPage } from "./inpage.mjs";
 import { bezier, controlPoint, MOTION, moveDuration, power3InOut } from "./motion.mjs";
 import { typingDelays } from "./rng.mjs";
 
-/**
- * Schema id written to events.json. Same structure as the earlier "kleber-take/1"; readers accept
- * both ids (docs/CONTRACT.md).
- */
+/** Schema id written to events.json (docs/CONTRACT.md). */
 export const SCHEMA = "walkthrough-take/1";
 
 /**

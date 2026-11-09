@@ -61,6 +61,6 @@ A decision that changes gets a new ADR that supersedes the old one; old ADRs are
 ## Also
 
 - [CHANGELOG.md](CHANGELOG.md): what each version contains and fixes.
-- [`examples/kleber-content-ai/`](../examples/kleber-content-ai/): the first real project, with its plan,
+- [`examples/brightpost/`](../examples/brightpost/): the first real project, with its plan,
   configs, storyboard, voiceover, delivery copy and agent briefs.
 - [`CLAUDE.md`](../CLAUDE.md): operating rules for agents in this repo.

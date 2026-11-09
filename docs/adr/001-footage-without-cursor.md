@@ -10,8 +10,8 @@ Accepted
 
 ## Context
 
-The first attempt at the Kleber walkthrough (5 November 2026) had no cursor, no zooms, and captions whose
-timings had drifted about 10 s from the picture (`examples/kleber-content-ai/PLAN.md`, Context). The new film
+The first attempt at the first client walkthrough (5 November 2026) had no cursor, no zooms, and captions whose
+timings had drifted about 10 s from the picture (`examples/brightpost/PLAN.md`, Context). The new film
 needed a pointer that leads the eye, camera punch-ins on the control being used, and captions timed to
 actions, and all three had to survive re-cutting: scenes get trimmed, time-lapsed and retaken many times
 before picture lock.
@@ -54,5 +54,5 @@ pointer. The film build draws the pointer, camera moves, spotlights and captions
 - Page hover reactions can show up to half a frame early or late against the drawn pointer (60 Hz mouse
   steps on a 120 Hz page; [`docs/CONTRACT.md`](../CONTRACT.md) section 7).
 - The take format is a versioned contract ([`docs/CONTRACT.md`](../CONTRACT.md)); readers accept
-  `walkthrough-take/1` and its first name `kleber-take/1`, and stop on anything else.
+  `walkthrough-take/1` and stop on anything else.
 - Anything the film anchors to must be labelled at recording time ([ADR-009](009-anchor-by-type-and-label.md)).

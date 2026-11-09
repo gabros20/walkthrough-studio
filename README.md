@@ -14,13 +14,13 @@ Website: <https://walkthrough-studio-chi.vercel.app> (source in [`site/`](site/)
 
 ## What it produced
 
-The first film: *Kleber Content AI walkthrough* (6 November 2026), 3:02 at 1920x1080 and 60 fps, in two
-variants with the same picture: **captions + music** and **voiceover + ducked music, no captions**. Real app
-footage only, agent waits shown as labelled time-lapses, −16 LUFS. It was cut from nine takes recorded on a
-studio copy of the app over several passes (a switch of capture method, a full retake after eight app fixes
-the film exposed, one scene retaken after the owner's review) and shipped as a 361-file delivery package. The
-plan, configs, storyboard, voiceover, delivery copy and every agent brief are in
-[`examples/kleber-content-ai/`](examples/kleber-content-ai/).
+The first film (6 November 2026): 3:02 at 1920x1080 and 60 fps, in two variants with the same picture:
+**captions + music** and **voiceover + ducked music, no captions**. The kit was extracted from a real client
+walkthrough job; the example here is anonymised as *Brightpost*, a fictional marketing-post studio for
+independent shops. Real app footage only, agent waits shown as labelled time-lapses, −16 LUFS. It was cut
+from nine takes recorded on a studio copy of the app over several passes (a switch of capture method, a full
+retake after eight app fixes the film exposed, one scene retaken after the owner's review) and shipped as a
+361-file delivery package. The plan, configs, storyboard, voiceover and delivery copy are in [`examples/brightpost/`](examples/brightpost/).
 
 ## Prerequisites
 
@@ -92,7 +92,7 @@ written to ([ADR-007](docs/adr/007-project-folders-outside-the-kit.md)).
 
 ## Studio mode: an app you own
 
-1. Copy `examples/kleber-content-ai/` into a project folder outside the kit (for example inside your app's
+1. Copy `examples/brightpost/` into a project folder outside the kit (for example inside your app's
    repo) and edit:
    - `studio.config.sh`: source repo, studio folder, data dirs to checkpoint, services, ports, build command,
      env ([`studio/README.md`](studio/README.md));
@@ -104,7 +104,7 @@ written to ([ADR-007](docs/adr/007-project-folders-outside-the-kit.md)).
 2. In Claude Code, in your app's repo, ask for the film. The `walkthrough-film` skill takes over: plan,
    approval, studio, capture test, takes, cut, review, sound, voiceover, delivery.
 
-[`examples/kleber-content-ai/PLAN.md`](examples/kleber-content-ai/PLAN.md) is the best template for a plan:
+[`examples/brightpost/PLAN.md`](examples/brightpost/PLAN.md) is the best template for a plan:
 story table, look numbers, pointer, camera and caption rules, takes and checkpoints, risks.
 
 ## Two modes, two voices
@@ -141,7 +141,7 @@ picture lock (`build.mjs --no-captions` gives the captionless twin with identica
 | `voiceover/` | script fitted to EDL windows, one TTS take, placement, re-timing fit check | [`voiceover/README.md`](voiceover/README.md) |
 | `delivery/` | masters and web encodes, clips, cropped stills, showcase sheets, README md/html/pdf, verify, zip | [`delivery/README.md`](delivery/README.md), [`docs/DELIVERY.md`](docs/DELIVERY.md) |
 | `skills/`, `agents/`, `.claude-plugin/` | 7 skills, 9 agent definitions, the plugin manifest | below |
-| `examples/kleber-content-ai/` | the first real project | [its README](examples/kleber-content-ai/README.md) |
+| `examples/brightpost/` | the first real project, anonymised | [its README](examples/brightpost/README.md) |
 
 How the stages fit together and the numbers that worked: [`docs/PIPELINE.md`](docs/PIPELINE.md). What went
 wrong the first time and the fix for each: [`docs/LESSONS.md`](docs/LESSONS.md).
@@ -178,7 +178,7 @@ to Haiku, three at a time on disjoint ranges; and an Opus critic checks the smal
 acts on it. Critical reviews are never skipped; everything else spends as few tokens as it can. Agents are
 long-lived and named, so the lead can send numbered rulings to the editor or a retake request to the take
 operator without re-briefing. Long reports come back as files. Why: [ADR-008](docs/adr/008-model-tier-orchestration.md).
-The real briefs are in [`examples/kleber-content-ai/agent-briefs/`](examples/kleber-content-ai/agent-briefs/).
+The roles and their briefs live in [`agents/`](agents/).
 
 ## Documentation
 

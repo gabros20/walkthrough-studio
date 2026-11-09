@@ -8,7 +8,7 @@ description: Score a locked walkthrough film - generate the music bed once via E
 The sound designer (`agents/sound-designer.md`, Opus) builds and mixes; you make the paid generation call.
 Read `docs/ELEVENLABS.md` (the exact connector calls, the API-key route, costs, "busy" handling, licence),
 `sound/` (`build-sound.mjs --help`), the `media-use` skill, and `docs/LESSONS.md` section "Sound and
-voice". Example: `examples/kleber-content-ai/music.json` and `beat-grid.json`.
+voice". Example: `examples/brightpost/music.json` and `beat-grid.json`.
 
 All paths are in the film's project folder `$P` (skill `build-film`); run from `$P` (or pass
 `--project $P`; `--film` is kept as an alias). `KIT` is the kit root.

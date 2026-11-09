@@ -13,7 +13,7 @@ one mapping turns source time into film time for the footage and every overlay a
 range and the pointer, camera, spotlights, captions and sound cues move with it.
 
 Worked examples: `film/storyboard.example.json` (three short scenes over `takes/sample`) and
-`examples/kleber-content-ai/storyboard.json` (the 13-scene, 3:02 film).
+`examples/brightpost/storyboard.json` (the 13-scene, 3:02 film).
 
 ## The mapping
 

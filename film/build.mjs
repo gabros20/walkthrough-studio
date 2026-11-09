@@ -19,8 +19,7 @@
 // One mapping per scene (lib/edl.mjs) turns source time into film time; the footage cut, the
 // pointer, clicks, cursor shapes, camera, spotlights, captions, time-lapse tags and sound cues all
 // go through it, so a re-cut can never desync them. Event references are "type:label" (or
-// "type:label#n") into the take's events.json (schema "walkthrough-take/1"; "kleber-take/1" is
-// accepted too, see lib/edl.mjs).
+// "type:label#n") into the take's events.json (schema "walkthrough-take/1", see lib/edl.mjs).
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";

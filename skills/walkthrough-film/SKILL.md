@@ -17,8 +17,8 @@ Run `npm run setup` in the kit root once (Playwright Chromium for the recorder a
 Docs (read the ones your step needs, not all): `docs/PIPELINE.md` (the pipeline and its numbers),
 `docs/LESSONS.md` (read once before planning), `docs/CONTRACT.md`, `docs/CAPTURE_TEST.md`,
 `docs/STORYBOARD.md`, `docs/LOOK.md`, `docs/DELIVERY.md`, `docs/ROADMAP.md` (what is planned, not built).
-Worked example (studio mode, both twins): `examples/kleber-content-ai/` (`PLAN.md`, configs, storyboard,
-voiceover, delivery, and the real agent briefs in `agent-briefs/`).
+Worked example (studio mode, both twins): `examples/brightpost/` (`PLAN.md`, configs, storyboard,
+voiceover, delivery; agent roles in `agents/*.md`).
 
 ## Prerequisite skills
 

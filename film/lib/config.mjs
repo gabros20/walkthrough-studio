@@ -62,7 +62,7 @@ const DEFAULTS = {
     // logo: null, or { onDark, onLight, aspect }: file paths relative to the brand file (or already
     // synced into film/assets/brand by scripts/sync-assets.mjs); aspect = width / height
     logo: null,
-    label: null, // text after the divider ("Content AI"); null for none
+    label: null, // text after the divider (e.g. "Studio"); null for none
     divider: true, // the hairline between logo (or wordmark) and label; only drawn with a label
     wordmark: null, // text drawn when there is no logo; defaults to "name"; "" for none
     // Proportions on a 24-unit row, scaled to the requested logo height.

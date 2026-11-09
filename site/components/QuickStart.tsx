@@ -116,8 +116,8 @@ export function Footer() {
               <span className="heading text-[1.125rem]">walkthrough-studio</span>
             </p>
             <p className="mt-4 max-w-measure text-[0.95rem] text-muted-ink">
-              Made from the Kleber Content AI walkthrough job: the plan, configs, storyboard, voiceover and every agent brief
-              are in <Code>examples/kleber-content-ai/</Code>.
+              Extracted from a real client walkthrough job; the example on this page is anonymised as Brightpost. The plan, configs, storyboard, voiceover and every agent brief
+              are in <Code>examples/brightpost/</Code>.
             </p>
             <p className="mt-3 font-mono text-label text-muted-ink">v0.1.0 · licence: TBD</p>
           </div>

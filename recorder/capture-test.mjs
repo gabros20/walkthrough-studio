@@ -104,7 +104,7 @@ for (let i = from; i <= to; i++) {
   longestRun = Math.max(longestRun, run);
 }
 
-// Reference red patch (#FD000D): 200x200 CSS at (40,100); sample the central 120x120 CSS of one mid frame.
+// Reference red patch (#F01020): 200x200 CSS at (40,100); sample the central 120x120 CSS of one mid frame.
 const crop = `crop=${Math.round(120 * k)}:${Math.round(120 * k)}:${Math.round(80 * k)}:${Math.round(140 * k)}`;
 const red = { mean: [0, 0, 0], maxDev: [0, 0, 0] };
 let px = 0;
@@ -114,7 +114,7 @@ await decodeFrames(master, { width: Math.round(120 * k), height: Math.round(120 
   for (let i = 0; i < buf.length; i += 3) {
     for (let c = 0; c < 3; c++) {
       red.mean[c] += buf[i + c];
-      red.maxDev[c] = Math.max(red.maxDev[c], Math.abs(buf[i + c] - [253, 0, 13][c]));
+      red.maxDev[c] = Math.max(red.maxDev[c], Math.abs(buf[i + c] - [240, 16, 32][c]));
     }
     px++;
   }

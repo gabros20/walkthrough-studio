@@ -86,7 +86,7 @@ The storyboard schema is in `docs/STORYBOARD.md`, the design system in `docs/LOO
 
 Colours, type, the slant, the lockup and the card lines come from a brand file. Every key is
 optional; `brand.example.json` shows the whole schema with the neutral defaults, and
-`examples/kleber-content-ai/brand.json` is a real one. Found as: `--brand <file>`, else
+`examples/brightpost/brand.json` is a real one. Found as: `--brand <file>`, else
 `FILM_BRAND`, else the storyboard's `"brand"` (relative to the storyboard), else `<project>/brand.json`,
 else the defaults in `lib/config.mjs`. Paths inside it are relative to the brand file, and
 `${NAME}` expands an environment variable (so a brand file can point into another checkout).
@@ -143,8 +143,8 @@ SVG's viewBox. `make-placeholder.mjs` writes eight flat stand-ins when there is 
 - **Seek safety.** `Timeline` adds `immediateRender: false` to every `fromTo` on a selector except the
   earliest one, so seeks before a tween keep the right state (`check` warns otherwise).
 - **Ids** are prefixed by the component id you pass (`a-ptr`, `a-ptr-disc-0`, `cap-2-w3`, …).
-- **Takes.** `lib/edl.mjs` reads `events.json` with schema `walkthrough-take/1`, and also the same
-  contract under its first name `kleber-take/1` (`TAKE_SCHEMAS`). Anything else stops the build.
+- **Takes.** `lib/edl.mjs` reads `events.json` with schema `walkthrough-take/1` (`TAKE_SCHEMAS`).
+  Anything else stops the build.
   `eventText(take, ref)` returns an event's logged visible text (marks carry it when the recorder
   logged it; `null` otherwise): captions with `"claims": "mark:<label>"` are checked against it by
   the audit.

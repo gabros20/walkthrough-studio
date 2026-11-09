@@ -13,7 +13,7 @@ A sandboxed instance of the app for recording: its own copy of the code, its own
 
 ## Scripts
 
-All scripts read the config from `$STUDIO_CONFIG` (else `./studio.config.sh`). Start from [`studio.config.example.sh`](studio.config.example.sh); the worked example is [`../examples/kleber-content-ai/studio.config.sh`](../examples/kleber-content-ai/studio.config.sh).
+All scripts read the config from `$STUDIO_CONFIG` (else `./studio.config.sh`). Start from [`studio.config.example.sh`](studio.config.example.sh); the worked example is [`../examples/brightpost/studio.config.sh`](../examples/brightpost/studio.config.sh).
 
 | Script | Does |
 |---|---|
@@ -48,7 +48,7 @@ Caveats:
 
 ## The production build step
 
-Record against a production build, not the dev server. Dev servers draw things into the page that end up in the footage: framework dev badges and route indicators, error overlays, hot-reload toasts, unminified slow paths. `tree.sh --build` runs `STUDIO_BUILD` inside the tree after the copy (the Kleber example builds the Next.js app with `output: "standalone"` and serves it with `NODE_ENV=production`; a `<service>_prepare` function copies `public/` and `.next/static` into the standalone folder, which Next leaves out). The build log is `run/build.log`.
+Record against a production build, not the dev server. Dev servers draw things into the page that end up in the footage: framework dev badges and route indicators, error overlays, hot-reload toasts, unminified slow paths. `tree.sh --build` runs `STUDIO_BUILD` inside the tree after the copy (the worked example builds the Next.js app with `output: "standalone"` and serves it with `NODE_ENV=production`; a `<service>_prepare` function copies `public/` and `.next/static` into the standalone folder, which Next leaves out). The build log is `run/build.log`.
 
 ## Typical session
 

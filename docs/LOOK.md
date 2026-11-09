@@ -41,7 +41,7 @@ lockup is never placed on the accent: the wipes pass over and reveal ink underne
 ## The lockup
 
 The app's own header lockup, from the brand file: logo (the real file, never redrawn), a hairline
-divider, a label ("Content AI" in the example), on a 24-unit row scaled to 84 px on the cards. It
+divider, a label ("Brightpost" in the example), on a 24-unit row scaled to 84 px on the cards. It
 sits left-aligned on the window's left edge (x 192) above the two title lines. Without a logo it is
 text: the wordmark (the brand name), the divider and the label. It lands once (blur 10 -> 0, scale
 1.06 -> 1, 0.6 s expo.out; divider draws up; label blurs in) and then holds dead still.

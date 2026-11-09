@@ -118,7 +118,7 @@ export function Quality({ assets }: { assets: FilmAssets }) {
               lede={
                 <>
                   <Code>build.mjs --audit</Code> runs before every review and before picture lock, and exits 1 on an error. On
-                  the delivered Kleber cut it reports 0 errors and 2 dead-air warnings.
+                  the delivered Brightpost cut it reports 0 errors and 2 dead-air warnings.
                 </>
               }
             />

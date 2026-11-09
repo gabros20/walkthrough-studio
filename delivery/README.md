@@ -4,7 +4,7 @@ Scripts that build the delivery package for a finished walkthrough film. The pac
 encodes and review checklist are in `docs/DELIVERY.md`; the workflow is the `deliver-package` skill.
 
 Everything is driven by one `package.config.json`. The real one is
-`examples/kleber-content-ai/delivery/package.config.json`; copy it and change the paths.
+`examples/brightpost/delivery/package.config.json`; copy it and change the paths.
 
 | Script | Does | Needs |
 |---|---|---|
@@ -28,7 +28,7 @@ Run the Python scripts with `python3 -I` (isolated mode); they add their own fol
 {
   "product": "Product-Name",
   "out": "../out/Product-Name_Demo-Package",
-  "brand": {"name": "Brand", "accent": "#FD000D", "ink": "#141414", "paper": "#F4F2EE",
+  "brand": {"name": "Brand", "accent": "#0E7C86", "ink": "#141414", "paper": "#F4F2EE",
             "logo": "path/logo-black.png", "fonts": {"400": "path/font-400.woff2", "700": "path/font-700.woff2"},
             "eyebrow": "Demo package", "footer": "Product demo package · Month Year"},
   "films": [
@@ -47,5 +47,5 @@ Relative paths resolve against the config file's folder. Scene ids are those in 
 ## Templates
 
 The copy documents are written per project by the `delivery-packager` agent in copy mode. Start from the
-real ones in `examples/kleber-content-ai/delivery/` (`README.md`, `05_Copy/*.md`,
+real ones in `examples/brightpost/delivery/` (`README.md`, `05_Copy/*.md`,
 `04_Creative-Showcase/README.md`): keep their structure, replace every fact, and verify each number again.

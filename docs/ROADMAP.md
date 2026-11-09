@@ -25,7 +25,7 @@ per effort. "Folded in" items were added during the extraction (2026-11-09); the
 | Item | Why | Status |
 |---|---|---|
 | **Draft storyboard from events.json** | Every click → camera framing + caption placeholder; every long wait → time-lapse range. The editor refines instead of writing from zero. The biggest token saver in the pipeline. | folded in (`film/scripts/draft-storyboard.mjs`) |
-| **Build audit** (`build.mjs --audit` / `scripts/audit.mjs`: frozen holds, pointer jumps at cuts, dead air before cuts, caption lint, caption claims against `mark` text) | These were all found by hand or by the user on the finished film. On the delivered Kleber EDL it reports 0 errors and 2 dead-air warnings. | folded in |
+| **Build audit** (`build.mjs --audit` / `scripts/audit.mjs`: frozen holds, pointer jumps at cuts, dead air before cuts, caption lint, caption claims against `mark` text) | These were all found by hand or by the user on the finished film. On the first film's delivered EDL it reports 0 errors and 2 dead-air warnings. | folded in |
 | **Caption drafting from labels and marked text** | `mark` events now carry the element's visible text; a Sonnet pass can draft short captions from label + text + scene intent, with the truth check built in. | open, next |
 | **Pointer bridging at cuts** | When the pointer would jump more than N px across a cut, emit a short bridging move or hide/show instead of teleporting. | open, next |
 | **Time-lapse auto-detection** | Any wait longer than N s in kept footage becomes a labelled time-lapse unless the storyboard says otherwise. | open |
@@ -40,7 +40,7 @@ per effort. "Folded in" items were added during the extraction (2026-11-09); the
 | **Per-line voiceover generation with a cache** | One TTS request per line, keyed by text hash + voice. Re-timing or rewording one line regenerates one line, not the whole track. | open, next |
 | **Script-first timing mode** | Today picture leads and the VO is fitted. For tutorial-style tours the voice should lead: the film stretches holds to the spoken line durations. Needs the EDL to accept per-range "fit to audio" targets. | open |
 | **Multi-language twins** | Captions and VO in other languages from the same picture lock: translate the caption/VO JSON, run TTS, re-place. The app under test spoke 8 languages; the film could too. | open |
-| **Pronunciation lexicon** | Brand names mispronounced by TTS ("Kleber") fixed once per project with spelling hints or phonemes, applied to every line. | open |
+| **Pronunciation lexicon** | Brand and product names mispronounced by TTS fixed once per project with spelling hints or phonemes, applied to every line. | open |
 | **Automatic listening proxy** | Transcribe the final mix with `hyperframes transcribe` and diff it against the script (missing words, wrong words); measure VO/music ratio per line; detect clipping. Still reported as "measured, not heard". | open, next |
 | **Music fallbacks** | ElevenLabs via API key when no connector is attached; a local library folder; HeyGen catalog. Length-aware prompt; generic beat-grid detection (`sound/analysis/`) to auto-nudge holds to bars. | partly (loop extension, grid) |
 

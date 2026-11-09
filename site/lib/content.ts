@@ -1,10 +1,10 @@
-// Every value here is quoted from the kit's repo (README.md, docs/, examples/kleber-content-ai/).
+// Every value here is quoted from the kit's repo (README.md, docs/, examples/brightpost/).
 
 export const REPO = "https://github.com/gabros20/walkthrough-studio";
 export const blob = (p: string) => `${REPO}/blob/main/${p}`;
 export const tree = (p: string) => `${REPO}/tree/main/${p}`;
 
-/** The delivered Kleber film's cut, from examples/kleber-content-ai/README-film-notes.md ("The cut"). */
+/** The delivered Brightpost film's cut, from examples/brightpost/README-film-notes.md ("The cut"). */
 export const EDL: { id: string; label: string; from: number; to: number; card?: boolean }[] = [
   { id: "title", label: "title card", from: 0, to: 7, card: true },
   { id: "s1", label: "set up", from: 7, to: 16.15 },
@@ -45,8 +45,8 @@ export const SCENES_SNIPPET = `{
       "start": "/site.html",
       "steps": [
         { "hold": 0.6 },
-        { "mark": { "role": "heading", "name": "Find a tyre for this winter" }, "label": "headline" },
-        { "type": "winter", "into": { "placeholder": "Search tyres" }, "label": "query" },
+        { "mark": { "role": "heading", "name": "Find a bike for this winter" }, "label": "headline" },
+        { "type": "ridgeline", "into": { "placeholder": "Search bikes" }, "label": "query" },
         { "click": { "role": "button", "name": "Search" }, "label": "search" },
         { "wait": { "quiet": { "ms": 600, "timeout": 15000 } }, "label": "results" },
         { "mark": { "role": "list", "name": "Results" }, "label": "results list" },

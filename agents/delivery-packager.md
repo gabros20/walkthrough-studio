@@ -15,7 +15,7 @@ verified).
 ## Read first
 
 - `docs/DELIVERY.md` (structure, naming, encodes, required README notes, review checklist).
-- `delivery/README.md` and `examples/kleber-content-ai/delivery/` (the real package's README and copy).
+- `delivery/README.md` and `examples/brightpost/delivery/` (the real package's README and copy).
 - The films, their `.srt` files and `edl.json`, the plan's story, `takes/INDEX.md`.
 
 ## Media mode (01_Films, 02_Feature-Clips, 03_Screenshots)

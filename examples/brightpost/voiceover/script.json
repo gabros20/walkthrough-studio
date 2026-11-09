@@ -1,0 +1,392 @@
+{
+  "film": "brightpost-walkthrough-v2 (192.0 s, 60 fps)",
+  "voice": "warm, assured British female narrator, calm pace",
+  "estimateRule": "words/2.4 + 0.35 s; every line <= 85% of its window; windows >= 0.5 s apart",
+  "totals": {
+    "lines": 27,
+    "words": 234,
+    "estSpeech": 106.96,
+    "speakingShare": 0.557,
+    "wordsOnlyShare": 0.508
+  },
+  "lines": [
+    {
+      "id": "L01",
+      "scene": "title",
+      "window": {
+        "start": 1.0,
+        "end": 6.6
+      },
+      "windowLength": 5.6,
+      "text": "One sentence from a shop. A campaign, ready to post.",
+      "words": 10,
+      "estDuration": 4.52,
+      "fillOfWindow": 0.807,
+      "onScreen": "burst of finished creatives, then title lockup"
+    },
+    {
+      "id": "L02",
+      "scene": "s1",
+      "window": {
+        "start": 7.3,
+        "end": 12.1
+      },
+      "windowLength": 4.8,
+      "text": "They join with their own one-time link.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.681,
+      "onScreen": "Confirm your company (one-time link)"
+    },
+    {
+      "id": "L03",
+      "scene": "s1",
+      "window": {
+        "start": 12.6,
+        "end": 17.4
+      },
+      "windowLength": 4.8,
+      "text": "Their logo, added once, goes on every post.",
+      "words": 8,
+      "estDuration": 3.68,
+      "fillOfWindow": 0.767,
+      "onScreen": "logo upload 12.8, shown on dark and light"
+    },
+    {
+      "id": "L04",
+      "scene": "s2",
+      "window": {
+        "start": 18.0,
+        "end": 23.6
+      },
+      "windowLength": 5.6,
+      "text": "Then they describe the post in their own words.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.732,
+      "onScreen": "start screen, platform picker; typing starts 24.1"
+    },
+    {
+      "id": "L05",
+      "scene": "s2",
+      "window": {
+        "start": 32.0,
+        "end": 36.0
+      },
+      "windowLength": 4.0,
+      "text": "Three on-brand options, from the brand hub.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.818,
+      "onScreen": "options arrive 30.9 (pause), checking images 33-36"
+    },
+    {
+      "id": "L06",
+      "scene": "s2",
+      "window": {
+        "start": 36.9,
+        "end": 40.85
+      },
+      "windowLength": 3.95,
+      "text": "Each image is checked before it's shown.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.828,
+      "onScreen": "first image lands 36.4, 'Worked for 56 s' ~39; cut 40.98"
+    },
+    {
+      "id": "L07",
+      "scene": "s3a",
+      "window": {
+        "start": 41.6,
+        "end": 46.6
+      },
+      "windowLength": 5.0,
+      "text": "Three different ideas, side by side, to choose between.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.82,
+      "onScreen": "option 2/3/1 clicks 41.9-47.3"
+    },
+    {
+      "id": "L08",
+      "scene": "s3a",
+      "window": {
+        "start": 49.4,
+        "end": 54.4
+      },
+      "windowLength": 5.0,
+      "text": "Each comes sized for the feed, and for stories.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.82,
+      "onScreen": "format chips 4:5 49.8, 9:16 52.5; whip 54.9"
+    },
+    {
+      "id": "L09",
+      "scene": "s3b",
+      "window": {
+        "start": 56.4,
+        "end": 61.3
+      },
+      "windowLength": 4.9,
+      "text": "Every word can be edited, even on the image.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.837,
+      "onScreen": "headline edit on image 56.9-60; new headline 61.5 (silence)"
+    },
+    {
+      "id": "L10",
+      "scene": "s4",
+      "window": {
+        "start": 66.0,
+        "end": 70.9
+      },
+      "windowLength": 4.9,
+      "text": "Want a change? Ask for it in plain words.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.837,
+      "onScreen": "Modify 66.0, redesign typed 68.2-71.0"
+    },
+    {
+      "id": "L11",
+      "scene": "s4",
+      "window": {
+        "start": 71.4,
+        "end": 75.4
+      },
+      "windowLength": 4.0,
+      "text": "The layout changes. The brand rules don't.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.818,
+      "onScreen": "working; new layout lands 76.5-78.5 (silence to 82)"
+    },
+    {
+      "id": "L12",
+      "scene": "s5",
+      "window": {
+        "start": 82.0,
+        "end": 86.4
+      },
+      "windowLength": 4.4,
+      "text": "Adding channels is instant. Nothing to wait for.",
+      "words": 8,
+      "estDuration": 3.68,
+      "fillOfWindow": 0.836,
+      "onScreen": "Add platform 82.1, LinkedIn 83.6, Newsletter 84.2"
+    },
+    {
+      "id": "L13",
+      "scene": "s5",
+      "window": {
+        "start": 86.9,
+        "end": 91.4
+      },
+      "windowLength": 4.5,
+      "text": "Six platforms, eighteen formats, all from one option.",
+      "words": 8,
+      "estDuration": 3.68,
+      "fillOfWindow": 0.818,
+      "onScreen": "format tour from 86.8"
+    },
+    {
+      "id": "L14",
+      "scene": "s5",
+      "window": {
+        "start": 93.6,
+        "end": 98.9
+      },
+      "windowLength": 5.3,
+      "text": "Each carries the same message, and the same look.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.774,
+      "onScreen": "format tour, beat cuts to 99.4"
+    },
+    {
+      "id": "L15",
+      "scene": "s6a",
+      "window": {
+        "start": 100.0,
+        "end": 105.4
+      },
+      "windowLength": 5.4,
+      "text": "The whole app speaks eight languages, not just the posts.",
+      "words": 10,
+      "estDuration": 4.52,
+      "fillOfWindow": 0.837,
+      "onScreen": "language menu 100.5, Deutsch/Francais/Magyar, back to English 106.2"
+    },
+    {
+      "id": "L16",
+      "scene": "s6b",
+      "window": {
+        "start": 107.9,
+        "end": 112.2
+      },
+      "windowLength": 4.3,
+      "text": "Posts translate too, with a single request.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.76,
+      "onScreen": "translate request typed and sent 108.4-110.3"
+    },
+    {
+      "id": "L17",
+      "scene": "s6b",
+      "window": {
+        "start": 115.7,
+        "end": 120.9
+      },
+      "windowLength": 5.2,
+      "text": "German on the image and in the post, everywhere.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.788,
+      "onScreen": "German lands 114.5-115 (pause); Instagram, Newsletter"
+    },
+    {
+      "id": "L18",
+      "scene": "s7",
+      "window": {
+        "start": 121.5,
+        "end": 125.6
+      },
+      "windowLength": 4.1,
+      "text": "Some things only need saying once.",
+      "words": 6,
+      "estDuration": 2.85,
+      "fillOfWindow": 0.695,
+      "onScreen": "rule typed 122.0-125.7"
+    },
+    {
+      "id": "L19",
+      "scene": "s7",
+      "window": {
+        "start": 127.0,
+        "end": 132.9
+      },
+      "windowLength": 5.9,
+      "text": "That's kept as a note, and added to every new request.",
+      "words": 11,
+      "estDuration": 4.93,
+      "fillOfWindow": 0.836,
+      "onScreen": "'Noting that for next time' 127-129; 'I've saved both' reply"
+    },
+    {
+      "id": "L20",
+      "scene": "s8",
+      "window": {
+        "start": 136.0,
+        "end": 140.8
+      },
+      "windowLength": 4.8,
+      "text": "In settings, they set their own brand kit.",
+      "words": 8,
+      "estDuration": 3.68,
+      "fillOfWindow": 0.767,
+      "onScreen": "settings page, colour Brightpost teal 137.1, pill 140.7"
+    },
+    {
+      "id": "L21",
+      "scene": "s8",
+      "window": {
+        "start": 141.3,
+        "end": 149.6
+      },
+      "windowLength": 8.3,
+      "text": "Each choice shows straight away on their latest campaign, and nothing changes until they save.",
+      "words": 15,
+      "estDuration": 6.6,
+      "fillOfWindow": 0.795,
+      "onScreen": "logo first 143.5, divider 146.3, preview re-renders; save 150.2"
+    },
+    {
+      "id": "L22",
+      "scene": "s8",
+      "window": {
+        "start": 151.4,
+        "end": 155.4
+      },
+      "windowLength": 4.0,
+      "text": "And here are the assistant's saved notes.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.818,
+      "onScreen": "Assistant memory spotlit 152.0-154.5"
+    },
+    {
+      "id": "L23",
+      "scene": "s9a",
+      "window": {
+        "start": 157.0,
+        "end": 162.0
+      },
+      "windowLength": 5.0,
+      "text": "The next campaign follows the notes and the kit.",
+      "words": 9,
+      "estDuration": 4.1,
+      "fillOfWindow": 0.82,
+      "onScreen": "second brief typed 157.4-161.6; options land ~164 (silence)"
+    },
+    {
+      "id": "L24",
+      "scene": "s9b",
+      "window": {
+        "start": 167.6,
+        "end": 172.4
+      },
+      "windowLength": 4.8,
+      "text": "Their logo first, their colour, their button shape.",
+      "words": 8,
+      "estDuration": 3.68,
+      "fillOfWindow": 0.767,
+      "onScreen": "option 2, shop logo first, teal, pill button"
+    },
+    {
+      "id": "L25",
+      "scene": "s9b",
+      "window": {
+        "start": 173.0,
+        "end": 177.2
+      },
+      "windowLength": 4.2,
+      "text": "And their sign-off, added without asking again.",
+      "words": 7,
+      "estDuration": 3.27,
+      "fillOfWindow": 0.779,
+      "onScreen": "sign-off line highlighted ~175; Export 177.4"
+    },
+    {
+      "id": "L26",
+      "scene": "s10",
+      "window": {
+        "start": 178.0,
+        "end": 184.6
+      },
+      "windowLength": 6.6,
+      "text": "The whole kit downloads at once. Copy the text, and post.",
+      "words": 11,
+      "estDuration": 4.93,
+      "fillOfWindow": 0.747,
+      "onScreen": "export sheet, zip 181.4, Copy 183.5; cut 185.0"
+    },
+    {
+      "id": "L27",
+      "scene": "end",
+      "window": {
+        "start": 186.0,
+        "end": 191.6
+      },
+      "windowLength": 5.6,
+      "text": "Every shop, on brand, from one sentence to every channel.",
+      "words": 10,
+      "estDuration": 4.52,
+      "fillOfWindow": 0.807,
+      "onScreen": "kit fan-out 185-187, wipe 187.05, end card"
+    }
+  ]
+}

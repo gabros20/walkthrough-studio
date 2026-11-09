@@ -72,7 +72,7 @@ def main():
     brand = load_config(a[a.index("--config") + 1])["brand"] if "--config" in a else {}
     rp = lambda p: p  # load_config resolved every brand path already
     b64 = lambda p: base64.b64encode(open(rp(p), "rb").read()).decode()
-    accent, ink, paper = brand.get("accent", "#FD000D"), brand.get("ink", "#141414"), brand.get("paper", "#F4F2EE")
+    accent, ink, paper = brand.get("accent", "#0E7C86"), brand.get("ink", "#141414"), brand.get("paper", "#F4F2EE")
     faces = "".join(f"@font-face{{font-family:B;font-weight:{w};src:url(data:font/woff2;base64,{b64(p)}) format('woff2')}}"
                     for w, p in brand.get("fonts", {}).items() if os.path.exists(rp(p)))
     logo = f'<img src="data:image/png;base64,{b64(brand["logo"])}" alt="{html.escape(brand.get("name", ""))}">' if brand.get("logo") and os.path.exists(rp(brand["logo"])) else ""

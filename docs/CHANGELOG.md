@@ -14,6 +14,16 @@ versions follow `package.json`.
 
 - README reordered: what it is, install, quick start for site mode (now including the recording, inspect and
   creatives steps), studio mode, then reference material.
+- The worked example is anonymised: `examples/brightpost/` (a fictional marketing-post studio for independent
+  shops, the shop Harbor Bikes) replaces the client's names, products, brand colour and fixtures everywhere,
+  including the sample pages and tests in `recorder/`.
+- Take readers accept only the schema id `walkthrough-take/1`; the pre-extraction alias is gone, and any
+  other id stops the build.
+
+### Removed
+
+- `examples/*/agent-briefs/`: the original briefs of the first job. The roles live in `agents/*.md`, the
+  rules in `docs/` and `docs/adr/008-model-tier-orchestration.md`.
 
 ### Fixed
 
@@ -21,14 +31,15 @@ versions follow `package.json`.
 
 ## [0.1.0] - 2026-11-09
 
-The kit extracted from the Kleber Content AI walkthrough job (6-9 November 2026).
+The kit, extracted from a real client walkthrough job (6-9 November 2026); the example here is anonymised as
+Brightpost.
 
 ### Added
 
 - **Recorder** (`recorder/`): Playwright with full Chromium in new-headless mode and the GPU, a DevTools
   screencast at 60 fps with frames slotted by browser timestamp, three sync flashes at each end, a heartbeat
-  pixel, cursor-free footage and an `events.json` action log (contract `walkthrough-take/1`, readers also
-  accept `kleber-take/1`). An invisible mouse on the same arcs the film draws.
+  pixel, cursor-free footage and an `events.json` action log (contract `walkthrough-take/1`). An invisible
+  mouse on the same arcs the film draws.
 - **Site mode**: any URL, no studio. Declarative scenes as a `.json` list of steps, `storageState`,
   `blockUrls`, `dismiss`, the generic `waitQuiet` wait, safe-area scrolling (`scrollIntoViewSafe`), marks that
   log the element's visible text, viewport presets `desktop` (1440x810 @2) and `phone` (390x844 @3), and
@@ -48,8 +59,8 @@ The kit extracted from the Kleber Content AI walkthrough job (6-9 November 2026)
 - **Delivery** (`delivery/`): masters and web encodes, feature clips, stills, contact and showcase sheets,
   README to HTML and PDF, inventory, verify, zip.
 - **Plugin**: 7 skills and 9 agents with model tiers, `.claude-plugin/plugin.json`.
-- **Docs**: pipeline, take contract, capture test, storyboard, look, delivery, lessons, roadmap, and the Kleber
-  project as a worked example (`examples/kleber-content-ai/`).
+- **Docs**: pipeline, take contract, capture test, storyboard, look, delivery, lessons, roadmap, and the first
+  project as a worked example (`examples/brightpost/`, anonymised as Brightpost).
 - `recorder/tools/save-login.mjs`: save a signed-in browser state for site mode; the owner signs in by hand.
 - `docs/ELEVENLABS.md`: the connector and API-key routes for music and speech.
 - **Project folders**: the film and sound builds run from a folder outside the kit
@@ -62,7 +73,7 @@ The kit extracted from the Kleber Content AI walkthrough job (6-9 November 2026)
 - Every delivery and voiceover script answers `--help`.
 - `delivery/zip.sh` handles relative paths.
 - `delivery/clips.py --dry` no longer has side effects.
-- `${VAR}` is expanded in every delivery path; the example's paths come from `KLEBER_REPO`.
+- `${VAR}` is expanded in every delivery path; the example's paths come from `BRIGHTPOST_REPO`.
 
 [Unreleased]: https://github.com/gabros20/walkthrough-studio/compare/f94bd0f...HEAD
 [0.1.0]: https://github.com/gabros20/walkthrough-studio/commit/f94bd0f

@@ -11,7 +11,7 @@ capture method, and gate on truth checks.
 
 Read: `docs/CONTRACT.md` (take format `walkthrough-take/1`), `docs/CAPTURE_TEST.md`, `studio/README.md`,
 `docs/LESSONS.md` (section "Capture and recording"). Example project files:
-`examples/kleber-content-ai/{walkthrough.config.mjs,app.mjs,scenes.mjs,studio.config.sh}`.
+`examples/brightpost/{walkthrough.config.mjs,app.mjs,scenes.mjs,studio.config.sh}`.
 
 ## Inputs
 

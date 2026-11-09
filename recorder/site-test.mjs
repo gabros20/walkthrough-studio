@@ -24,7 +24,7 @@ const server = http.createServer((req, res) => {
   if (u.pathname === "/api/search")
     return setTimeout(() => {
       res.setHeader("content-type", "application/json");
-      res.end(JSON.stringify(["Krisalp HP3 205/55 R16", "Krisalp HP3 225/45 R17", "Quadraxer 3 195/65 R15", "Quadraxer 3 205/55 R16", "Krisalp HP3 SUV 235/60 R18", "Quadraxer 3 225/40 R18", "Krisalp HP3 185/65 R15", "Quadraxer 3 215/55 R17"]));
+      res.end(JSON.stringify(["Ridgeline 7, size S", "Ridgeline 7, size M", "Coastline 3, size S", "Coastline 3, size M", "Ridgeline 7 Cargo, size L", "Coastline 3, size L", "Ridgeline 7, size XS", "Coastline 3, size XL"]));
     }, 1200);
   const f = path.join(here, "pages", path.basename(u.pathname));
   if (!fs.existsSync(f)) return res.writeHead(404).end();

@@ -9,7 +9,7 @@ The film editor (`agents/film-editor.md`, Opus) does this work. You give it the 
 rulings, and you rule on what it reports.
 
 Read: `docs/STORYBOARD.md` (format), `docs/LOOK.md` (numbers, banned list), `$KIT/film/README.md`, the `hyperframes`
-skill. Example: `examples/kleber-content-ai/storyboard.json`, `brand.json`, `creatives.json`, `captions.srt`.
+skill. Example: `examples/brightpost/storyboard.json`, `brand.json`, `creatives.json`, `captions.srt`.
 
 ## Inputs
 

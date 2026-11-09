@@ -1,5 +1,5 @@
 // The header lockup on the title and end cards: logo (or a text wordmark), a hairline divider and
-// an optional label, e.g. "[logo] | Content AI". Everything comes from the brand (lib/config.mjs):
+// an optional label, e.g. "[logo] | Studio". Everything comes from the brand (lib/config.mjs):
 //
 //   lockup.logo      { onDark, onLight, aspect } or null. scripts/sync-assets.mjs copies the files
 //                    into assets/brand/ and measures their aspect.

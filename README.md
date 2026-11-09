@@ -1,5 +1,9 @@
 # walkthrough-studio
 
+[![Licence: MIT](https://img.shields.io/github/license/gabros20/walkthrough-studio)](LICENSE)
+[![Version](https://img.shields.io/github/v/tag/gabros20/walkthrough-studio?sort=semver&label=version)](https://github.com/gabros20/walkthrough-studio/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/gabros20/walkthrough-studio/ci.yml?branch=main&label=CI)](https://github.com/gabros20/walkthrough-studio/actions/workflows/ci.yml)
+
 A toolkit and Claude Code plugin that lets coding agents make walkthrough and tour videos of a web app or
 website, in the style of Screen Studio: real app footage with a drawn pointer, camera punch-ins, captions or
 an ElevenLabs voiceover, music, and a title and end card.
@@ -40,26 +44,36 @@ retake after eight app fixes the film exposed, one scene retaken after the owner
 
 ## Install
 
-Below, `$KIT` is the folder this repo is in.
+Full steps, flags and what each platform gets: [`docs/INSTALL.md`](docs/INSTALL.md).
+
+- **Claude Code** (skills, agents and the whole kit). In a session:
+
+  ```text
+  /plugin install walkthrough-studio --marketplace gabros20/walkthrough-studio
+  ```
+
+  Or in a shell: `claude plugin install walkthrough-studio --marketplace gabros20/walkthrough-studio`. For one
+  session from a clone: `claude --plugin-dir ./walkthrough-studio`.
+- **Any agent via skills.sh** (the 7 skills; add the kit below):
+  `npx skills add gabros20/walkthrough-studio` (pick agents with `-a`, for your user with `-g`).
+- **Codex** (skills and the kit):
+  `codex plugin marketplace add gabros20/walkthrough-studio && codex plugin add walkthrough-studio@walkthrough-studio`.
+  Skills only: `npx skills add gabros20/walkthrough-studio -a codex`.
+- **Cursor**: `npx skills add gabros20/walkthrough-studio -a cursor`; the agents can be copied from the kit's
+  `agents/` to `~/.cursor/agents/`.
+- **Antigravity**: `npx skills add gabros20/walkthrough-studio -a antigravity`.
+- **Hermes**: `npx skills add gabros20/walkthrough-studio -a hermes-agent -g`, or per skill
+  `hermes skills install gabros20/walkthrough-studio/skills/<skill>`.
+
+**Get the kit tooling.** Every route except a Claude Code or Codex plugin install copies only the `SKILL.md`
+files. The skills run the kit's tools, so clone it once (elsewhere? set `WALKTHROUGH_STUDIO_HOME` to its path):
 
 ```bash
-git clone https://github.com/gabros20/walkthrough-studio.git && cd walkthrough-studio
-npm run setup               # recorder dependencies + Playwright Chromium (also used for PDFs)
-claude plugin validate .    # checks the plugin manifest, skills and agents
+git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup
 ```
 
-Load it as a plugin for one session with `claude --plugin-dir $KIT`, or install it through a marketplace that
-lists this repo (`claude plugin marketplace add <source>`, then
-`claude plugin install walkthrough-studio@<marketplace>`). You can also symlink only the parts you want:
-
-```bash
-for s in skills/*/; do ln -s "$PWD/$s" ~/.claude/skills/"$(basename "$s")"; done
-for a in agents/*.md; do ln -s "$PWD/$a" ~/.claude/agents/; done
-```
-
-> [!NOTE]
-> The skills look for the kit two folders above their own. With symlinked skills that points into
-> `~/.claude`, so tell the session where `$KIT` is.
+Below, `$KIT` is the kit's folder (the clone, or the plugin cache). Platforms without sub-agents run each
+agent's role in the main session; nothing is skipped.
 
 ## Quick start: tour a website (site mode)
 
@@ -188,10 +202,17 @@ including the architecture decision records in [`docs/adr/`](docs/adr/) and the
 multi-tab flows, one CLI, package presets) is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Rules for agents
 working in this repo: [`CLAUDE.md`](CLAUDE.md).
 
-## Generated media and licence
+## Contributing, versioning, licence
 
-No licence has been chosen for the code yet. Music and voice generated through ElevenLabs are governed by the
-terms of the plan they were generated under (the free tier's terms for commercial use were not verified for
-the first film); confirm them before publishing. Brand assets, logos and app footage belong to their owners
-and are not in this repo: the example's `brand.json` points at the client's files through an environment
-variable.
+- **Contributing**: [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the checks (`npm run check`, `npm run
+  check:site`), adding a skill, agent or tool, conventional commits and pull requests. Be kind:
+  [code of conduct](CODE_OF_CONDUCT.md). Security problems: [`SECURITY.md`](SECURITY.md) (private reporting,
+  not issues).
+- **Versioning**: [semver](https://semver.org/), one version across the plugin and package manifests, set by
+  `scripts/version.mjs`; changes are listed in the [changelog](docs/CHANGELOG.md) and each `v*` tag becomes a
+  GitHub Release. Release procedure: [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md).
+- **Licence**: the code is [MIT](LICENSE). Music and voice generated through ElevenLabs are governed by the
+  terms of the plan they were generated under (the free tier's terms for commercial use were not verified
+  for the first film); confirm them before publishing. Brand assets, logos and app footage belong to their
+  owners and are not in this repo: the example's `brand.json` points at the client's files through an
+  environment variable.

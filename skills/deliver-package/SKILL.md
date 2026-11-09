@@ -8,6 +8,15 @@ description: Build the delivery package for a finished walkthrough film - rename
 Read `docs/DELIVERY.md` first (structure, naming, encodes, the README notes, the review checklist). The real
 package's README, copy and config are in `examples/brightpost/delivery/`.
 
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
+
 ## Inputs
 
 - Final films (one per variant, e.g. Captions and Voiceover), each with audio, its `.srt` and its `edl.json`.
@@ -28,7 +37,8 @@ package's README, copy and config are in `examples/brightpost/delivery/`.
     `04_Creative-Showcase` exists only when the app makes creatives; a site tour skips it (and leaves the
     `stills` of its own pages in 03_Screenshots).
   Give each the config path, the scratchpad folder, the folders it owns and the other agent's folders to
-  leave alone.
+  leave alone. (Or, without sub-agents, do both modes yourself, media first: see
+  `agents/delivery-packager.md` in the kit.)
 - [ ] Media mode runs:
   ```bash
   python3 -I delivery/films.py  package.config.json

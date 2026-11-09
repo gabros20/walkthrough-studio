@@ -6,9 +6,19 @@ description: Make the voiceover version of a walkthrough or tour film (decided a
 # Voiceover twin
 
 The voiceover producer (`agents/voiceover-producer.md`, Opus) writes and places; the film editor renders the
-captionless twin; the sound designer mixes; you make the one TTS call. Read `docs/ELEVENLABS.md` (voice choice, the one speech call, download, costs) and `voiceover/` (`make_script.py`,
+captionless twin; the sound designer mixes; you make the one TTS call. (Or, without sub-agents, do those roles'
+checklists yourself: see `agents/voiceover-producer.md`, `film-editor.md` and `sound-designer.md` in the kit.) Read `docs/ELEVENLABS.md` (voice choice, the one speech call, download, costs) and `voiceover/` (`make_script.py`,
 `place.py`, `fitcheck.py`, `remap.py`, `compare-twins.py`; `voiceover/README.md`) and `docs/LESSONS.md` (E9, S3, S6). Example:
 `examples/brightpost/voiceover/{script.json,script.txt,placement.json,voiceover.srt}`.
+
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
 
 ## Inputs
 

@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "description": "Agent-driven toolkit for app walkthrough films: studio instance, recorder, HyperFrames film, sound, voiceover, delivery.",
+  "license": "MIT",
+  "repository": "https://github.com/gabros20/walkthrough-studio",
   "engines": {
     "node": ">=22"
   },
@@ -16,6 +18,10 @@
     "film:check": "cd film && npx --yes hyperframes@0.9.16 check",
     "sound": "node sound/build-sound.mjs",
     "package:verify": "python3 -I delivery/verify.py",
-    "validate": "claude plugin validate ."
+    "validate": "claude plugin validate .",
+    "check": "node scripts/check.mjs",
+    "check:site": "cd site && npm ci && npm run build",
+    "lint:skills": "node scripts/lint-skills.mjs",
+    "version:set": "node scripts/version.mjs"
   }
 }

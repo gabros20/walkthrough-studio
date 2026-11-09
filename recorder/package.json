@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Records cursor-free app takes with an action log (events.json) for the walkthrough film build.",
+  "license": "MIT",
   "engines": {
     "node": ">=22"
   },

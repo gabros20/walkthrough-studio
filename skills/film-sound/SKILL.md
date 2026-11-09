@@ -6,12 +6,22 @@ description: Score a locked walkthrough film - generate the music bed once via E
 # Film sound
 
 The sound designer (`agents/sound-designer.md`, Opus) builds and mixes; you make the paid generation call.
+(Or, without sub-agents, do that role's checklist yourself: see `agents/sound-designer.md` in the kit.)
 Read `docs/ELEVENLABS.md` (the exact connector calls, the API-key route, costs, "busy" handling, licence),
 `sound/` (`build-sound.mjs --help`), the `media-use` skill, and `docs/LESSONS.md` section "Sound and
 voice". Example: `examples/brightpost/music.json` and `beat-grid.json`.
 
 All paths are in the film's project folder `$P` (skill `build-film`); run from `$P` (or pass
 `--project $P`; `--film` is kept as an alias). `KIT` is the kit root.
+
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
 
 ## Inputs
 

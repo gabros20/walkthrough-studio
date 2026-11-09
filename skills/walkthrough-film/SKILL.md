@@ -8,11 +8,19 @@ description: Master workflow for making a Screen-Studio-style walkthrough or tou
 You are the lead. On a large job you orchestrate and review; specialised agents do the work. You spend your
 own tokens on the plan, on rulings, on reading the critic's findings and on final checks.
 
-**Where the kit is.** Every path in these skills (`recorder/`, `film/`, `docs/`, ...) is relative to the kit
-root: the plugin folder, two levels above this skill's base directory. Run kit commands from there (or with
-absolute paths). Keep the project's own files (walkthrough config, scenes, takes, brand, storyboard, voiceover,
-package config) in the user's project and pass them with `--config`, `--takes`, `--brand` and file arguments.
-Run `npm run setup` in the kit root once (Playwright Chromium for the recorder and the PDF step).
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
+
+Run kit commands from `$KIT` (or with absolute paths). Keep the project's own files (walkthrough config,
+scenes, takes, brand, storyboard, voiceover, package config) in the user's project and pass them with
+`--config`, `--takes`, `--brand` and file arguments. Run `npm run setup` in `$KIT` once (Playwright Chromium
+for the recorder and the PDF step).
 
 Docs (read the ones your step needs, not all): `docs/PIPELINE.md` (the pipeline and its numbers),
 `docs/LESSONS.md` (read once before planning), `docs/CONTRACT.md`, `docs/CAPTURE_TEST.md`,
@@ -102,7 +110,9 @@ voiceover fit check → render both once.
 Rules: the cheapest model that can do a step reliably; an Opus critic checks the small models' output; critical
 reviews are never skipped. Name each agent so you can message it later. Brief each like a peer: goal, paths,
 what to read first, hard rules, what to build, checks before reporting, report format. Ask for long reports as
-a scratchpad file plus a short message. Tell worker agents not to spawn sub-agents.
+a scratchpad file plus a short message. Tell worker agents not to spawn sub-agents. Without sub-agents
+(platforms other than Claude Code), do each row's role checklist yourself, in order: see `agents/<name>.md` in
+the kit; the built-in `Explore` and `Plan` rows become your own read-only survey and a self-review of the plan.
 
 ## Workflow
 

@@ -7,6 +7,15 @@ description: The review loop for a walkthrough film draft or final (captioned or
 
 Spend little on looking and a lot on judging: Haiku agents describe, one Opus critic judges, you rule.
 
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
+
 ## Inputs
 
 - The render (`film/renders/<name>.mp4` or the delivered file), its `edl.json`, `cues.json`,
@@ -26,11 +35,13 @@ Spend little on looking and a lot on judging: Haiku agents describe, one Opus cr
   `--at t1,t2,... --cols 2 --width 960`. ffmpeg's `drawtext` may be missing; this uses Pillow.
 - [ ] **Describers.** Spawn three `frame-describer` agents (Haiku) in one message, on disjoint ranges of
   about a third of the film each, one frame every 2 s, each writing `frames-<a|b|c>.md` in the scratchpad.
-  Give each the one-paragraph film description and the problem list from the agent file.
+  Give each the one-paragraph film description and the problem list from the agent file. (Or, without
+  sub-agents, do that role's checklist yourself: see `agents/frame-describer.md` in the kit.)
 - [ ] **Critic.** Spawn `film-critic` (Opus) with the render, sheets, the describers' reports, the storyboard
   and plan, the known-issues list, and a report file path. It rules on every describer flag (real / by design
   / misread) and returns must fix / should fix / nice to have with times and concrete fixes, plus the three
-  strongest moments to protect.
+  strongest moments to protect. (Or, without sub-agents, do that role's checklist yourself: see
+  `agents/film-critic.md` in the kit; judge on a fresh pass, after the describing is done.)
 - [ ] **Rule.** Read the critic's summary (open the full file only where needed). Send the editor one
   numbered list of rulings, saying which earlier messages it supersedes. App problems go to `app-fixer`
   (then studio re-sync and retake), not into the edit.

@@ -5,11 +5,21 @@ description: Cut a walkthrough or tour film from recorded takes (studio or site 
 
 # Build the film
 
-The film editor (`agents/film-editor.md`, Opus) does this work. You give it the takes, the plan and the
+The film editor (`agents/film-editor.md`, Opus) does this work (or, without sub-agents, you do that role's
+checklist yourself: see `agents/film-editor.md` in the kit). You give it the takes, the plan and the
 rulings, and you rule on what it reports.
 
 Read: `docs/STORYBOARD.md` (format), `docs/LOOK.md` (numbers, banned list), `$KIT/film/README.md`, the `hyperframes`
 skill. Example: `examples/brightpost/storyboard.json`, `brand.json`, `creatives.json`, `captions.srt`.
+
+**Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
+`agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
+`${CLAUDE_PLUGIN_ROOT}` (Claude Code or Codex plugin install; skip it if it shows unexpanded),
+`$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio`, this skill's own `../..`. If none does, the install copied
+only this file (skills.sh): ask the user to run
+`git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio && cd ~/walkthrough-studio && npm run setup`.
+Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
+`$KIT/agents/<name>.md`.
 
 ## Inputs
 

@@ -1,6 +1,24 @@
+import fs from "node:fs";
+import path from "node:path";
 import { CopyBlock } from "./CopyBlock";
+import { InstallTabs } from "./InstallTabs";
 import { Code, Heading, Shell } from "./Shell";
 import { BUILD_COMMANDS, REPO, ROADMAP, SETUP, blob } from "@/lib/content";
+
+/**
+ * Version and licence of the kit, read from the repo root's package.json at build time (the page is
+ * static). Falls back to the current values when the site is built without the repo around it.
+ */
+function kitMeta(): { version: string; license: string } {
+  const fallback = { version: "0.1.0", license: "MIT" };
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), "..", "package.json"), "utf8"));
+    if (pkg?.name !== "walkthrough-studio") return fallback;
+    return { version: pkg.version ?? fallback.version, license: pkg.license ?? fallback.license };
+  } catch {
+    return fallback;
+  }
+}
 
 const PREREQS = [
   "macOS (APFS clones for studio mode)",
@@ -22,7 +40,7 @@ export function QuickStart() {
               title="Quick start"
               lede={
                 <>
-                  Install the plugin, then ask Claude Code for the film. The <Code>walkthrough-film</Code> skill takes it from
+                  Install it for your agent, then ask for the film. The <Code>walkthrough-film</Code> skill takes it from
                   there: plan, your approval, capture test, takes, cut, review, sound, voiceover, delivery.
                 </>
               }
@@ -37,8 +55,17 @@ export function QuickStart() {
             </ul>
           </div>
 
-          <div className="lg:col-span-7">
-            <CopyBlock title="clone, set up, load as a plugin" code={SETUP} prompt />
+          <div className="lg:col-span-7 lg:pt-3">
+            <div id="install">
+              <h3 className="sr-only">Install</h3>
+              <InstallTabs />
+            </div>
+            <h3 className="heading mt-12 text-heading">The recorder and film tooling</h3>
+            <p className="mt-3 max-w-measure text-muted">
+              The skills drive scripts that live in the repo. The Claude Code plugin carries the whole repo; on the
+              skills.sh routes, clone it once and set it up.
+            </p>
+            <CopyBlock className="mt-6" title="clone, set up, load as a plugin" code={SETUP} prompt />
           </div>
         </div>
 
@@ -106,6 +133,7 @@ export function Roadmap() {
 }
 
 export function Footer() {
+  const kit = kitMeta();
   return (
     <footer className="on-ink bg-ink pb-12 text-white">
       <Shell>
@@ -119,7 +147,7 @@ export function Footer() {
               Extracted from a real client walkthrough job; the example on this page is anonymised as Brightpost. The plan, configs, storyboard, voiceover and every agent brief
               are in <Code>examples/brightpost/</Code>.
             </p>
-            <p className="mt-3 font-mono text-label text-muted-ink">v0.1.0 · licence: TBD</p>
+            <p className="mt-3 font-mono text-label text-muted-ink">v{kit.version} · licence: {kit.license}</p>
           </div>
           <nav aria-label="Docs" className="md:col-span-4">
             <p className="font-mono text-label text-muted-ink">docs/</p>

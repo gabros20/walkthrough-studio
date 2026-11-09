@@ -43,6 +43,6 @@ export function Heading({
   );
 }
 
-export function Code({ children }: { children: ReactNode }) {
-  return <code className="chip">{children}</code>;
+export function Code({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <code className={`chip ${className}`}>{children}</code>;
 }

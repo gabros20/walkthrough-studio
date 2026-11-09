@@ -1,0 +1,19 @@
+{
+  "name": "walkthrough-studio",
+  "description": "Walkthrough Studio: agent-driven toolkit for Screen-Studio-style walkthrough and tour videos.",
+  "owner": {
+    "name": "Tamás Gábor",
+    "url": "https://github.com/gabros20"
+  },
+  "metadata": {
+    "description": "Walkthrough Studio: agent-driven toolkit for Screen-Studio-style walkthrough and tour videos.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "walkthrough-studio",
+      "source": "./",
+      "description": "Record, edit, score, voice and package walkthrough videos of any web app or site: 7 skills and 9 review/production agents."
+    }
+  ]
+}

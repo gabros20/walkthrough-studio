@@ -7,9 +7,9 @@ It is used against *other* projects' apps. The rules below protect those project
 
 | Path | What |
 |---|---|
-| `skills/<name>/SKILL.md` | workflows; start with `skills/walkthrough-film` |
+| `skills/<name>/SKILL.md` | workflows; start with `skills/walkthrough-film`. Each finds the kit as `${CLAUDE_PLUGIN_ROOT}`, `$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio` or its own `../..` (keep that block identical in all 7) |
 | `agents/<name>.md` | specialised agent roles with their model tier |
-| `docs/` | `README.md` (index by purpose), `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md`, `ROADMAP.md` (planned, not built), `adr/` (decisions: do not re-litigate without a superseding ADR), `CHANGELOG.md`, `TUTORIAL-first-site-tour.md` |
+| `docs/` | `README.md` (index by purpose), `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md`, `INSTALL.md` (per-platform install; `INSTALL-RESEARCH.md` is the why), `ROADMAP.md` (planned, not built), `adr/` (decisions: do not re-litigate without a superseding ADR), `CHANGELOG.md`, `TUTORIAL-first-site-tour.md` |
 | `studio/` | isolated app instance scripts (clone, ports, checkpoints) |
 | `recorder/` | Playwright capture, invisible-mouse driving, `events.json` take format, take runner |
 | `film/` | HyperFrames film kit: `build.mjs`, components, review scripts |
@@ -28,7 +28,8 @@ It is used against *other* projects' apps. The rules below protect those project
 - Footage, renders, audio, frame caches and packages stay out of git (see `.gitignore`). Do not commit a
   file larger than a few MB without asking.
 - Commit messages end with the session line the host provides. Large pushes:
-  `git -c http.postBuffer=524288000 push`. Never force-push.
+  `git -c http.postBuffer=524288000 push`. Never force-push except the documented maintainer squash in
+  `docs/MAINTAINERS.md`.
 - Sound must be verified present on any delivered video (`delivered:` line, `delivery/verify.py`). Audio is
   reported as "measured, not heard".
 - Honesty in films: time-lapses labelled, nothing mocked, a caption or line is cut when its claim is not
@@ -41,7 +42,9 @@ It is used against *other* projects' apps. The rules below protect those project
 ## Before claiming done
 
 - Changed a script: run it (or its `--dry`/`--help`) on real or sample input and read the output.
-- Changed `skills/`, `agents/` or `.claude-plugin/`: `claude plugin validate .` must pass.
+- Changed `skills/`, `agents/` or `.claude-plugin/`: `claude plugin validate .` must pass. Skills must also work
+  installed alone (skills.sh copies only `SKILL.md`, with no agents): kit paths go through `$KIT`, and each
+  agent step names its `agents/<name>.md` fallback. Install changes go in `docs/INSTALL.md` and the README.
 - Changed `delivery/`: `BRIGHTPOST_REPO=<brightpost checkout> python3 -I delivery/clips.py examples/brightpost/delivery/package.config.json --dry`
   (needs the example's source films; otherwise test on any film with an `edl.json`); every script answers `--help`.
 - Changed `film/`: `node film/build.mjs <storyboard.json> --takes <takes> --dry --audit` on a real storyboard

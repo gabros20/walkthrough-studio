@@ -1,8 +1,8 @@
 import { ArrowRight } from "lucide-react";
-import { CopyBlock } from "./CopyBlock";
 import { Film, type FilmAssets } from "./Film";
+import { InstallTabs } from "./InstallTabs";
 import { Shell } from "./Shell";
-import { INSTALL, REPO } from "@/lib/content";
+import { REPO } from "@/lib/content";
 
 const NAV = [
   { href: "#how", label: "How it works" },
@@ -10,6 +10,7 @@ const NAV = [
   { href: "#agents", label: "Agents" },
   { href: "#quality", label: "Quality" },
   { href: "#quick-start", label: "Quick start" },
+  { href: "#install", label: "Install" },
 ];
 
 export function Header() {
@@ -63,12 +64,12 @@ export function Hero({ assets }: { assets: FilmAssets }) {
         <div className="mt-10 grid grid-cols-1 gap-12 md:mt-14 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5 lg:pt-2">
             <p className="max-w-measure text-body-lg">
-              walkthrough-studio is a Claude Code plugin. Point it at any web app or website and get a
+              walkthrough-studio is a skill pack for coding agents (Claude Code, Codex, Cursor, Antigravity, Hermes). Point it at any web app or website and get a
               Screen-Studio-style walkthrough video back: a drawn pointer, camera punch-ins, and captions or an
               ElevenLabs voiceover.
             </p>
 
-            <CopyBlock className="mt-8" title="install as a plugin, for one session" code={INSTALL} prompt wrap />
+            <InstallTabs className="mt-8" />
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               <a

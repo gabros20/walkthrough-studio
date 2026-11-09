@@ -178,7 +178,68 @@ npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
 for f in cues.json edl.json; do cp $f renders/final.$f; done; cp captions.srt renders/final.captions.srt
 node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`;
 
-export const INSTALL = `claude --plugin-dir /path/to/walkthrough-studio`;
+/**
+ * One install route per platform, from docs/INSTALL-RESEARCH.md ("One-liner" per section and the
+ * compatibility matrix). `code` is what the block shows: lines starting with "#" are muted labels.
+ * `copy` is what the Copy button puts on the clipboard. In `note`, `backticks` render as code chips.
+ */
+export type InstallRoute = { id: string; tab: string; title: string; code: string; copy: string; note: string };
+
+export const INSTALL_ROUTES: InstallRoute[] = [
+  {
+    id: "claude-code",
+    tab: "Claude Code",
+    title: "install the plugin",
+    code: `# install from the marketplace
+claude plugin install walkthrough-studio --marketplace gabros20/walkthrough-studio
+# or for one session
+claude --plugin-dir ./walkthrough-studio`,
+    copy: "claude plugin install walkthrough-studio --marketplace gabros20/walkthrough-studio",
+    note: "Skills and the 9 agents, namespaced `walkthrough-studio:*`.",
+  },
+  {
+    id: "skills-sh",
+    tab: "Any agent (skills.sh)",
+    title: "install the skills",
+    code: "npx skills add gabros20/walkthrough-studio",
+    copy: "npx skills add gabros20/walkthrough-studio",
+    note: "Skills only (`SKILL.md`), into `.agents/skills`; works for Codex, Cursor, Antigravity, Hermes, Gemini CLI. Clone the repo for the recorder and film tooling.",
+  },
+  {
+    id: "codex",
+    tab: "Codex",
+    title: "marketplace, then plugin",
+    code: "codex plugin marketplace add gabros20/walkthrough-studio && codex plugin add walkthrough-studio@walkthrough-studio",
+    copy: "codex plugin marketplace add gabros20/walkthrough-studio && codex plugin add walkthrough-studio@walkthrough-studio",
+    note: "Reads the same `.claude-plugin/marketplace.json`; skills only, no agents.",
+  },
+  {
+    id: "cursor",
+    tab: "Cursor",
+    title: "install into Cursor",
+    code: "npx skills add gabros20/walkthrough-studio -a cursor",
+    copy: "npx skills add gabros20/walkthrough-studio -a cursor",
+    note: "Agents: copy `agents/*.md` to `~/.cursor/agents`.",
+  },
+  {
+    id: "antigravity",
+    tab: "Antigravity",
+    title: "install into Antigravity",
+    code: "npx skills add gabros20/walkthrough-studio -a antigravity",
+    copy: "npx skills add gabros20/walkthrough-studio -a antigravity",
+    note: "Skills only, into `.agents/skills`; invoke one with `/<skill-name>`.",
+  },
+  {
+    id: "hermes",
+    tab: "Hermes",
+    title: "install into Hermes, global",
+    code: "npx skills add gabros20/walkthrough-studio -a hermes-agent -g",
+    copy: "npx skills add gabros20/walkthrough-studio -a hermes-agent -g",
+    note: "Native: `hermes skills install gabros20/walkthrough-studio/skills/<skill>`, one skill at a time.",
+  },
+];
+
+export const INSTALL_DOC = blob("docs/INSTALL.md");
 export const SETUP = `git clone https://github.com/gabros20/walkthrough-studio
 cd walkthrough-studio
 npm run setup                 # Playwright Chromium for the recorder

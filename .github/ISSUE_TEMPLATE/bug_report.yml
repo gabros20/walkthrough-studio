@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in the kit (recorder, film build, sound, voiceover, delivery, skills, agents, site) does not work as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste client footage, credentials, saved browser logins
+        (`storageState`) or API keys. A security problem goes through private vulnerability reporting
+        instead (see SECURITY.md).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - recorder (takes, site mode, studio)
+        - film (storyboard, build.mjs, HyperFrames)
+        - sound
+        - voiceover
+        - delivery
+        - skills or agents (plugin)
+        - website (site/)
+        - docs
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, what you got.
+      placeholder: |
+        Ran `node recorder/takes/run.mjs ...` and expected ..., got ...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The smallest set of commands, ideally against a public site or the fictional Brightpost example.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: The relevant lines of the error or log (not the whole log). Rendered as code.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Kit version or commit
+      description: "`node scripts/version.mjs --current`, or `git rev-parse --short HEAD`."
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Node version, Python version, ffmpeg version, Claude Code version if the plugin is involved.
+      placeholder: |
+        macOS 15.x, Node 24.x, Python 3.13, ffmpeg 7.x, Claude Code 2.x
+    validations:
+      required: true

@@ -14,11 +14,14 @@ and read the docs their step needs. Paths: `$KIT` is the kit, `$P` a film's proj
 
 | Doc | Task |
 |---|---|
+| [INSTALL.md](INSTALL.md) | Install the skills (and agents, where the platform has them) on Claude Code, skills.sh, Codex, Cursor, Antigravity or Hermes, and get the kit tooling. |
 | [ELEVENLABS.md](ELEVENLABS.md) | Generate the music take and the voiceover take, through the connector or with an API key. |
 | [DELIVERY.md](DELIVERY.md) | Build, check and zip the delivery package (also the reference for its structure and encodes). |
 | [`skills/*/SKILL.md`](../skills/) | The agent workflows step by step: `walkthrough-film` (the whole job), `record-takes`, `build-film`, `review-film`, `film-sound`, `voiceover`, `deliver-package`. |
 | [`studio/README.md`](../studio/README.md) | Set up a studio instance, checkpoint and restore it. |
 | [`voiceover/README.md`](../voiceover/README.md) | Write, generate, place and re-fit a voiceover. |
+| [MAINTAINERS.md](MAINTAINERS.md) | Protect `main` with a ruleset, set up the repository, squash the history once, and cut a release. |
+| [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Run the checks, add a skill, agent or tool, write commits and pull requests. |
 
 ## Reference (lookup)
 
@@ -37,6 +40,7 @@ and read the docs their step needs. Paths: `$KIT` is the kit, `$P` a film's proj
 | Doc | Explains |
 |---|---|
 | [PIPELINE.md](PIPELINE.md) | How a job runs from plan to delivery, the numbers that worked, and which model tier does what. |
+| [INSTALL-RESEARCH.md](INSTALL-RESEARCH.md) | What each of the six agent platforms loads from this repo, the verified commands and output, and the compatibility matrix behind `INSTALL.md`. |
 | [CAPTURE_TEST.md](CAPTURE_TEST.md) | How the capture method was chosen, the measurements, and how to re-run the test. |
 | [LESSONS.md](LESSONS.md) | What went wrong on the first film, the fix for each, and where the fix lives. Read before planning. |
 | [ROADMAP.md](ROADMAP.md) | What is planned and not built, by value per effort. |
@@ -62,5 +66,6 @@ A decision that changes gets a new ADR that supersedes the old one; old ADRs are
 
 - [CHANGELOG.md](CHANGELOG.md): what each version contains and fixes.
 - [`examples/brightpost/`](../examples/brightpost/): the first real project, with its plan,
-  configs, storyboard, voiceover, delivery copy and agent briefs.
+  configs, storyboard, voiceover and delivery copy (the agent roles are in [`agents/`](../agents/)).
 - [`CLAUDE.md`](../CLAUDE.md): operating rules for agents in this repo.
+- [`LICENSE`](../LICENSE) (MIT), [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md), [`SECURITY.md`](../SECURITY.md).

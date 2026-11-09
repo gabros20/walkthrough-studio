@@ -5,6 +5,9 @@
   "author": {
     "name": "Tamás Gábor"
   },
+  "repository": "https://github.com/gabros20/walkthrough-studio",
+  "license": "MIT",
+  "icon": "./.claude-plugin/icon.png",
   "keywords": [
     "video",
     "walkthrough",

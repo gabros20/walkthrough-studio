@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PLUGIN = ".claude-plugin/plugin.json";
 const MARKETPLACE = ".claude-plugin/marketplace.json";
-const PACKAGES = [PLUGIN, "package.json", "recorder/package.json", "film/package.json"];
+const PACKAGES = [PLUGIN, "package.json", "recorder/package.json", "film/package.json", "site/package.json"];
 const CHANGELOG = "docs/CHANGELOG.md";
 const DEFAULT_REPO = "https://github.com/gabros20/walkthrough-studio";
 const SEMVER =

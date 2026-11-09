@@ -6,10 +6,11 @@ export function Shell({ children, className = "" }: { children: ReactNode; class
 
 /** The slanted band join: the film's wipe, led by a thin key-green bar. */
 export function Join({ from, to, flip = false }: { from: "cyc" | "ink"; to: "cyc" | "ink"; flip?: boolean }) {
-  const bg = from === "cyc" ? "bg-cyc" : "bg-ink";
   const fill = to === "cyc" ? "bg-cyc" : "bg-ink";
+  // The bottom 2px already carry the next band's colour, so no antialiased seam shows at the join.
+  const background = `linear-gradient(to bottom, var(--color-${from}) calc(100% - 2px), var(--color-${to}) 0)`;
   return (
-    <div className={`join ${flip ? "flip" : ""} ${bg}`} aria-hidden>
+    <div className={`join ${flip ? "flip" : ""}`} style={{ background }} aria-hidden>
       <i className="join-bar" />
       <i className={`join-fill ${fill}`} />
     </div>

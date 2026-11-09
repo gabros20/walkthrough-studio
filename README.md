@@ -10,7 +10,7 @@ re-cutting a scene never puts them out of sync. Music and an optional voiceover 
 and a delivery package (films, clips, stills, showcase sheets, copy) is built for the people who will present
 it. A lead agent plans and reviews; specialised agents on cheaper or stronger models do each step.
 
-Website: <https://walkthrough-studio.vercel.app> <!-- site-url -->
+Website: <https://walkthrough-studio-chi.vercel.app> (source in [`site/`](site/))
 
 ## What it produced
 

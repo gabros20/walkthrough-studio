@@ -45,3 +45,6 @@ __pycache__/
 
 # recorder tools output (inspect.mjs default)
 /inspect/
+
+# the website's four small HyperFrames visuals are part of the site source
+!site/public/visuals/*.mp4

@@ -15,6 +15,8 @@ type Props = {
   copy?: string;
   /** Space out groups: every "#" label line after the first gets a gap above it. */
   groups?: boolean;
+  /** Plain words, not commands: set in the body face at reading size (a request to an agent). */
+  prose?: boolean;
   className?: string;
 };
 
@@ -55,7 +57,7 @@ function Line({ text, prompt, wrap, gap }: { text: string; prompt: boolean; wrap
   );
 }
 
-export function CopyBlock({ code, title, prompt = false, wrap = false, copy: copyText, groups = false, className = "" }: Props) {
+export function CopyBlock({ code, title, prompt = false, wrap = false, copy: copyText, groups = false, prose = false, className = "" }: Props) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -84,13 +86,17 @@ export function CopyBlock({ code, title, prompt = false, wrap = false, copy: cop
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className={`flex-1 px-5 py-4 text-mono leading-relaxed ${wrap ? "overflow-x-auto whitespace-pre-wrap" : "overflow-x-auto"}`}>
-        <code>
-          {code.split("\n").map((l, i) => (
-            <Line key={i} text={l} prompt={prompt} wrap={wrap} gap={groups && i > 0} />
-          ))}
-        </code>
-      </pre>
+      {prose ? (
+        <p className="flex-1 px-5 py-4 text-body-lg break-words md:px-6 md:py-5">{code}</p>
+      ) : (
+        <pre className={`flex-1 px-5 py-4 text-mono leading-relaxed ${wrap ? "overflow-x-auto whitespace-pre-wrap" : "overflow-x-auto"}`}>
+          <code>
+            {code.split("\n").map((l, i) => (
+              <Line key={i} text={l} prompt={prompt} wrap={wrap} gap={groups && i > 0} />
+            ))}
+          </code>
+        </pre>
+      )}
       <span className="sr-only" aria-live="polite">
         {copied ? "Copied to clipboard" : ""}
       </span>

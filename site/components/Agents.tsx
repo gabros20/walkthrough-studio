@@ -58,7 +58,7 @@ export function Agents() {
         </div>
 
         {/* The same three tiers on the other agents the kit installs into (docs/MODELS.md). */}
-        <div className="mt-4">
+        <div id="models" className="mt-4 scroll-mt-6">
           <h3 className="heading text-heading">The same tiers on other agents</h3>
 
           <dl className="mt-5 divide-y divide-ink-line border-y border-ink-line md:hidden">

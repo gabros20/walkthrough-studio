@@ -8,10 +8,17 @@ import { BUILD_COMMANDS, CLI_COMMANDS, REPO, ROADMAP_OPEN, ROADMAP_ORDER, blob }
 
 /**
  * Version and licence of the kit, read from the repo root's package.json at build time (the page is
- * static). Falls back to the current values when the site is built without the repo around it.
+ * static). When the site is built without the repo around it (a Vercel CLI deploy uploads only
+ * site/), it falls back to site/package.json, whose version scripts/version.mjs keeps in step.
  */
 function kitMeta(): { version: string; license: string } {
-  const fallback = { version: "0.1.0", license: "MIT" };
+  let fallback = { version: "0.0.0", license: "MIT" };
+  try {
+    const own = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
+    fallback = { version: own.version ?? fallback.version, license: own.license ?? fallback.license };
+  } catch {
+    /* keep the defaults */
+  }
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), "..", "package.json"), "utf8"));
     if (pkg?.name !== "walkthrough-studio") return fallback;

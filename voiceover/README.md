@@ -5,21 +5,39 @@ carrying everything the captions said. The picture stays identical to the frame
 (`node $KIT/film/build.mjs --no-captions`); the voice is written against the picture's clock, generated
 in one take, cut into lines and placed on that clock, and the sound build ducks the music under it.
 
+There are two ways to make the voice: **one take** of the whole script, cut into lines by `place.py`
+(below, and how the example film was made), or **one request per line** with a cache
+(`tts.mjs`: rewording a line regenerates only that line). The per-line route, the pronunciation
+lexicon, language twins and the listening proxy are in [`docs/VOICE.md`](../docs/VOICE.md); both
+routes write the same `vo-track.wav`, `placement.json` and `voiceover.srt`.
+
 ```
 # from the film project folder ($KIT = the kit's root); everything lands in ./voiceover
 python3 -I $KIT/voiceover/make_script.py lines.json --out voiceover --edl edl.json --cues cues.json
 #   -> script.json, script.txt; exit 1 if a line does not fit its window
 #   TTS: script.txt -> one take (ElevenLabs connector), saved as voiceover/vo-take1.mp3
-npx --yes hyperframes@0.9.16 transcribe voiceover/vo-take1.mp3 --json > voiceover/words.json
-python3 -I $KIT/voiceover/place.py voiceover/vo-take1.mp3 voiceover/words.json --vo-dir voiceover \
+npx --yes hyperframes@0.9.16 transcribe voiceover/vo-take1.mp3 --json --dir voiceover   # -> voiceover/transcript.json
+python3 -I $KIT/voiceover/place.py voiceover/vo-take1.mp3 voiceover/transcript.json --vo-dir voiceover \
         --edl renders/final-vo.edl.json --cues renders/final-vo.cues.json --dry     # look first
 python3 -I $KIT/voiceover/place.py …same… --name my-film    # -> vo-track.wav, placement.json, voiceover.srt
 node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav \
         --deliver out/my-film-voiceover.mp4
 python3 -I $KIT/voiceover/compare-twins.py renders/final.picture-only.mp4 renders/final-vo.picture-only.mp4
+node $KIT/voiceover/listen-check.mjs out/my-film-voiceover.mp4 --vo voiceover/vo-track.wav   # measured, not heard
+
+# or per line (docs/VOICE.md): render, then assemble on the windows; no transcription or cutting
+node $KIT/voiceover/lexicon.mjs check voiceover/script.json
+node $KIT/voiceover/tts.mjs render --script voiceover/script.json --voice <voice_id>
+ELEVENLABS_MOCK=1 node $KIT/voiceover/tts.mjs render …   # rehearsal: tones, no credits, MOCK banner
 ```
 
-The tools need Python 3 with numpy (`place.py`, `compare-twins.py`), ffmpeg and ffprobe.
+A mock run (`ELEVENLABS_MOCK=1` or `=say`) is safe in the project's `voiceover/`: it caches in
+`voiceover/cache-mock/` under a key that includes the mock mode, so a real run never reuses mock audio;
+`lines/manifest.json` says `"mock"`, so a real run treats those line files as stale; and its cost rows
+carry `"mock": true` and are not folded into `state.json` (docs/VOICE.md).
+
+The tools need Python 3 with numpy (`place.py`, `compare-twins.py`), ffmpeg and ffprobe; the `.mjs`
+tools (`tts.mjs`, `lexicon.mjs`, `translate-brief.mjs`, `listen-check.mjs`) need only Node 22.
 
 ## 1. Write the script against the picture
 
@@ -66,8 +84,10 @@ window** and windows to be **at least 0.5 s apart**, lists every line that does 
 
 ## 3. Transcribe and place
 
-`npx --yes hyperframes@0.9.16 transcribe <take> --json > words.json` gives word-level timestamps
-(Parakeet when installed, else whisper; `--engine`, `--model` to choose). Check how brand names were
+`npx --yes hyperframes@0.9.16 transcribe <take> --json --dir voiceover` writes word-level timestamps to
+`voiceover/transcript.json` (Parakeet when installed, else whisper; `--engine`, `--model` to choose).
+With `--json`, stdout carries only a one-line summary (`{"ok": true, …, "transcriptPath": …}`), not the
+words: redirecting it into `words.json` gives `place.py` nothing to align. Check how brand names were
 transcribed: it is a hint to how they were pronounced.
 
 `place.py` then:
@@ -124,6 +144,9 @@ the voice:
   speech dropped). The voiceover's `.srt` is delivered beside the film.
 
 ## 6. Listening checks (a human, before it ships)
+
+`listen-check.mjs` measures first (transcript against the script per line, voice over music per line,
+clipping; docs/VOICE.md, Listening proxy). It narrows where to listen; it does not replace listening.
 
 Nobody can hear audio inside an agent session; every number above is a measurement, not a listen.
 A person listens to the whole voiceover film, on headphones and on laptop speakers, for:

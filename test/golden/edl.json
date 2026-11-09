@@ -1,0 +1,142 @@
+{
+  "fps": 30,
+  "clipFps": 30,
+  "durations": {
+    "filmTarget": {
+      "min": 8,
+      "max": 12
+    },
+    "total": 9.566666666666666,
+    "scenes": [
+      {
+        "scene": "title",
+        "target": 2,
+        "actual": 2
+      },
+      {
+        "scene": "a",
+        "target": 3.7,
+        "actual": 3.7,
+        "excised": 0
+      },
+      {
+        "scene": "b",
+        "target": 1.85,
+        "actual": 1.8666666666666667,
+        "excised": 0
+      },
+      {
+        "scene": "end",
+        "target": 2,
+        "actual": 2
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "a",
+      "start": 2,
+      "duration": 3.7,
+      "exit": "hard",
+      "ranges": [
+        {
+          "srcIn": 0.6,
+          "srcOut": 1.9,
+          "filmIn": 0,
+          "filmDur": 1.2999999999999998,
+          "rate": 1,
+          "timelapse": null,
+          "range": 0
+        },
+        {
+          "srcIn": 1.9,
+          "srcOut": 2.2333333333333334,
+          "filmIn": 1.3,
+          "filmDur": 0.8,
+          "rate": 0.41666666666666685,
+          "timelapse": null,
+          "range": 1
+        },
+        {
+          "srcIn": 2.2333333333333334,
+          "srcOut": 2.5,
+          "filmIn": 2.1,
+          "filmDur": 0.2666666666666666,
+          "rate": 1,
+          "timelapse": null,
+          "range": 2
+        },
+        {
+          "srcIn": 3.7,
+          "srcOut": 5.033333333333333,
+          "filmIn": 2.3666666666666667,
+          "filmDur": 1.333333333333333,
+          "rate": 1,
+          "timelapse": null,
+          "range": 3
+        }
+      ],
+      "excised": [],
+      "gapsAccepted": []
+    },
+    {
+      "id": "b",
+      "start": 5.7,
+      "duration": 1.8666666666666667,
+      "exit": "hard",
+      "ranges": [
+        {
+          "srcIn": 5.966666666666667,
+          "srcOut": 6.833333333333333,
+          "filmIn": 0,
+          "filmDur": 0.8666666666666663,
+          "rate": 1,
+          "timelapse": null,
+          "range": 0
+        },
+        {
+          "srcIn": 6.833333333333333,
+          "srcOut": 7.466666666666667,
+          "filmIn": 0.8666666666666667,
+          "filmDur": 0.5,
+          "rate": 1.2666666666666675,
+          "timelapse": {
+            "label": "Scrolling",
+            "duration": 0.5
+          },
+          "range": 1
+        },
+        {
+          "srcIn": 7.466666666666667,
+          "srcOut": 7.966666666666667,
+          "filmIn": 1.3666666666666667,
+          "filmDur": 0.5,
+          "rate": 1,
+          "timelapse": null,
+          "range": 2
+        }
+      ],
+      "excised": [],
+      "gapsAccepted": []
+    }
+  ],
+  "pointerTreatments": [
+    {
+      "scene": "a",
+      "at": 4.367,
+      "cut": "a range 3→4",
+      "kind": "fade",
+      "px": 715,
+      "by": "auto"
+    },
+    {
+      "scene": "b",
+      "at": 5.7,
+      "cut": "a→b",
+      "kind": "bridge",
+      "px": 142,
+      "by": "auto",
+      "seconds": 0.35
+    }
+  ]
+}

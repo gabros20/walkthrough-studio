@@ -13,6 +13,8 @@ type Props = {
   wrap?: boolean;
   /** What the Copy button copies, when it differs from what the block shows. */
   copy?: string;
+  /** Space out groups: every "#" label line after the first gets a gap above it. */
+  groups?: boolean;
   className?: string;
 };
 
@@ -32,9 +34,9 @@ export function Words({ text }: { text: string }) {
   );
 }
 
-function Line({ text, prompt, wrap }: { text: string; prompt: boolean; wrap: boolean }) {
+function Line({ text, prompt, wrap, gap }: { text: string; prompt: boolean; wrap: boolean; gap: boolean }) {
   // Whole-line and trailing shell comments render muted; JSON and JS lines render as-is.
-  if (text.startsWith("#")) return <span className="block text-muted-ink">{text}</span>;
+  if (text.startsWith("#")) return <span className={`block text-muted-ink ${gap ? "mt-3" : ""}`}>{text}</span>;
   const hash = text.indexOf("  #");
   const body = hash >= 0 ? text.slice(0, hash) : text;
   const comment = hash >= 0 ? text.slice(hash) : "";
@@ -53,7 +55,7 @@ function Line({ text, prompt, wrap }: { text: string; prompt: boolean; wrap: boo
   );
 }
 
-export function CopyBlock({ code, title, prompt = false, wrap = false, copy: copyText, className = "" }: Props) {
+export function CopyBlock({ code, title, prompt = false, wrap = false, copy: copyText, groups = false, className = "" }: Props) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -85,7 +87,7 @@ export function CopyBlock({ code, title, prompt = false, wrap = false, copy: cop
       <pre className={`flex-1 px-5 py-4 text-mono leading-relaxed ${wrap ? "overflow-x-auto whitespace-pre-wrap" : "overflow-x-auto"}`}>
         <code>
           {code.split("\n").map((l, i) => (
-            <Line key={i} text={l} prompt={prompt} wrap={wrap} />
+            <Line key={i} text={l} prompt={prompt} wrap={wrap} gap={groups && i > 0} />
           ))}
         </code>
       </pre>

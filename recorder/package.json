@@ -1,6 +1,6 @@
 {
   "name": "walkthrough-recorder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Records cursor-free app takes with an action log (events.json) for the walkthrough film build.",
@@ -24,7 +24,8 @@
     "remux": "node remux.mjs",
     "retime": "node retime.mjs",
     "index": "node takes/index-data.mjs",
-    "inspect": "node tools/inspect.mjs"
+    "inspect": "node tools/inspect.mjs",
+    "explore": "node tools/explore.mjs"
   },
   "dependencies": {
     "playwright-core": "1.62.1"

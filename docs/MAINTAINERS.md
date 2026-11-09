@@ -62,7 +62,8 @@ Save the payload as `ruleset-main.json`:
         "do_not_enforce_on_create": false,
         "required_status_checks": [
           { "context": "check", "integration_id": 15368 },
-          { "context": "site", "integration_id": 15368 }
+          { "context": "site", "integration_id": 15368 },
+          { "context": "test", "integration_id": 15368 }
         ]
       }
     }

@@ -42,6 +42,11 @@ export const DEFAULTS = Object.freeze({
   // click (and a mark of an element near the edge) the recorder wheel-scrolls the element inside
   // it, so the film's crop never cuts it. on: which actions do this automatically.
   safeArea: { top: 0, bottom: 120, on: ["click", "mark"] },
+  // A page that opens a new tab or window: "same-tab" turns it into a navigation of the same page,
+  // "follow" moves the screencast to the new page (a hard cut), "block" closes it. Logged as nav.
+  popups: "same-tab",
+  // alert / confirm / prompt / beforeunload: answered at once ("accept" | "dismiss") and logged.
+  dialogs: "accept",
   takesDir: "./takes",
   runnerDir: null, // default <takesDir>/_runner
   adapter: null, // module path, optional
@@ -72,6 +77,7 @@ const ENV = {
   WALKTHROUGH_STORAGE: "storageState",
   WALKTHROUGH_MODE: "session.mode",
   WALKTHROUGH_VIEWPORT: "viewport",
+  WALKTHROUGH_POPUPS: "popups",
   WALKTHROUGH_ADAPTER: "adapter",
   WALKTHROUGH_SCENES: "scenes",
   STUDIO_CONFIG: "studio.config",
@@ -161,6 +167,8 @@ export function sessionOptions(c, extra = {}) {
     blockUrls: c.blockUrls,
     dismiss: c.dismiss,
     safeArea: c.safeArea,
+    popups: c.popups,
+    dialogs: c.dialogs,
     ...extra,
   };
 }

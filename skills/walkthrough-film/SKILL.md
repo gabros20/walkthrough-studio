@@ -1,6 +1,6 @@
 ---
 name: walkthrough-film
-description: Master workflow for making a Screen-Studio-style walkthrough or tour video of any web app or website with agents, with on-screen captions or an ElevenLabs voiceover (or both twins from one picture lock). Two entry modes - studio mode for an app you own (isolated clone, own data, checkpoints) and site mode for any URL (no studio; saved login, consent-banner dismissal, generic waits). Covers plan, capture test, scripted takes with an invisible mouse and action log, HyperFrames edit with a drawn pointer, camera punch-ins and event-anchored captions, review loop, picture lock, music and SFX, voiceover, and a delivery package; which specialised agent and model tier does each step; the review gates and honesty rules. Use when asked for an app walkthrough, product tour, feature demo, onboarding video, stakeholder or client presentation video of an app or site, or to remake/extend one made with this kit.
+description: Master workflow for making a Screen-Studio-style walkthrough or tour video of any web app or website with agents, with on-screen captions or an ElevenLabs voiceover (or both twins from one picture lock), driven by the `walkthrough` CLI. Two entry modes - studio mode for an app you own (isolated clone, own data, checkpoints) and site mode for any URL (no studio; saved login, consent-banner dismissal, generic waits). Covers plan, tour map, capture test, scripted takes with an invisible mouse and action log, HyperFrames edit with a drawn pointer, camera punch-ins and event-anchored captions, 16:9, 9:16 or 1:1 films, review bundle and loop, picture lock, music and SFX, voiceover (picture-first or voice-first), and delivery presets; which specialised agent and model tier does each step; the review gates and honesty rules. Use when asked for an app walkthrough, product tour, feature demo, onboarding video, stakeholder or client presentation video of an app or site, or to remake/extend one made with this kit.
 ---
 
 # Walkthrough film
@@ -17,16 +17,55 @@ only this file (skills.sh): ask the user to run
 Without sub-agents (most platforms other than Claude Code), do each named agent's role yourself from
 `$KIT/agents/<name>.md`.
 
-Run kit commands from `$KIT` (or with absolute paths). Keep the project's own files (walkthrough config,
-scenes, takes, brand, storyboard, voiceover, package config) in the user's project and pass them with
-`--config`, `--takes`, `--brand` and file arguments. Run `npm run setup` in `$KIT` once (Playwright Chromium
-for the recorder and the PDF step).
+One film is one **project folder** outside the kit (recorder config, scenes, takes, brand, storyboard,
+voiceover, renders, `state.json`); the kit is never written to. Run `npm run setup` in `$KIT` once
+(Playwright Chromium for the recorder and the PDF step).
 
-Docs (read the ones your step needs, not all): `docs/PIPELINE.md` (the pipeline and its numbers),
-`docs/LESSONS.md` (read once before planning), `docs/CONTRACT.md`, `docs/CAPTURE_TEST.md`,
-`docs/STORYBOARD.md`, `docs/LOOK.md`, `docs/DELIVERY.md`, `docs/ROADMAP.md` (what is planned, not built).
+Docs (read the ones your step needs, not all): `docs/CLI.md` (every command, what it writes, the state
+file), `docs/PIPELINE.md` (the pipeline and its numbers), `docs/LESSONS.md` (read once before planning),
+`docs/CONTRACT.md`, `docs/CAPTURE_TEST.md`, `docs/STORYBOARD.md`, `docs/LOOK.md`, `docs/CAPTIONS.md`,
+`docs/REVIEW.md`, `docs/VOICE.md`, `docs/DELIVERY.md`, `docs/ROADMAP.md` (what is open).
 Worked example (studio mode, both twins): `examples/brightpost/` (`PLAN.md`, configs, storyboard,
 voiceover, delivery; agent roles in `agents/*.md`).
+
+## The CLI flow (default)
+
+`walkthrough` (`node $KIT/bin/walkthrough.mjs`; alias it) wraps every tool, finds the project from the
+current folder (or `--project <dir>`), prints the exact command it runs (`› …`) and records takes, captions,
+builds, renders, reviews, sound, voice, deliveries and costs in the project's `state.json`, so a new session
+resumes with `walkthrough state`. The order of one film:
+
+```bash
+walkthrough init <dir> --mode site|studio --url <baseUrl>   # project scaffold; cd into it
+walkthrough doctor [--capture]                    # tools, skills, disk, keys, config; fix every fail
+walkthrough studio up | checkpoint CP0            # studio mode only
+walkthrough explore [url]                         # tour map + scenes.draft.json -> edit into scenes.json
+walkthrough take --auto                           # or go files; --parallel N in site mode
+walkthrough draft                                 # storyboard.json from the accepted takes
+walkthrough captions brief / captions apply       # the tool briefs, an agent writes captions.answers.json
+walkthrough build --dry --audit                   # durations, pointer treatments, audit; repeat to clean
+walkthrough render [--name final]                 # disk policy, sidecars copied, state.renders
+walkthrough review                                # review/<name>/: sheets, cut strips, audit, REVIEW.md, index.html
+walkthrough state lock                            # picture lock
+walkthrough sound music | beat-grid | build --deliver out/<film>.mp4
+walkthrough vo tts | assemble | listen-check …     # voiceover twin
+walkthrough deliver --preset sales|web|social|docs --video out/<film>.mp4
+```
+
+The by-hand commands in each step skill are the fallback (no CLI, a flag the CLI does not pass, or
+debugging): they are what the `›` lines print. Choices that change the plan:
+
+- **Aspect**: `look.aspect` `"16:9"` (default), `"9:16"` or `"1:1"` in `brand.json` or the storyboard's
+  `look` (or `build --aspect`). 9:16 needs takes recorded with `viewport: "phone"`; a phone take gets a
+  neutral device bezel (`look.bezel: false` turns it off). Numbers: `docs/LOOK.md` "Aspect presets".
+- **Pointer at cuts**: the build bridges or fades jumps by itself (`"pointerAtCuts": "auto"`); set
+  `bridge`, `fade` or `none`, or per cut `"pointer"` on an exit, only to overrule it.
+- **Voice-first**: picture-first is the default. When the narration leads (tutorials), place the voice
+  first and build with `--fit-audio voiceover/placement.json` (or `"fitAudio"` in the storyboard): the
+  film holds rest moments until each line fits (`docs/STORYBOARD.md` "Script-first timing").
+- **Outputs**: delivery presets `sales` (the full package), `web` (encodes, poster, VTT, chapters),
+  `social` (clips under 60 s, captions burned, a 9:16 render when there is one), `docs` (10-30 s clips and
+  GIFs per feature). Scene `"group"`s in the storyboard decide the features.
 
 ## Prerequisite skills
 
@@ -52,8 +91,8 @@ with `npx --yes hyperframes@0.9.16 render` still works.
 
 Both modes use the same recorder, take format (`walkthrough-take/1`), film kit, sound, voiceover and delivery.
 Pick the viewport preset early (`viewport: "desktop"` = 1440x810 @2, the default; `"phone"` = 390x844 @3 with
-mobile emulation): it fixes the
-capture size and the film's framing. Use `scrollIntoViewSafe` for every target near a viewport edge, and
+mobile emulation): it fixes the capture size, the film's framing and which aspects are possible (a 9:16 film
+needs phone takes). Use `scrollIntoViewSafe` for every target near a viewport edge, and
 `mark` the elements captions talk about (marks carry the element's visible text, which the caption audit
 checks against). Exact config keys: `recorder/` docs and `docs/CONTRACT.md`.
 
@@ -65,7 +104,8 @@ checks against). Exact config keys: `recorder/` docs and `docs/CONTRACT.md`.
 | Pacing | holds sized for reading: ≥ 0.5 s + 0.3 s per word, last line ≥ 2.5 s | holds sized for speech: 2.4 words/s + 0.35 s per line, 15% spare, pauses at reveals |
 | Plays muted | yes (decks, autoplay on web pages) | no |
 | Build | `build.mjs` normally | the same storyboard with `--no-captions`: identical picture timing |
-| Extra steps | none | script, one paid TTS take, placement, ducked mix |
+| Extra steps | none | script, TTS (one take, or per line with a cache), placement, ducked mix |
+| Voice-first | n/a | lines placed back to back, then `build --fit-audio` makes room for them |
 
 If the owner wants both (the first film shipped both and let the client choose): size each hold for the
 slower of the two at that moment, lock the picture once, render the captioned film and the `--no-captions`
@@ -107,6 +147,10 @@ voiceover fit check → render both once.
 | Masters, clips, stills | `delivery-packager` media mode | sonnet | at delivery |
 | Showcase, copy, README | `delivery-packager` copy mode | opus | at delivery, in parallel |
 
+The tiers are Claude names. On Codex, Antigravity, Cursor or Hermes use the equivalents in
+`docs/MODELS.md` (large / medium / small, with each platform's model and effort setting); the rule
+is the same: spend by task, and one large-model review of the small models' work.
+
 Rules: the cheapest model that can do a step reliably; an Opus critic checks the small models' output; critical
 reviews are never skipped. Name each agent so you can message it later. Brief each like a peer: goal, paths,
 what to read first, hard rules, what to build, checks before reporting, report format. Ask for long reports as
@@ -116,22 +160,25 @@ the kit; the built-in `Explore` and `Plan` rows become your own read-only survey
 
 ## Workflow
 
-- [ ] **0. Preflight.** Free disk (renders need 3-8 GB of frame cache; if a step would leave < 5 GB, use an
-  external buffer for render caches only). Node 24, ffmpeg 8, Python 3 with numpy and Pillow, `npm run setup`
-  (Playwright Chromium), `npx hyperframes@0.9.16`, the `/hyperframes`, `/media-use` and `/hyperframes-cli`
-  skills (see "Prerequisite skills"), ElevenLabs
-  connector or key (names only). Studio mode: note the owner's dev-server ports.
-- [ ] **1. Decide** mode, viewport preset, captions / voiceover / both, target length (3:00-3:15 worked; take
-  the owner's number when given). Defaults when the owner does not say: site mode for a URL you do not run,
-  `desktop`, captions only (voiceover when they ask for a voice), the kit's neutral brand when no brand files
-  exist.
+- [ ] **0. Preflight.** `walkthrough init <dir>` then `walkthrough doctor` (Node 22+, ffmpeg with libx264
+  and drawtext, Python 3 with numpy and Pillow, `npx hyperframes@0.9.16`, Playwright Chromium, the
+  `/hyperframes`, `/media-use` and `/hyperframes-cli` skills (see "Prerequisite skills"), free disk and the
+  `buffer`, `ELEVENLABS_API_KEY` by name only, the project config). Renders need 3-8 GB of frame cache; set
+  `buffer` in `walkthrough.config.mjs` to an external drive when the disk is short (the CLI spills to it).
+  Studio mode: note the owner's dev-server ports.
+- [ ] **1. Decide** mode, viewport preset, aspect, captions / voiceover / both (and picture-first or
+  voice-first), target length (3:00-3:15 worked; take the owner's number when given), the delivery presets.
+  Defaults when the owner does not say: site mode for a URL you do not run, `desktop`, 16:9, captions only
+  (voiceover when they ask for a voice), picture-first, the kit's neutral brand when no brand files exist,
+  `sales` for a client package.
 - [ ] **2. Plan.** Explore agents map features, selectors, limits and blockers (site mode:
-  `node recorder/tools/inspect.mjs --config <config> --path /page` and `recorder/tools/explore.mjs` for
-  screens, controls and boxes, read-only). Write the plan: story table with
+  `walkthrough explore` for the tour map, `tour-map.md` and `scenes.draft.json`, and
+  `node recorder/tools/inspect.mjs --config <config> --path /page` for one page, read-only). Write the plan: story table with
   film times and caption or narration drafts, look numbers, pointer/camera/caption rules, takes, sound,
   verification, risks, order, cost. Plan agent stress-tests it. **Gate: owner approves.**
-- [ ] **3. Instance.** Studio mode: `studio-builder` builds it and CP0. Site mode: copy `recorder/site-test/`'s config
-  and `scenes.json` into the project, log in once with the test account if the site needs one
+- [ ] **3. Instance.** Studio mode: `studio-builder` builds it and CP0 (`walkthrough studio up`, `studio
+  checkpoint CP0`). Site mode: edit the scaffold's `walkthrough.config.mjs` and turn `scenes.draft.json`
+  into `scenes.json`, log in once with the test account if the site needs one
   (`recorder/tools/save-login.mjs`), list the banners to dismiss, confirm the URL loads clean (`inspect.mjs`).
 - [ ] **4. Capture test.** `take-operator` runs it; **gate: you accept the method and frame rate** (60 fps only
   if it holds honestly, else 30 throughout). Meanwhile `film-editor` prepares brand assets and components.
@@ -139,18 +186,23 @@ the kit; the built-in `Explore` and `Plan` rows become your own read-only survey
   the plan to what the app or site actually does.
 - [ ] **6. Takes** (skill `record-takes`). While recording nothing heavy runs (editor: code and `--dry` only).
   Studio mode: if the app changes, stop, re-sync, rebuild, re-record. **Gate: truth checks in INDEX.md pass.**
-- [ ] **7. Edit** (skill `build-film`): draft storyboard from `events.json` → refine → build → render → audit.
-- [ ] **8. Review loop** (skill `review-film`): audit, describers, critic, your numbered rulings, editor fixes.
-  Repeat until the must-fix list is empty. App bugs (studio mode) go to `app-fixer`, then a retake.
-- [ ] **9. Picture lock.** `build.mjs --audit` clean, `hyperframes check` clean, durations in range. Render
-  the captioned film and, if wanted, the `--no-captions` twin from the same lock. Show the owner a preview.
-- [ ] **10. Music** (skill `film-sound`, `docs/ELEVENLABS.md`): you generate the bed (one call; film length + 2 s); `sound-designer`
-  builds bed, SFX and mix; **gate: `delivered:` line** for each twin.
-- [ ] **11. Voiceover** (skill `voiceover`), if chosen: script → one TTS take → placement → ducked mix.
+- [ ] **7. Edit** (skill `build-film`): `walkthrough draft` → refine → `captions brief` / agent / `captions
+  apply` → `build --dry --audit` → `render`.
+- [ ] **8. Review loop** (skill `review-film`): `walkthrough review` (the bundle), describers on its sheets,
+  critic on the bundle, your numbered rulings, editor fixes. Repeat until the must-fix list is empty. App
+  bugs (studio mode) go to `app-fixer`, then a retake. Send the owner `review/<name>/index.html` for notes.
+- [ ] **9. Picture lock.** `build --audit` clean, `hyperframes check` clean, durations in range;
+  `walkthrough state lock`. Render the captioned film and, if wanted, the `--no-captions` twin (and a 9:16
+  version for social) from the same lock. Show the owner a preview.
+- [ ] **10. Music** (skill `film-sound`, `docs/ELEVENLABS.md`): you generate the bed once (`walkthrough sound
+  music` with a key, else the connector; film length + 2 s); `sound-designer` measures the grid and builds
+  bed, SFX and mix; **gate: `delivered:` line** for each twin.
+- [ ] **11. Voiceover** (skill `voiceover`), if chosen: script → TTS (`walkthrough vo tts`, cached per line,
+  or one take) → placement → ducked mix → `vo listen-check` (measured, not heard).
 - [ ] **12. Owner review.** Fix notes: retake (from the right checkpoint in studio mode), re-frame, dry run,
   voiceover fit check, re-render the twins once, re-run sound.
-- [ ] **13. Delivery** (skill `deliver-package`): two packager agents in parallel; you review the hero sheet,
-  a few stills, the README; verify; zip.
+- [ ] **13. Delivery** (skill `deliver-package`): `walkthrough deliver --preset …` per output; for `sales`,
+  two packager agents in parallel; you review the hero sheet, a few stills, the README; verify; zip.
 - [ ] **14. Hand over.** Paths, durations, loudness numbers, known flaws with times, listening checks for a
   human, the open licence check for generated media, what is not in git.
 
@@ -162,3 +214,6 @@ the kit; the built-in `Explore` and `Plan` rows become your own read-only survey
 - When picture timing changes after the voiceover exists: dry run → VO fit check → render once.
 - Before claiming anything is done, run its check (capture checks, `build.mjs --audit`, `hyperframes check`,
   `delivered:`, `delivery/verify.py`) and read the output.
+- `walkthrough render` takes the build flags (`--aspect`, `--fit-audio`, `--fit-gap`, `--fit-max`, `--brand`,
+  `--takes`) and rebuilds when the build on disk differs from them, printing each input that changed. Give
+  `render` the flags you built with, or keep `look.aspect` and `fitAudio` in the storyboard.

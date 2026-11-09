@@ -1,6 +1,6 @@
 # ElevenLabs: music and voice
 
-*Mode: how-to. Generating the music take and the voiceover take, by connector or API key. Paths: `$P` is the film's project folder, `$KIT` the kit. What happens to the files next: `sound/README.md`, `voiceover/README.md`.*
+*Mode: how-to. Generating the music take and the voiceover take, by connector or API key. Paths: `$P` is the film's project folder, `$KIT` the kit. What happens to the files next: `sound/README.md`, `voiceover/README.md`, `docs/VOICE.md`.*
 
 How the first film's music bed and voiceover were generated, and how to do the same without the connector.
 The lead makes every generation call itself, one call per asset. Sub-agents cannot reach the claude.ai
@@ -64,14 +64,46 @@ Tool names are those of the connector. Which models exist varies by workspace, s
    ```
    Then hand the path to the voiceover producer for transcription and placement (skill `voiceover`).
 
+### Speech, line by line
+
+`node $KIT/voiceover/tts.mjs render … --voice <id>` without a key writes `voiceover/lines/<nn>.txt` for every
+line not in the cache and prints these steps with the exact file names: one `creative_generate_speech` per
+listed line (same flow, same voice, model `eleven_v4`, `text` = the file's contents), download each to its
+`voiceover/lines/<nn>.mp3`, then `tts.mjs assemble`. Each call makes two takes by default and charges, so use
+it for the few lines that changed, not for a first full read (`docs/VOICE.md`).
+
 ## API-key route (no connector)
 
 Verify against the current docs before relying on these. They were checked against the ElevenLabs API
 reference on 9 November 2026 (`POST /v1/music`, `POST /v1/text-to-speech/{voice_id}`, `GET /v2/voices`,
-header `xi-api-key`). The music endpoint's default model was `music_v1`, which is marked deprecated, so pass
-a current music model id from the models page.
+header `xi-api-key`). The music endpoint's `model_id` takes `music_v1`, `music_v2` or `music_v2_5`; its
+default, `music_v1`, is deprecated (removal announced for 31 January 2027), so the scripts pass `music_v2_5`.
+Its `output_format` defaults to `auto` (an MP3: 44.1 kHz/128 kbps for v1 models, 48 kHz/192 kbps for v2).
 
 Keep the key in your environment (`ELEVENLABS_API_KEY`), never in a file in the repo.
+
+### Scripted (the kit's tools)
+
+Both scripts call the API with `fetch` (no dependencies), never print the key, check that the answer is
+audio before saving it, append a cost row the CLI folds into `state.json`, and fall back to printing the
+connector steps when no key is set. `ELEVENLABS_MOCK=1` prints every request (key redacted) and returns a
+local file instead, so they can be tested without network or credits.
+
+```bash
+# speech, one request per line, cached by text (docs/VOICE.md)
+node $KIT/voiceover/tts.mjs render --script $P/voiceover/script.json --voice <voice_id> --out $P/voiceover
+#   = walkthrough vo tts --voice <voice_id>
+# music, one take; never overwrites an existing take (sound/README.md)
+node $KIT/sound/generate-music.mjs --prompt-file $P/music.prompt.txt --seconds 197 --instrumental --out $P/music-take1.mp3
+#   = walkthrough sound music --prompt-file music.prompt.txt   (seconds from the last render + 2)
+```
+
+| Script | Request | Cost row (`kind`, `units`) |
+|---|---|---|
+| `voiceover/tts.mjs render` | `POST /v1/text-to-speech/{voice_id}?output_format=mp3_44100_128`, `{ text, model_id: "eleven_v4" }`, per cache miss | `tts`, characters sent → `voiceover/cost.jsonl` |
+| `sound/generate-music.mjs` | `POST /v1/music`, `{ prompt, music_length_ms, model_id: "music_v2_5", force_instrumental }` | `music`, seconds asked → `sound-build/cost.jsonl` |
+
+### By hand (curl)
 
 ```bash
 # list voices (search by name)

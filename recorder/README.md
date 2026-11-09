@@ -18,6 +18,7 @@ npx playwright-core install chromium         # Chromium build 1234 (~250 MB, in 
 npm run sample-take                          # ~15 s take of pages/sample.html -> ../takes/sample/
 node verify-dot.mjs ../takes/sample          # pointer-sync check: "pass": true
 npm run site-test                            # site mode end to end (add -- --viewport phone for the phone preset)
+npm run explore -- <url> --max-pages 3       # tour map of a site (see "Tour map")
 ```
 
 Takes go to the config's `takesDir`, else `$WALKTHROUGH_TAKES`, else `takes/` at the repo root (git-ignored). Never inside `recorder/takes/`, which is code.
@@ -53,11 +54,11 @@ Raw frames are slotted by the browser's own timestamps (`slot = round((ts - T0) 
 | `verify-dot.mjs` | pointer-sync check on a calibration take |
 | `capture-test.mjs` | the capture-quality test (`docs/CAPTURE_TEST.md`) |
 | `sample-take.mjs` | records the sample take on `pages/sample.html` |
-| `site-test.mjs`, `site-test/` | site-mode check: serves `pages/site.html` locally and records `site-test/scenes.json` (desktop or `--viewport phone`) |
+| `site-test.mjs`, `site-test/` | site-mode check: serves `pages/` locally and records the two scenes of `site-test/scenes.json` (desktop or `--viewport phone`; `--popups`, `--dialogs`, `--parallel 2` for the other policies and parallel takes) |
 | `tools/inspect.mjs` | screenshot + outline of interactive elements at the take viewport, optionally signed in (no recording) |
-| `tools/explore.mjs` | `withSession(fn, { state })` and `outline(page)` for one-off exploration scripts |
+| `tools/explore.mjs` | the tour map (below): crawl a site, write `tour-map.json`/`.md`, thumbnails and `scenes.draft.json`; also exports `withSession(fn, { state })` and `outline(page)` for one-off exploration scripts |
 | `tools/save-login.mjs` | site mode: open a visible browser at the sign-in page, the owner signs in, save the storage state (`--url --until --out`) |
-| `pages/` | synthetic test pages (`sample.html`, `counter.html`) |
+| `pages/` | synthetic test pages (`sample.html`, `counter.html`, `site.html` and `specs.html` for the site test) |
 
 ## The project interface
 
@@ -80,6 +81,8 @@ export default {
   blockUrls: [],                           // glob strings or RegExps; matching requests are aborted (analytics, chat widgets)
   dismiss: [],                             // targets clicked off camera, if visible, before each take's start flashes (cookie banners)
   safeArea: { top: 0, bottom: 120, on: ["click", "mark"] }, // safe band in CSS px; see scrollIntoViewSafe; null = off
+  popups: "same-tab",                      // new tabs/windows: "same-tab" | "follow" | "block" (below); WALKTHROUGH_POPUPS, --popups
+  dialogs: "accept",                       // alert/confirm/prompt/beforeunload: "accept" | "dismiss"; --dialogs
   session: {
     mode: "new",                           // new | shell | headed; WALKTHROUGH_MODE, --mode
     heartbeat: true,                       // 1 px compositor heartbeat: makes capture gaps measurable
@@ -189,7 +192,29 @@ What site mode adds to every take:
 
 - **`blockUrls`**: requests matching a glob or RegExp are aborted for the whole session (analytics beacons, chat widgets, consent managers that re-open).
 - **`dismiss`**: before each take's start flashes, each target that is visible is clicked off camera (cookie and consent banners), and the mouse is put back. `take.json` lists what was clicked under `dismissed`.
+- **`popups`**: what happens when the page opens a new tab or window (`target=_blank` links and forms, `window.open`). `"same-tab"` (default): an init script turns it into a navigation of the same page before it happens, so the screencast never loses the page; the `nav` event carries `popup: "same-tab"`. `"follow"`: the new tab opens and the screencast moves to it mid-take (one master, one clock); the `nav` event has `newTab: true` and the editor sees a hard cut; when that tab closes the recorder returns to the opener. `"block"`: the new tab is closed at once and logged with `popup: "blocked"`. Use `follow` only when the new tab is the point (an export preview); `same-tab` gives smoother footage.
+- **Downloads**: a file the page downloads during a take is saved to `<take>/downloads/` and logged as a `download` event (label of the step that caused it, filename, bytes), so a caption can claim it. Downloads outside a take are discarded.
+- **`dialogs`**: alert, confirm, prompt and beforeunload are answered at once (`"accept"`, the default, or `"dismiss"`) and logged as `dialog` events (kind, message, action). A take never hangs on one. Headless Chromium draws no dialog box, so the footage does not show it.
 - **`storageState`**: a Playwright storage-state JSON (cookies, localStorage) to start signed in or with consent already given. Make one with `node recorder/tools/save-login.mjs --url <sign-in page> --until <URL part seen after sign-in> --out <project>/login.storage.json`: a visible browser opens, the owner signs in by hand with the test account, and the state is saved when the URL matches. Keep it out of git; it is a credential.
+
+### Tour map: explore a site before writing scenes
+
+```
+node recorder/tools/explore.mjs <url> [--config walkthrough.config.mjs] [--depth 2] [--max-pages 20]
+     [--storage state.json] [--viewport desktop|phone] [--out <dir>] [--delay 300] [--ignore-robots]
+walkthrough explore [url] [...]          (the same, written into the project folder)
+```
+
+A breadth-first crawl of same-site links from `<url>` (default: the config's `baseUrl`), to `--depth` hops and at most `--max-pages` pages, one page at a time with `--delay` ms between them. It never clicks, types or submits; it does not follow download, mail, other-site, hash-only, or sign-out and destructive links (a signed-in crawl must not sign itself out), and it honours `robots.txt` for `*` unless `--ignore-robots`. The config's viewport, `storageState`, `blockUrls` and `dismiss` apply (banners are clicked away on every page). Output, in `--out` (default: the current folder):
+
+| File | Contents |
+|---|---|
+| `tour-map.json` | schema `walkthrough-tour-map/1`: start URL, options, and per page `url`, `title`, `status`, `depth`, `from`, `landmarks`, `headings` (h1-h3), `controls` (the visible interactive nodes of the accessibility tree, at most 80: `role`, `name`, `text` (80 characters), `href`, `box` in CSS px from the page top at scroll 0, `inView`, `landmark`), `thumb`; then `skipped` links with the reason and `unvisited` URLs left when the page cap was hit |
+| `tour-map.md` | the same for reading: one section per page, controls as a table |
+| `thumbs/<n>.jpg` | the first viewport of page n, 480 px wide |
+| `scenes.draft.json` | one declarative scene per page: `nav` to it, `wait quiet`, `mark` of the h1 (label `headline`), clicks on up to 5 primary controls (buttons first, then links in the navigation or header, which are on every page; on a page with neither, one same-site link from the first screen), `hold`. Controls named like delete, remove, pay, checkout, buy, sign out, consent buttons and send/submit buttons are never clicked and are listed under `_skipped` with the reason |
+
+The draft is a starting point the agent edits into `scenes.json`: cut and reorder, add typing and scrolling, replace the first `nav` with `start` to open the page off camera. The drafted scenes of the site-test page record as they are. Limits: it follows links only, so screens reached by clicking (dialogs, tabs, client-side routes without links) are not mapped; a single-page app that routes without `<a href>` maps as one page.
 
 ### Built-in waits and scrolling
 
@@ -202,6 +227,7 @@ What site mode adds to every take:
 
 ```
 node recorder/takes/run.mjs --config path/to/walkthrough.config.mjs [scene ...] [--from N] [--to N] [--auto] [--fresh]
+     [--popups same-tab|follow|block] [--dialogs accept|dismiss] [--parallel N]
 ```
 
 It opens one session and records the selected scenes in order. After each take it writes `<runnerDir>/status-N.json` (ok, sync, gaps, warnings, truth, unique fps, contact sheet path) and `<take>/verify/sheet.jpg`, then waits for `<runnerDir>/go-N.json`:
@@ -215,6 +241,8 @@ It opens one session and records the selected scenes in order. After each take i
 This is the loop that worked: an agent (or a person) reads the status and the contact sheet, then decides. `--auto` skips the go files: continue while takes pass, checkpoint where a scene names one, stop on the first failure. Values decided between takes go in `<runnerDir>/ctx-override.json` (merged into `ctx` before each take). The scenes module is re-imported before every take, so a script fix needs no restart. Starting at a later scene resumes with the saved `ctx.json` and reloads the app first.
 
 A take is `ok` when the scene did not throw, `masterSync.pass` is true and the longest capture gap outside waits is at most `gate.maxGapMs` (100 ms). On a real app, some re-layouts stall capture for 100-260 ms whatever you do (`docs/CAPTURE_TEST.md`); in the first client walkthrough seven of nine accepted takes had such a stall and were kept, with the stall listed in `takes/INDEX.md`. With go files a reviewer makes that call; with `--auto`, raise `gate.maxGapMs` or the run stops at the first such take.
+
+**Parallel takes** (`--parallel N`, site mode only): the selected scenes are recorded N at a time as independent takes, each in its own browser (own context, cookies and screencast) and its own take folder, starting from a fresh page (the scene's `start`, else `baseUrl` + `reload.path`) with its own `ctx`. `--auto` is implied (no go files; after a failure no new take starts). Browsers launch one at a time, captures run together, and each master is encoded only when no take is capturing, so an encode never takes CPU from another take's screencast. The runner refuses `--parallel` when the config has a `studio`: the takes would share one database and one app state. It starts no servers, so all takes use the config's `baseUrl`. Two screencasts at 2880x1620 load the machine: on the site test, two takes took 31 s instead of 58 s in sequence with both masters in sync, but expect longer capture gaps (raise `gate.maxGapMs` or record in sequence on a busy machine).
 
 Standalone take scripts (one pickup take, no runner) use the same pieces directly; see `examples/brightpost/take-5b.mjs`.
 

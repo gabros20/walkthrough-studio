@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+{{CSS}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 id="title">{{TITLE}}</h1>
+  <div class="facts" id="facts"></div>
+</header>
+<noscript><p style="padding:0 20px">This page needs JavaScript for the findings table and notes. Everything it shows is also in REVIEW.md, audit.md and the sheets/ and cuts/ folders beside it.</p></noscript>
+
+<main class="layout">
+  <div class="player">
+    <div class="panel">
+      <video id="film" src="{{VIDEO}}" controls preload="metadata" playsinline></video>
+      <p id="video-error" class="hint" hidden>The video did not load from <code>{{VIDEO}}</code>. The page expects the render at that path relative to this folder; open the page from the review folder inside the project, or copy the render there.</p>
+      <div class="controls">
+        <span class="now mono" id="now">0:00.00</span>
+        <button type="button" id="back" title="One frame back">&#8592; frame</button>
+        <button type="button" id="fwd" title="One frame forward">frame &#8594;</button>
+        <button type="button" id="add-timed" class="primary">Note at current time</button>
+      </div>
+      <div class="timed">
+        <h3>Timed notes</h3>
+        <p class="hint" id="timed-empty">Pause where something is wrong and add a note: it keeps the time.</p>
+        <ul id="timed-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <section class="panel block">
+      <h2>Findings</h2>
+      <p class="hint">From the build audit (holds, pointer jumps at cuts, dead air, caption lint, caption claims) on this render's sidecars. Measured, not judged: rule on each one. Click a time to seek the video.</p>
+      <div class="filters" id="filters"></div>
+      <table class="findings" id="findings">
+        <colgroup><col class="c-level"><col class="c-t"><col class="c-check"><col></colgroup>
+        <thead><tr><th>level</th><th>time</th><th>check</th><th>finding, note and ruling</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty" id="findings-empty" hidden>The audit found nothing on this render.</p>
+    </section>
+
+    <section class="panel block notes">
+      <h2>Notes for the editor</h2>
+      <label class="hint" for="reviewer">Your name (optional)</label>
+      <input id="reviewer" type="text" autocomplete="name" style="width:100%;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:5px 7px;margin:2px 0 8px">
+      <label class="hint" for="free-notes">Anything else</label>
+      <textarea id="free-notes" placeholder="Overall notes: pacing, story, what to protect"></textarea>
+      <div class="export">
+        <button type="button" id="export" class="primary">Export notes</button>
+        <a id="download" download="review-notes.json" hidden></a>
+      </div>
+      <p class="hint">Export writes <code>review-notes.json</code> (your rulings, notes and timed notes) to your downloads; send that file to the editor. Notes are also kept in this browser until you clear its site data.</p>
+    </section>
+
+    <section class="panel block files">
+      <h2>Files in this bundle</h2>
+      <ul id="files"></ul>
+    </section>
+  </div>
+</main>
+
+<div class="media">
+  <details class="panel group" open>
+    <summary>Contact sheets per scene <span id="sheets-count"></span></summary>
+    <p class="hint">Click a frame to seek the video to it.<span class="label-note" hidden> These tiles are unlabelled (REVIEW.md, Not measured, says why): count from the scene start, one tile per sheet step.</span></p>
+    <div id="sheets"></div>
+  </details>
+  <details class="panel group">
+    <summary>Cut strips: 3 frames before and 3 after every cut and transition <span id="cuts-count"></span></summary>
+    <p class="hint">The first frame after the cut is marked. Click a frame to seek to it.</p>
+    <div id="cuts"></div>
+  </details>
+</div>
+
+<footer>{{FOOTER}}</footer>
+
+<script type="application/json" id="review-data">{{DATA}}</script>
+<script>
+{{JS}}
+</script>
+</body>
+</html>

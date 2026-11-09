@@ -1,0 +1,46 @@
+{
+  "_comment": "Delivery presets, run by delivery/run_preset.py (or `walkthrough deliver --preset <name>`). Each preset reads one project's renders (renders/<name>.mp4 + .edl.json + .captions.srt + .cues.json) and the storyboard's scene groups. Numbers here are the defaults the script uses; docs/DELIVERY.md explains each output.",
+  "sales": {
+    "describe": "The full demo package: films (masters, subtitles, posters, web encodes), feature clips, stills, the creative showcase when a creatives folder is configured, copy templates, README md/html/pdf, MANIFEST, verify, zip.",
+    "out": "out/{product}_Demo-Package",
+    "zip": true,
+    "stills_crop": {"band": 180, "window": [192, 36, 1536, 864], "margin": 24},
+    "showcase_auto_images": 24
+  },
+  "web": {
+    "describe": "Web embed: 1080p30 and 720p encodes, a poster, .srt and .vtt, and a chaptered YouTube description from the scene groups.",
+    "out": "out/{product}_Web",
+    "zip": false,
+    "encodes": [
+      {"label": "1080p30", "short": 1080, "fps": 30, "crf": 23},
+      {"label": "720p30", "short": 720, "fps": 30, "crf": 23}
+    ],
+    "poster_t": 6.0,
+    "intro_chapter": "Intro",
+    "youtube": {"min_chapters": 3, "min_chapter_seconds": 10}
+  },
+  "social": {
+    "describe": "Social cuts: one clip per scene group, at most 60 s, captions burned in; uses a 9:16 render when there is one.",
+    "out": "out/{product}_Social",
+    "zip": false,
+    "max_seconds": 60,
+    "fps": 30,
+    "crf": 20,
+    "vertical_suffix": "-9x16",
+    "burn": ["subtitles", "drawtext", "overlay"],
+    "caption": {"font_frac": 0.052, "max_width_frac": {"landscape": 0.72, "portrait": 0.86}, "bottom_frac": {"landscape": 0.08, "portrait": 0.2}}
+  },
+  "docs": {
+    "describe": "Docs and help centres: one clip per feature (scene group), 10-30 s, each with its .srt slice, a GIF of at most 8 MB and a poster .jpg, plus index.md.",
+    "out": "out/{product}_Docs",
+    "zip": false,
+    "min_seconds": 10,
+    "max_seconds": 30,
+    "fps": 30,
+    "crf": 20,
+    "gif": {
+      "max_bytes": 8000000,
+      "steps": [[960, 15], [960, 12], [800, 12], [800, 10], [720, 10], [640, 10], [640, 8], [560, 8], [480, 8]]
+    }
+  }
+}

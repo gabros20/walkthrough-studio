@@ -60,14 +60,19 @@ node build.mjs [storyboard.json]    # the real build: cuts clips, writes index.h
 node build.mjs --project <dir>      # the project (else FILM_PROJECT, the storyboard's folder, the current directory)
 node build.mjs --dry                # mapping + durations table only: no ffmpeg, no files written
 node build.mjs --audit              # build, then audit: holds, pointer jumps at cuts, dead air, captions, claims
+                                    # (every build prints "pointer: bridge|fade <px> px at <t> s (<cut>)" per treated cut)
 node build.mjs --dry --audit        # audit the would-be files (no holds check)
 node build.mjs --dry --dry-out /tmp/x   # also writes the would-be cues.json, edl.json, captions.srt there
+node build.mjs --emit-only          # everything but the footage: no ffmpeg, masters need not exist (golden test)
 node build.mjs --takes ../takes     # where the take folders are (else WALKTHROUGH_TAKES, storyboard takesDir,
                                     #   <project>/takes, ../takes next to the project)
 node build.mjs --brand my.json      # brand file (else FILM_BRAND, storyboard "brand", <project>/brand.json, neutral defaults)
 FILM_FPS=60 node build.mjs          # film rate (or "fps" in the storyboard); clips stay at storyboard.clipFps
 node build.mjs --no-captions        # voiceover twin: identical film, captions track not mounted
                                     #   (or "captions": false in the storyboard); cues.json records "captions": false
+node build.mjs --fit-audio voiceover/placement.json [--fit-gap 0.3] [--fit-max 6]
+                                    # script-first timing: holds a rest moment wherever a voice line is longer
+                                    #   than its window (or "fitAudio" in the storyboard); refuses what it cannot fit
 node scripts/verify-pointer.mjs     # drawn pointer vs recorder/motion.mjs, sampled in Chrome
 npx --yes hyperframes@0.9.16 check --json            # inside the project
 npx --yes hyperframes@0.9.16 snapshot --at 1,4.5,12
@@ -78,6 +83,15 @@ npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
 After every render, copy `cues.json` and `edl.json` beside it as `renders/<name>.cues.json` and
 `renders/<name>.edl.json` (and `captions.srt` as `<name>.captions.srt`): the sound build and the
 voiceover tools read those, so a later rebuild cannot desync a render you already have.
+
+Picture-first is the default: the voice is written to the picture's windows. `--fit-audio` turns it
+round for a film whose narration leads (`docs/STORYBOARD.md`, "Script-first timing"): every placed
+line whose clip plus `--fit-gap` is longer than its window (its start to the next line or the
+scene's cut) gets a `stretch` on the longest rest moment in that window, adding exactly the missing
+seconds. The durations table gets a `fit` column, each hold prints a `fit:` line, `edl.json` lists
+them in `fitAudio`, and the audit warns on holds over 2 s. A line on the title or end card, one that
+needs more than `--fit-max` seconds, or one with no rest moment of 0.4 s in its window stops the
+build (exit 1, nothing written) with the line, its window and the shortfall.
 
 The storyboard schema is in `docs/STORYBOARD.md`, the design system in `docs/LOOK.md`. Start from
 `storyboard.example.json` (three short scenes over `takes/sample`; `init-project.mjs` copies it into the project).
@@ -112,13 +126,40 @@ else the defaults in `lib/config.mjs`. Paths inside it are relative to the brand
 | `lockup.metrics` | 24-unit row: gap 10, divider 1x16 dropped 6, label 14/500/-0.01em dropped 10, wordmark 22/800 | Proportions, scaled to the row height (84 px on the cards). Take them from the app's own header. |
 | `cards.title` / `cards.end` | two lines each | Title and end-card lines when the storyboard gives none. |
 | `assets.creatives` | `creatives.json` | The creatives file for `sync-assets.mjs`. |
-| `look.*` | see `brand.example.json` | Layout numbers: `film`, `capture`, `window`, `camera`, `caption`, `type`, `pointer`. The storyboard's `look` overrides these again for one film. |
+| `look.aspect` | `"16:9"` | `"16:9"`, `"9:16"` or `"1:1"`: the canvas, and every layout number derived from it (see Aspect and bezel). `--aspect` on the build and `FILM_ASPECT` override it. |
+| `look.bezel` | `"auto"` | The phone bezel: `"auto"` on a phone-preset take, `false` never, `true` (or an object of `thickness`, `outerRadius`, `body`, `ring`, `ringWidth`) always. |
+| `look.allowLetterbox` | `false` | Let 9:16 place a landscape take letterboxed instead of stopping the build. |
+| `look.*` | derived from the aspect and the take | Layout numbers: `film`, `capture`, `window`, `band`, `camera`, `caption`, `tag`, `type`, `pointer`, `wipe`, `cards`. Set one only to fix it for a deliberate layout; it then no longer follows the aspect. The storyboard's `look` overrides these again for one film. |
 
 **The lockup without a logo** degrades to text, in this order: wordmark + divider + label
 ("Acme | Studio"), wordmark alone, label alone, or nothing (an empty block, no tweens). With a logo
 the divider and label sit low on the row as in an app header; text-only they are centred on it. A
 brand that names a logo which was never synced stops the build with "run node
 scripts/sync-assets.mjs" rather than silently falling back to text.
+
+## Aspect and bezel
+
+`look.aspect` picks the canvas: `16:9` 1920x1080 (default), `9:16` 1080x1920, `1:1` 1080x1080. Set it in
+the brand file or the storyboard's `look`, or pass `--aspect 9:16` to `build.mjs` (or set
+`FILM_ASPECT`). `lib/config.mjs` derives the window, the caption band, the tag position, the wipe width,
+the camera's focus and scale ranges, the pointer size and the title and end card layouts from the aspect
+and from the take's `events.json` `viewport` and `scale` (the first scene's take; every take in the
+film must share it). `docs/LOOK.md` ("Aspect presets") has the rules and the numbers.
+
+- **16:9 over a desktop take** is the original layout, unchanged to the byte.
+- **9:16** needs a portrait take: record with `viewport: "phone"`. With a landscape take the build stops
+  ("9:16 needs a phone-preset take; record with viewport: phone") unless `look.allowLetterbox: true`,
+  which centres the landscape window with ink above and below. Captions wrap to two lines (plate at most
+  92% of the width; the lint warns at three) and the time-lapse tag gets its own row above them.
+- **1:1** takes either orientation. A phone take sits small in a square frame; frame it closer.
+- **Cards.** 16:9 keeps the side layout. 9:16 and 1:1 stack it: lockup on top, the lines under it
+  (wrapped to the width), the creatives as a strip along the bottom, a taller title wall and an end
+  cascade sized to the canvas.
+- **Phone bezel.** A phone-preset take (viewport at most 500 CSS px wide, scale 2 or more) gets a
+  neutral device frame in `lib/stage.mjs`: a rounded bezel (radius 2.4 x the window radius, 3.5% of the
+  window width thick), a thin ring in the plate colour, no notch or brand marks, the footage and the
+  spotlights clipped to its inner radius, the pointer in the overlay as always. Sized from the take, never
+  from a fixed master size. `look.bezel: false` turns it off.
 
 ## Creatives
 
@@ -148,20 +189,25 @@ SVG's viewBox. `make-placeholder.mjs` writes eight flat stand-ins when there is 
   `eventText(take, ref)` returns an event's logged visible text (marks carry it when the recorder
   logged it; `null` otherwise): captions with `"claims": "mark:<label>"` are checked against it by
   the audit.
-- **Aspect.** Only 16:9 is built; what a 9:16 or 1:1 preset would have to change is listed in
-  `docs/LOOK.md` (Roadmap).
+- **Aspect.** `look.aspect` (16:9, 9:16, 1:1) derives the layout; see Aspect and bezel. Components read
+  the derived constants from `lib/config.mjs` and never hardcode canvas numbers.
 - **The recorder's motion.** `lib/pointer.mjs` and `lib/emit.mjs` import `../../recorder/motion.mjs`
   (the ease and arc the mouse really moved with), and `build.mjs` its `pointerAt`. Keep `film/` and
   `recorder/` side by side.
 
 ## lib/config.mjs
 
-Loads the brand and the look (above) and exports: `FILM` (fps, width, height, font, fontStack),
+Loads the brand and the look (above), derives the layout from the aspect and the first scene's take,
+and exports (16:9 values): `FILM` (fps, width, height, font, fontStack),
 `COLOR` (ink, paper, accent, text, muted, plate, ghost; `white` = text), `CAPTURE` (1440x810),
 `WINDOW` (1536x864 at x 192 y 36, radius 16, shadow), `K = WINDOW.width / CAPTURE.width`, `CAMERA`
-(ease, moveSeconds, scale ranges pane 1.3-1.5 / control 1.3-1.85, focus point, fill), `CAPTION` (plate
-y 953-1017, 44 px / 700, max 10 words, slant, plate colour, charWidth), `TYPE` (title 92 / 900 /
--1.5%; tag 28 / 500), `POINTER` (44 px, fill, edge, disc), `SHAPE` (slant, wipe slant), `EASE`,
+(ease, moveSeconds, scale ranges pane 1.3-1.5 / control 1.3-1.85, focus point, fill, whip distances),
+`CAPTION` (plate y 953-1017, 44 px / 700, max 10 words, slant, plate colour, charWidth; at 9:16 and 1:1
+also maxLines, maxWidth, lineHeight), `TAG` (row: null = beside the caption, safe 96, clear 48), `BAND`
+(top 900), `TYPE` (title 92 / 900 / -1.5%; tag 28 / 500), `POINTER` (44 px, fill, edge, disc), `WIPE`
+(width 3400), `CARDS` (layout side/stacked and its numbers), `BEZEL` (null, or thickness, radii, body,
+ring), `DEVICE` (the take's viewport, scale, phone), `LAYOUT` (aspect, allowLetterbox, portrait,
+cards), `ASPECT`, `ASPECTS`, `TAKES_DIR`, `isPhoneViewport()`, `SHAPE` (slant, wipe slant), `EASE`,
 `BRAND`, `brandAsset(path)`, `cliArgs()`, `snap(t)` (to the frame grid), `frame()`.
 
 ## Stage — lib/stage.mjs
@@ -171,17 +217,19 @@ y 953-1017, 44 px / 700, max 10 words, slant, plate colour, charWidth), `TYPE` (
 Emits `#<id>-ground` (flat ink), `#<id>-cam` (camera wrapper, full frame), `#<id>-win` (the window,
 holding `<video id="<id>-video" class="clip" muted>` at 1536x864), `#<id>-ovl` (same box, not
 clipped: the pointer), `#<id>-mask` (clipped to the window radius: spotlights) and `#<id>-band` (the
-ink band under the window, faded in by the camera when zoomed). Pointer and spotlights are inside
+ink band under the window, faded in by the camera when zoomed), plus `#<id>-bezel` around the window
+on a phone take (the window and mask then clip to the bezel's inner radius). Pointer and spotlights are inside
 the camera wrapper, so they move and scale with the screen. `masked` = spotlight parts, `overlay` =
 pointer part, `extra` = camera part, `outside` = parts on the frame outside the camera (the
 time-lapse tag).
 
 ## Time-lapse tag — lib/tag.mjs
 
-`timelapseTag({ id, start, end, label = "Time-lapse", rate, x }) -> part` — fast-forward mark,
+`timelapseTag({ id, start, end, label = "Time-lapse", rate, x, y }) -> part` — fast-forward mark,
 the label and the speed (`3×`) in the tag type, muted, in the ink band at x 192 on the caption
-centre line; its own clip over the compressed range's film span. `plateWidth(text)` and `TAG_WIDTH`
-are the conservative widths the build uses to keep tags 48 px clear of caption plates.
+centre line; its own clip over the compressed range's film span. `tagPlacement(captionTexts) ->
+{ x, y, clear }` is where the build puts it: at 16:9 beside the plates, 48 px clear (from the
+conservative widths `plateWidth(text)` and `TAG_WIDTH`); at 9:16 and 1:1 on its own row above the caption.
 
 ## Camera — lib/camera.mjs
 
@@ -222,7 +270,13 @@ shadow (`look.pointer`). Three SVG shapes: `arrow`, `hand`, `ibeam`; hotspot at 
 - `pointerShow / pointerHide({ id, at })`, `pointerPlace({ id, at, point })`, `pointerMarkup({ id, shape })`.
 - `new Pointer({ id, point, shape })` keeps position, shape and disc count:
   `.show(at)`, `.hide(at)`, `.move({ to, start, end?, control? })`, `.click({ at })`,
-  `.shape({ at, shape })`, `.part()`.
+  `.shape({ at, shape })`, `.fadeOut({ end, dur })`, `.fadeIn({ cut, after, dur, hidden })`, `.part()`.
+- Pointer at cuts: `cutTreatment({ px, mode, override, jump })` -> `{ kind: "bridge" | "fade" | null, by }`
+  (the storyboard's `pointerAtCuts`, a per-cut `pointer` override, thresholds `JUMP` = 120 / 400 stage
+  px), `bridgeSeconds(cut, nextAction)` (0.35 s, capped before the next logged move or click, `null`
+  under 0.2 s), timings `CUT_BRIDGE` and `CUT_FADE` (out 0.15 s before the cut, in from 0.2 s after).
+  `build.mjs` applies them at every untreated cut and lists them in `edl.json` `pointerTreatments`
+  (docs/STORYBOARD.md, "Pointer at cuts").
 - Re-exports `MOTION`, `moveDuration`, `controlPoint` from the recorder.
 
 ## Spotlight — lib/spotlight.mjs
@@ -238,15 +292,17 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
 - `captionsScene({ id = "captions", duration, items: [{ text, start, end, variant? }] }) -> scene file`
   — one captions composition (mount it with `data-track-kind="captions"`), each caption its own clip
   `#cap-<i>` (hard-hidden outside its span, plus a `set visibility:hidden` at its end). Slanted plate,
-  accent tick, 44 px bold, centred, plate y 953-1017 (centre 985). Variants (default cycles):
+  accent tick, 44 px bold, centred, plate y 953-1017 (centre 985). At 9:16 and 1:1 a caption wider
+  than 92% of the canvas wraps into two balanced lines (`captionLines(text)`). Variants (default cycles):
   `"wipe"` plate wipes open + line blurs in; `"words"` word by word blur-in; `"tick"` the tick leads,
   the plate grows from it, words come up. Exit: 0.18 s blur-out (power3.in). Landed text never moves.
 - `captionsPart(items) -> part`, `captionHold(text, last)`, `lintCaptions(items) -> [problems]`
-  (word count, hold time, overlap), `toSrt(items) -> string` (the sidecar from the same data).
+  (word count, hold time, overlap, more than two wrapped lines), `toSrt(items) -> string` (the sidecar
+  from the same data).
 
 ## Transitions — lib/transitions.mjs
 
-- `slantWipe({ id, start, dur = 0.9, dir = 1, width = 3400 }) -> part & { cut }` — accent panel
+- `slantWipe({ id, start, dur = 0.9, dir = 1, width = WIPE.width }) -> part & { cut }` — accent panel
   leaning "/" (`shape.wipeSlantDeg`) led by a thin bar, power2.inOut; the frame is fully accent
   ~0.1 s around `cut` (start + dur/2): swap what is underneath there.
 - Camera push: `Camera.pushThrough` + `Camera.settleIn`. Whip: `Camera.whipOut` + `whipIn`.
@@ -268,6 +324,10 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
   step, each over the last), slow push; the accent slant closes right to left at `wipeStart` (cut
   +0.45); lockup and the closing lines (landed by ~1 s after the cut, then held) and the slant
   column drifting down.
+- At 9:16 and 1:1 (`CARDS.layout` `"stacked"`) both cards put the lockup on top, the lines under it
+  (wrapped to the width), and `stripPanel({ id, items, start, end, dir, pool })` in place of the
+  column: a full-width strip along the bottom drifting sideways, topped up from `pool` when the items
+  are too few to cover the drift. The wall has more rows; the end cascade is sized to the canvas.
 - `lockup({ id, logoHeight, x, y, tone }) -> { css, html, k, width, height, parts }`,
   `lockupIn({ id, at })`, `lockupOut({ id, at, dur })`, `lockupParts()`, `logoFiles()` — see Brand.
 
@@ -276,13 +336,14 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
 | Script | What it does |
 |---|---|
 | `scripts/draft-storyboard.mjs <take>… [--take n] [--out f]` | First-pass storyboard: one scene per take, keep span, agent waits as time-lapses, a framing and a `TODO` caption per click, marks as `_candidates.spotlights` (docs/STORYBOARD.md, Drafting). |
-| `scripts/audit.mjs [storyboard] [--takes d] [--edl f --cues f --srt f] [--hold s] [--jump px] [--tail s] [--no-holds] [--json]` | Holds, pointer jumps at cuts, dead air after captions, caption lint, caption claims against mark text; exit 1 on errors only (also `build.mjs --audit`). |
+| `scripts/audit.mjs [storyboard] [--takes d] [--edl f --cues f --srt f] [--hold s] [--jump px] [--tail s] [--no-holds] [--json]` | Holds, pointer jumps at cuts (the build's bridges and fades listed as `ok (auto …)`; untreated jumps are errors when `pointerAtCuts` is `none`), dead air after captions, caption lint, caption claims against mark text; exit 1 on errors only (also `build.mjs --audit`). |
 | `scripts/init-project.mjs <dir>` | Make `<dir>` a film project: HyperFrames files, `kit.json`, `brand.json`, `storyboard.example.json` (adds only what is missing). |
 | `scripts/sync-assets.mjs [--project d] [--brand f] [--creatives f]` | Logo + creatives into `<project>/assets/`, manifests. |
 | `scripts/make-placeholder.mjs [seconds] [--creatives]` | Stand-in footage (+ stand-in creatives when there are none) for `build-demo.mjs`. |
 | `scripts/verify-pointer.mjs` | Drawn pointer vs the recorder's curve in headless Chrome (needs `playwright-core`). |
 | `scripts/holds.py [min_s] [storyboard.json] [--takes dir]` | Dead holds: stretches with no pointer move, no tween and no UI change (needs the cut clips and the built compositions; run from the project). |
 | `scripts/scene-sheets.py <video> <edl.json> <outdir> [fps] [width]` | One contact sheet per scene of a render, labelled with film time. |
+| `scripts/review-bundle.mjs <renders/name.mp4> [--out dir] [--takes d] [--fps-sheet n] …` | The review bundle for a render (`walkthrough review`): sheets per scene, cut strips, audit, holds, audio, costs, `REVIEW.md` and a static review page (`docs/REVIEW.md`; templates in `scripts/review/`). |
 | `scripts/list-events.py <take dir>…` | A take's events as a table: the labels refs are written with. |
 | `scripts/cadence.py <video> <t0> <t1> <w:h:x:y>` | Frame-change cadence of a crop (30 fps clips in a 60 fps film must change every 2nd frame). |
 | `scripts/align-frames.py <clip> <master> <clipT:masterT>…` | How many master frames a cut clip is off at given moments. |
@@ -292,6 +353,13 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
 - `lib/` components and `lib/edl.mjs` (refs, anchors, mapping); `build.mjs` + a storyboard: the
   real build; `build-demo.mjs` + `demo/targets.mjs`: the placeholder demo.
 - `lib/project.mjs`: what makes a folder a project (`ensureProject`).
+- The golden test (`npm test` at the repo root, `test/run.mjs`): a two-scene fixture over an 8 s trim
+  of the sample take (`test/fixtures/brightpost-mini/`), built with `--dry --dry-out` and
+  `--emit-only`; `edl.json`, `cues.json`, `captions.srt` and the SHA-256 of every composition must
+  match `test/golden/`. A change to `lib/` or `build.mjs` that moves the cut fails it with a diff;
+  when the change is intended, `node test/run.mjs --update` rewrites the goldens (and shows the diff).
+  `node test/run.mjs --render` (local only) also renders the fixture at 15 fps and compares eight
+  frames by an 8x8 average hash, at most 6 of 64 bits apart (`--render --update` re-records them).
 - Generated into the project (and git-ignored there by the `.gitignore` the project gets):
   `index.html`, `compositions/*.html`, `cues.json`, `captions.srt`, `edl.json`, `assets/footage/`,
   `assets/brand/`, `assets/creatives/`, `renders/`, `review/`, `sound-build/`, `assets/audio/`,

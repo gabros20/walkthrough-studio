@@ -6,7 +6,9 @@
 //   jumps     the pointer jumping at a cut: at a hard cut between scenes, and where a scene's ranges
 //             are not contiguous, the distance between where the mouse was before and after, in
 //             stage px at wide framing; cuts treated by pointer.enterFrom / pointer.exit, a push or
-//             a whip, or a hidden pointer are listed as treated
+//             a whip, or a hidden pointer are listed as treated, and so are the bridges and fades the
+//             build applied (edl.json "pointerTreatments": "ok (auto bridge)"); an untreated jump is
+//             a warning, an error when the storyboard says "pointerAtCuts": "none"
 //   dead air  a caption that ends before the next cut, after which nothing logged happens (no
 //             move, click, typing, scroll, time-lapse) for more than --tail s before that cut
 //   captions  caption lint: words, hold, overlap (overlap is an error)
@@ -14,7 +16,7 @@
 //             mark's logged text (an error: the caption says something the screen does not)
 //
 //   node <kit>/film/scripts/audit.mjs [storyboard.json] [--project dir] [--takes dir] [--edl f] [--cues f] [--srt f]
-//                          [--hold 1.0] [--jump 120] [--tail 1.0] [--no-holds] [--json]
+//                          [--hold 1.0] [--jump <storyboard jump.bridge, else 120>] [--tail 1.0] [--no-holds] [--json]
 //
 // Defaults read <project>/edl.json, cues.json and captions.srt (what build.mjs last wrote; the
 // project as in lib/config.mjs, or --project). Prints one
@@ -40,7 +42,7 @@ const takesDir = opt("takes") ? resolve(opt("takes")) : process.env.WALKTHROUGH_
 const edlPath = resolve(opt("edl") ?? join(PROJECT_DIR, "edl.json"));
 const cuesPath = resolve(opt("cues") ?? join(PROJECT_DIR, "cues.json"));
 const srtPath = resolve(opt("srt") ?? join(PROJECT_DIR, "captions.srt"));
-const HOLD = Number(opt("hold", 1.0)), JUMP = Number(opt("jump", 120)), TAIL = Number(opt("tail", 1.0));
+const HOLD = Number(opt("hold", 1.0)), JUMP = Number(opt("jump", sb.jump?.bridge ?? 120)), TAIL = Number(opt("tail", 1.0));
 
 const rows = [];
 const add = (level, check, scene, film, detail) => rows.push({ level, check, scene: scene ?? "", film: film == null ? "" : film.toFixed(2), detail });
@@ -68,6 +70,14 @@ for (const s of scenes) if (!s.sb) add("error", "edl", s.id, s.start, "scene is 
 // ---------- jumps ----------
 const at = (s, src) => pointerAt(take(s.sb.take).events, src, take(s.sb.take).pointerStart);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) * K;
+// bridges and fades the build applied at cuts (by: "auto", or "storyboard" for an exit/range "pointer")
+const applied = (edl.pointerTreatments ?? []).map((x) => ({ ...x, seen: false }));
+const appliedAt = (scene, film) => {
+  const x = applied.find((y) => y.scene === scene && Math.abs(y.at - film) < 1.5 / FPS);
+  if (x) x.seen = true;
+  return x ? `${x.by === "auto" ? "auto " : ""}${x.kind}` : null;
+};
+const UNTREATED = sb.pointerAtCuts === "none" ? "error" : "warn";
 for (let i = 0; i < scenes.length; i++) {
   const s = scenes[i];
   if (!s.sb) continue;
@@ -78,10 +88,12 @@ for (let i = 0; i < scenes.length; i++) {
     const a = s.ranges[k - 1], b = s.ranges[k];
     if (Math.abs(a.srcOut - b.srcIn) < 1e-6 || hidden) continue;
     const d = dist(at(s, a.srcOut), at(s, b.srcIn));
-    // a montage cuts on every beat by design: its slices are one beat long
+    // a montage cuts on every beat by design (edl.json marks its slices; an older edl: one-beat ranges)
     const beat = sb.music?.beat ?? 0.625;
-    const montage = s.sb.ranges.some((r) => r.montage) && Math.min(a.filmDur, b.filmDur) <= beat + 1.5 / FPS;
-    if (d > JUMP) add(montage ? "ok" : "warn", "jump", s.id, s.start + b.filmIn, `pointer jumps ${Math.round(d)} px at a cut inside the scene (source ${a.srcOut.toFixed(2)} -> ${b.srcIn.toFixed(2)} s)${montage ? " (montage slice)" : ""}`);
+    const marked = s.ranges.some((r) => "montage" in r);
+    const montage = marked ? Boolean(a.montage || b.montage) : s.sb.ranges.some((r) => r.montage) && Math.min(a.filmDur, b.filmDur) <= beat + 1.5 / FPS;
+    const auto = appliedAt(s.id, s.start + b.filmIn);
+    if (d > JUMP || auto) add(montage || auto ? "ok" : UNTREATED, "jump", s.id, s.start + b.filmIn, `pointer jumps ${Math.round(d)} px at a cut inside the scene (source ${a.srcOut.toFixed(2)} -> ${b.srcIn.toFixed(2)} s)${auto ? ` (${auto})` : montage ? " (montage slice)" : ""}`);
   }
   if (i === 0) continue;
   const p = scenes[i - 1];
@@ -91,11 +103,14 @@ for (let i = 0; i < scenes.length; i++) {
   const pEnd = last.srcIn + Math.max(0, p.duration - last.filmIn) * last.rate;
   const d = dist(at(p, Math.min(pEnd, last.srcOut)), at(s, first.srcIn));
   const treated =
-    p.exit === "push" ? "push" : p.exit === "whip" ? "whip"
+    p.exit === "push" ? "push" : p.exit === "whip" || s.sb.enter === "whip" ? "whip"
     : s.sb.pointer?.enterFrom ? "enterFrom" : p.sb.pointer?.exit ? "exit"
     : hidden || p.sb.pointer?.show === false ? "hidden" : p.sb.pointer?.hideAt ? "hideAt" : s.sb.pointer?.showAt ? "showAt" : null;
-  if (d > JUMP) add(treated ? "ok" : "warn", "jump", s.id, s.start, `${p.id} -> ${s.id}: pointer ${Math.round(d)} px apart${treated ? ` (treated: ${treated})` : ": hard cut, untreated (pointer.enterFrom / exit, or a push)"}`);
+  const auto = appliedAt(s.id, s.start);
+  if (d > JUMP || auto) add(treated || auto ? "ok" : UNTREATED, "jump", s.id, s.start, `${p.id} -> ${s.id}: pointer ${Math.round(d)} px apart${treated ? ` (treated: ${treated})` : auto ? ` (${auto})` : ": hard cut, untreated (pointer.enterFrom / exit, a push, or \"pointerAtCuts\": \"auto\")"}`);
 }
+// treatments at cuts the recorded mouse does not measure as a jump (the drawn pointer did move)
+for (const x of applied) if (!x.seen) add("ok", "jump", x.scene, x.at, `${x.cut}: drawn pointer ${x.px} px apart (${x.by === "auto" ? "auto " : ""}${x.kind})`);
 
 // ---------- captions ----------
 function parseSrt(path) {
@@ -132,7 +147,8 @@ function lastActivity(t0, t1) {
     for (const r of s.ranges) {
       const f0 = s.start + r.filmIn, a = Math.max(t0, f0), b = Math.min(t1, f0 + r.filmDur);
       if (b <= a) continue;
-      if (r.timelapse) { last = Math.max(last, b); continue; } // a time-lapse is motion throughout
+      // a time-lapse is motion throughout; a fit-audio hold is the voice speaking (build.mjs --fit-audio)
+      if (r.timelapse || r.fit) { last = Math.max(last, b); continue; }
       const sa = r.srcIn + (a - f0) * r.rate, sb_ = r.srcIn + (b - f0) * r.rate;
       for (const e of tk.events) {
         if (!ACTIVE.has(e.type) || e.t >= sb_ || (e.tEnd ?? e.t) < sa) continue;
@@ -149,6 +165,15 @@ for (const c of caps) {
   const stillFrom = lastActivity(c.end, cut);
   if (cut - stillFrom > TAIL)
     add("warn", "dead air", null, c.end, `"${c.text}" ends ${(cut - c.end).toFixed(2)} s before the cut at ${cut.toFixed(2)}; nothing logged moves for the last ${(cut - stillFrom).toFixed(2)} s: end the scene sooner or carry the caption`);
+}
+
+// fit: the holds build.mjs --fit-audio added for the voice (edl.json "fitAudio"); a hold longer than
+// FIT_LONG s is a still picture a viewer may notice, so it is a warning
+const FIT_LONG = 2;
+if (Array.isArray(edl.fitAudio)) {
+  if (!edl.fitAudio.length) add("ok", "fit", null, null, "fit-audio: every voice line fits its window; nothing held");
+  for (const f of edl.fitAudio)
+    add(f.hold > FIT_LONG ? "warn" : "ok", "fit", f.scene, f.at, `${f.line}: a ${f.hold.toFixed(2)} s hold (+${f.added.toFixed(2)} s) for the voice${f.hold > FIT_LONG ? `, longer than ${FIT_LONG} s: shorten the line or re-cut the scene if it reads as a freeze` : ""}`);
 }
 
 // claims: "claims": "mark:<label>" on a storyboard caption; its quoted phrase must be in the mark's text

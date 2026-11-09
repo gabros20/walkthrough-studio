@@ -1,0 +1,9 @@
+{
+  "note": "Spelling hints for text-to-speech, applied whole-word to the text sent (never to captions). Copy to <project>/voiceover/lexicon.json. Editing an entry regenerates only the lines it changes; bumping version regenerates every line. Find candidates with: node voiceover/lexicon.mjs check voiceover/script.json",
+  "version": 1,
+  "entries": {
+    "Brightpost": "Bright post",
+    "SKU": "S K U",
+    "4K": "four K"
+  }
+}

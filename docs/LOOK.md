@@ -1,6 +1,6 @@
 # The look
 
-*Mode: reference (the numbers, from `film/lib/config.mjs`). "Banned in this film" and "Honesty" are rules; "Roadmap: 9:16 and 1:1" is planning, not built.*
+*Mode: reference (the numbers, from `film/lib/config.mjs`). "Banned in this film" and "Honesty" are rules. The sections up to "Aspect presets" give the 16:9 numbers; "Aspect presets" gives the rules and the derived numbers for 9:16 and 1:1, and the phone bezel.*
 
 The design system of a walkthrough film. The numbers are the defaults in `film/lib/config.mjs`;
 colours, type, the slant and the lockup come from the project's brand file (`brand.json`), layout numbers
@@ -9,7 +9,8 @@ explained. Everything on screen either is the app or points at the app.
 
 ## Canvas and ground
 
-- 1920x1080. The film rate is 30 fps by default, 60 when the capture test passes at 60 (the example
+- 1920x1080 at 16:9 (the default); 1080x1920 at 9:16, 1080x1080 at 1:1 (`look.aspect`, see "Aspect
+  presets"). The film rate is 30 fps by default, 60 when the capture test passes at 60 (the example
   film is 60 fps over 60 fps masters).
 - The ground is flat **ink** (`colors.ink`, `#141414` by default): no gradient, no texture, no vignette.
 - The app runs in its light theme so the window separates clearly from the ink.
@@ -145,26 +146,86 @@ Four kinds, each caused by something on screen:
   replaced by the frame before).
 - Every number in a caption or a voice line comes from the code or the recording.
 
-## Roadmap: 9:16 and 1:1
+## Aspect presets
 
-Only 16:9 is built. Portrait and square are not a brand.json switch yet, because the layout is not
-one formula: the window, the caption band, the camera's clamp and the title/end cards each carry
-their own 16:9 numbers. A preset (`look.aspect`) would have to set all of these, and the cards need
-their own layouts rather than scaled ones. The constants that change:
+`look.aspect` in the brand file (or the storyboard's `look`, or `--aspect` on the build, or
+`FILM_ASPECT`; the command line wins) is `"16:9"` (default), `"9:16"` or `"1:1"`. `film/lib/config.mjs`
+derives every layout number from the aspect and from the take: the first scene's `events.json`
+`viewport` and `scale`. Every take in one film must share that viewport; the build stops when one does
+not. Any derived number can still be set in a `look` section (`film`, `capture`, `window`, `band`,
+`camera`, `caption`, `tag`, `type`, `pointer`, `wipe`, `cards`), but then it no longer follows the aspect.
 
-| Where | 16:9 value | What it is |
-|---|---|---|
-| `look.film` | 1920x1080 | Canvas: 1080x1920 (9:16) or 1080x1080 (1:1). |
-| `look.window` | 1536x864 at left 192, top 36, radius 16 | A 16:9 app scaled to the width (e.g. 1008x567 at left 36 in 9:16) leaves most of a portrait frame empty; a portrait film wants a portrait capture (`look.capture`, e.g. a 390x844 phone viewport at 3x) and a window sized to it. |
-| `look.capture` | 1440x810 | Must match the recorder's viewport; `K = window.width / capture.width` follows. |
-| `look.caption.top` | 953 (plate 953-1017) | The band under the window: `window.top + window.height` + about 53. |
-| `look.camera.focus` | (960, 450) | Middle of the area above the caption band. |
-| `look.camera.controlScale` | max 1.85 | The capture's pixel limit: capture px x density / window width. |
-| `lib/camera.mjs` `bandNeeded` | band at `window.top + window.height` (900), triggers 30 px below | Derived from `WINDOW`; keeps working. |
-| `lib/titlecards.mjs` `PANEL.through` | (1510, 700) | Where the slanted column's edge passes the title lines. |
-| `lib/titlecards.mjs` `endScene` | cards 640 px tall, baseline y 870, margins 150 | The end cascade. |
-| `lib/titlecards.mjs` `titleScene` | 2 rows of 4 creatives, text block at x 192, 64 px gap | The title wall and type block. |
-| `build.mjs` tag placement | x >= 96, 48 px clear of the plate | Time-lapse tag in the band. |
-| `lib/tag.mjs` `TAG_WIDTH` | 250 | Tag width estimate. |
-| `lib/transitions.mjs` `slantWipe` width | 3400 | Panel wide enough to cover the frame while leaning. |
-| `look.pointer.size` | 44 (4% of 1080) | Scale with the frame height. |
+**16:9 over a desktop take keeps the fixed numbers above, unchanged** (the golden test proves the
+output is byte-identical). Everything else uses these rules, with `s = min(width, height) / 1080` (1 for
+all three presets):
+
+- **Band.** The ink band at the bottom holds the captions and the time-lapse tag: 180 px (16:9),
+  220 (1:1), 340 (9:16), times `s`. Zoomed framings keep the window covering the canvas down to the
+  band's top (`band.top`); the ink band fades in over the footage when a framing reaches 30 px past it.
+- **Window.** The capture's own aspect, fitted into the area above the band inside side margins of 10% of
+  the width and a top margin of height / 30 (16:9: 192 and 36, which gives today's 1536x864), centred in
+  that area. A phone bezel is part of the fit. The window never reaches into the band. Corner radius:
+  16 x (window width / 1536), at least 8; on a phone take 14% of the width / 2.4 (the bezel's outer
+  radius is 2.4 x this).
+- **Camera.** Focus at (width / 2, band top / 2). The control scale is capped at the capture's pixel
+  limit, master width / window width less 1.3%, at most 1.85; the low end of both ranges is 1.3 (or the
+  cap, if lower). Whips travel 1600 / 1100 px at 16:9, scaled with the width.
+- **Captions.** 44 px type, 64 px plate (times `s`). At 9:16 and 1:1 a caption wider than 92% of the
+  canvas wraps into two balanced lines (decided at build time from the character-width estimate, so it is
+  deterministic), on a taller plate with the tick centred; the caption lint warns at more than two lines.
+  The plate's top is band top + 80 (one line ends 64 px lower, two lines 116). At 16:9 a caption never
+  wraps.
+- **Time-lapse tag.** At 16:9 beside the plate, 48 px clear of it, never left of x 96. At 9:16 and 1:1 on
+  its own row above the caption (centre line at band top + 40), from the window's left edge, so tag and
+  caption never overlap.
+- **Pointer.** 44 px, but never larger against the app than at 16:9 (41.25 CSS px of the capture).
+- **Wipe.** The panel is wide enough to cover the frame while leaning: width + 2 x tan(wipe slant) x
+  height + 36% of the width (3400 at 16:9).
+- **Title and end cards.** 16:9 is the **side** layout described above. 9:16 and 1:1 are **stacked**:
+  the lockup (64 px row) on top at x = 8% of the width, the two lines under it (72 px, each wrapped to the
+  width when it would not fit, 44 px gap), centred in the area above a strip of creatives along the
+  bottom that drifts sideways at 42 px/s (left on the title, right on the end card). The title wall has 4
+  rows at 9:16 and 3 at 1:1 (cropped top and bottom when taller than the frame). The end cascade is 40%
+  (9:16) or 50% (1:1) of the height, inside 8% margins; cards shrink until the widest ends inside the
+  right margin.
+
+**9:16 needs a portrait take.** Record with `viewport: "phone"` (390x844 CSS px at 3x, a 1170x2532
+master). With a landscape take the build stops: "9:16 needs a phone-preset take; record with viewport:
+phone". `look.allowLetterbox: true` places the landscape window anyway, scaled to the width inside the
+margins, centred with ink above and below. **1:1** takes both orientations.
+
+### Derived numbers
+
+| | 16:9, desktop take | 9:16, phone take | 1:1, desktop take | 1:1, phone take |
+|---|---|---|---|---|
+| Canvas | 1920x1080 | 1080x1920 | 1080x1080 | 1080x1080 |
+| Capture (CSS px, scale) | 1440x810, 2 | 390x844, 3 | 1440x810, 2 | 390x844, 3 |
+| Window | 1536x864 at (192, 36), r 16 | 678x1467 at (201, 89), r 40 | 864x486 at (108, 205), r 9 | 368x796 at (356, 50), r 21 |
+| K (stage px per capture px) | 1.0667 | 1.7385 | 0.6 | 0.9436 |
+| Bezel | none | 24 px, outer r 96, inner r 72 | none | 13 px, outer r 50, inner r 37 |
+| Band top | 900 | 1580 | 860 | 860 |
+| Caption plate top | 953 (one line) | 1660 (up to two lines, max 994 wide) | 940 (two lines, 994) | 940 (two lines, 994) |
+| Tag | beside the plate, centre y 985 | own row, centre y 1620, x 201 | own row, centre y 900, x 108 | own row, centre y 900, x 356 |
+| Camera focus | (960, 450) | (540, 790) | (540, 430) | (540, 430) |
+| Control scale | 1.3-1.85 | 1.3-1.7 | 1.3-1.85 | 1.3-1.85 |
+| Pointer | 44 | 44 | 25 | 39 |
+| Wipe panel | 3400 | 2866 | 2255 | 2255 |
+| Cards | side: lockup 84, title 92 | stacked: lockup 64, title 72, strip 518 tall, wall 4 rows, cascade 768 | stacked: strip 324, wall 3 rows, cascade 540 | as 1:1 desktop |
+
+A landscape take letterboxed in 9:16 (`allowLetterbox`) gets an 864x486 window at (108, 579) and a 25 px pointer.
+
+### Phone bezel
+
+When the take is a phone preset (viewport at most 500 CSS px wide, scale 2 or more), `lib/stage.mjs`
+draws a neutral device frame around the footage, inside the camera wrapper so it moves with every
+framing:
+
+- the bezel is 3.5% of the window width on each side, its outer corner radius 2.4 x the window radius;
+- body `#0B0B0B`, a 2 px ring in the plate colour (`colors.plate`) on its edge, carrying the window's
+  shadow; no notch, no buttons, no brand marks;
+- the footage is clipped to the inner radius (outer minus the bezel), and so are the spotlights; the
+  pointer stays in the overlay as at 16:9.
+
+Its size comes from `events.json` `viewport` and `scale`, never from a fixed 1170x2532. `look.bezel:
+false` turns it off, `true` forces it on any take, and an object (`thickness`, `outerRadius`, `body`,
+`ring`, `ringWidth`) changes its parts.

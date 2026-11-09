@@ -1,0 +1,41 @@
+{
+  "fps": 30,
+  "duration": 9.566666666666666,
+  "captions": true,
+  "cues": [
+    {
+      "t": 1.45,
+      "type": "transition",
+      "kind": "wipe",
+      "where": "title"
+    },
+    {
+      "t": 3.235,
+      "type": "click",
+      "label": "send"
+    },
+    {
+      "t": 5.439,
+      "type": "click",
+      "label": "option 3"
+    },
+    {
+      "t": 5.7,
+      "type": "transition",
+      "kind": "cut",
+      "to": "b"
+    },
+    {
+      "t": 7.567,
+      "type": "transition",
+      "kind": "cut",
+      "to": "end"
+    },
+    {
+      "t": 8.067,
+      "type": "transition",
+      "kind": "wipe",
+      "where": "end"
+    }
+  ]
+}

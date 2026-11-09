@@ -30,6 +30,8 @@ export async function runStep(take, step) {
   const { label } = step;
   const page = take.page;
   const base = take.session.config?.baseUrl;
+  // Downloads and dialogs that this step causes are logged under its label.
+  if (label) take.currentLabel = label;
   if (step.click !== undefined) return take.click(step.click, { label, at: step.at, count: step.count });
   if (step.type !== undefined) {
     if (step.into !== undefined) await take.click(step.into, { label: `${label} field`, at: step.at ?? { x: 0.25, y: 0.5 } });

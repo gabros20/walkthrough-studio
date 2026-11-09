@@ -237,3 +237,51 @@ export function installRecorderPage(opts) {
     else document.addEventListener("DOMContentLoaded", ensureDot, { once: true });
   }
 }
+
+/**
+ * popups: "same-tab" (installed with context.addInitScript when the config asks for it). Links and
+ * forms with a target that opens a new browsing context, and window.open(url), navigate the same
+ * page instead, so the screencast never loses the page. Each one is reported to the recorder
+ * (binding __recPopup) before the navigation starts, so the nav event that follows carries
+ * popup: "same-tab". Downloads (<a download>) and window.open() with no URL are left alone; a
+ * popup that still opens is closed by the recorder and its URL opened in the same page.
+ */
+export function installPopupPolicy() {
+  if (window.__recPopups) return;
+  window.__recPopups = true;
+  const report = (url, via) => {
+    try {
+      window.__recPopup?.({ url: String(url), via });
+    } catch {}
+  };
+  const opensNew = (t) => !!t && !/^_(self|parent|top)$/i.test(t);
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      const a = e.composedPath?.().find((n) => n?.tagName === "A" || n?.tagName === "AREA");
+      if (!a || !a.href || a.hasAttribute("download") || !opensNew(a.getAttribute("target"))) return;
+      a.setAttribute("target", "_self");
+      report(a.href, "link");
+    },
+    true,
+  );
+  document.addEventListener(
+    "submit",
+    (e) => {
+      const f = e.target;
+      if (!(f instanceof HTMLFormElement) || !opensNew(f.getAttribute("target"))) return;
+      f.setAttribute("target", "_self");
+      report(f.action || location.href, "form");
+    },
+    true,
+  );
+  const open = window.open;
+  window.open = function (url, ...rest) {
+    if (url === undefined || url === null || url === "" || String(url) === "about:blank") return open.call(this, url, ...rest);
+    const abs = new URL(String(url), location.href).href;
+    report(abs, "window.open");
+    location.assign(abs);
+    return window;
+  };
+}

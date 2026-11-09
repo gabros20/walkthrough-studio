@@ -12,7 +12,24 @@ Playwright drives the app with an invisible mouse and logs every action to `even
 cursor; the pointer, the camera and the captions are drawn afterwards from that log in a HyperFrames edit, so
 re-cutting a scene never puts them out of sync. Music and an optional voiceover are made after picture lock,
 and a delivery package (films, clips, stills, showcase sheets, copy) is built for the people who will present
-it. A lead agent plans and reviews; specialised agents on cheaper or stronger models do each step.
+it. A lead agent plans and reviews; specialised agents on cheaper or stronger models do each step. One CLI,
+`walkthrough`, runs every step from a project folder and keeps the project's state, so a new session picks up
+where the last one stopped.
+
+What it does:
+
+- **Point it at anything**: an app you own (a sandboxed studio copy with checkpoints) or any URL (saved login,
+  banner dismissal, generic waits); a tour map of the site with drafted scenes; desktop or phone viewports;
+  new tabs, downloads and dialogs handled and logged; parallel takes for independent scenes.
+- **Cut with less effort**: a storyboard drafted from the action log, captions briefed by a tool and written
+  by an agent with every quoted UI string checked against the recording, pointer bridges and fades at cuts,
+  16:9, 9:16 and 1:1 films with a phone bezel, and a build audit (holds, pointer jumps, dead air, caption truth).
+- **Sound and voice**: a music bed generated once and fitted by bar-aligned loops, a measured beat grid,
+  effects on the cues, per-line voiceover with a cache, a pronunciation lexicon, language twins, script-first
+  timing where the film makes room for the voice, and a listening proxy (measured, not heard).
+- **Review and deliver**: a review bundle per render (contact sheets, cut strips, audit, audio, costs) with a
+  static page for the human reviewer; delivery presets for a sales package, web embeds, social clips and
+  docs clips with GIFs; a cost ledger and a disk policy that spills renders to an external drive.
 
 Website: <https://walkthrough-studio-chi.vercel.app> (source in [`site/`](site/))
 
@@ -75,11 +92,74 @@ git clone https://github.com/gabros20/walkthrough-studio ~/walkthrough-studio &&
 Below, `$KIT` is the kit's folder (the clone, or the plugin cache). Platforms without sub-agents run each
 agent's role in the main session; nothing is skipped.
 
-## Quick start: tour a website (site mode)
+## Quick start
 
 Ask for the film in Claude Code and the `walkthrough-film` skill runs the whole job. To run the steps
-yourself, follow [`docs/TUTORIAL-first-site-tour.md`](docs/TUTORIAL-first-site-tour.md): a 60-second
-captioned tour of a public website. In short, with `P` = a project folder outside the kit:
+yourself, use the CLI. `walkthrough` has no npm dependencies, needs Node 22+ and is not installed globally:
+run it as `node $KIT/bin/walkthrough.mjs`, `npm run cli --` inside the kit, `npx --prefix $KIT walkthrough`, or
+through an alias as below. One film from a website:
+
+```bash
+# once: the kit, the recorder's Chromium, the CLI on your path
+cd ~ && git clone https://github.com/gabros20/walkthrough-studio
+npm --prefix ~/walkthrough-studio run setup
+export WALKTHROUGH_STUDIO_HOME=~/walkthrough-studio
+alias walkthrough='node "$WALKTHROUGH_STUDIO_HOME/bin/walkthrough.mjs"'
+# a project folder for the film, then check the machine
+walkthrough init my-tour --mode site --url https://example.com
+cd my-tour
+walkthrough doctor
+# map the site, then edit scenes.draft.json into scenes.json
+walkthrough explore
+# record every scene, then draft the cut from the takes
+walkthrough take --auto
+walkthrough draft
+# the tool briefs, an agent fills captions.answers.json, apply checks it
+walkthrough captions brief
+walkthrough captions apply
+# check the cut, render it, build the review bundle
+walkthrough build --dry --audit
+walkthrough render
+walkthrough review
+# picture lock, one music take, its beat grid, the mix
+walkthrough state lock
+walkthrough sound music --prompt-file music.prompt.txt
+walkthrough sound beat-grid music-take1.mp3
+walkthrough sound build --deliver out/my-tour.mp4
+# the web package: 1080p30 + 720p, poster, .srt + .vtt, YouTube chapters
+walkthrough deliver --preset web --video out/my-tour.mp4
+```
+
+Each command prints the command it runs (`› …`), so every step can be run by hand too. `state.json` records
+takes, captions, builds, renders, reviews, sound, voice, deliveries and costs (`walkthrough state`). The
+first real render needs the title and end card creatives (`creatives.json`), or `walkthrough build
+--placeholders` for a draft. [`docs/TUTORIAL-first-site-tour.md`](docs/TUTORIAL-first-site-tour.md) walks
+through a 60-second captioned tour step by step.
+
+### Commands
+
+| Command | Does |
+|---|---|
+| `init <dir> [--mode site\|studio] [--url]` | scaffolds a project: recorder config, `scenes.json`, film project, `state.json` |
+| `doctor [--capture]` | checks node, ffmpeg, Python, HyperFrames, Chromium, skills, disk, keys and the project; exits 1 on a failure |
+| `studio up\|down\|checkpoint\|restore\|status\|tree\|paths` | the studio scripts with the project's studio config |
+| `explore [url]` | tour map of a site: pages, controls, thumbnails, `scenes.draft.json` (read-only crawl) |
+| `capture-test`, `take [scene…] [--auto] [--parallel N]` | the recorder's capture test and take runner |
+| `draft` | first-pass storyboard from the accepted takes |
+| `captions brief\|apply` | the caption brief for an agent, then its answers checked and written into the storyboard |
+| `build [--dry] [--audit] [--no-captions]`, `audit` | the film build (aspect, pointer treatments, `--fit-audio`) and its audit |
+| `render [--name] [--no-captions]` | the HyperFrames render, with the disk policy (5 GB, `buffer` spill, `caffeinate`) |
+| `review [--render <name>]` | the review bundle and static review page for a render |
+| `sound music\|beat-grid\|build` | one music take by API key, its beat grid, the soundtrack and the `delivered:` mux |
+| `vo tts\|assemble\|lexicon\|translate\|listen-check\|…` | the voiceover tools: per-line TTS with a cache, lexicon, language twins, listening proxy, fit check, placement |
+| `deliver --preset sales\|web\|social\|docs` | the delivery presets |
+| `state [lock\|unlock]`, `cost add\|show` | the project state and the cost ledger |
+
+Every command, flag, file it writes, the state schema and the exit codes: [`docs/CLI.md`](docs/CLI.md).
+
+## Without the CLI (site mode by hand)
+
+The same film with the tools called directly, with `P` = a project folder outside the kit:
 
 ```bash
 mkdir -p $P && cp $KIT/recorder/site-test/walkthrough.config.mjs $KIT/recorder/site-test/scenes.json $P/
@@ -133,9 +213,11 @@ story table, look numbers, pointer, camera and caption rules, takes and checkpoi
 | Bad take | restore the checkpoint, redo | idempotent scenes, or reset by hand |
 
 Decide **captions or voiceover** before the storyboard: captions play muted and holds are sized for reading;
-a voiceover needs holds sized for speech, a script, one paid TTS take and a ducked mix. Both can come from one
-picture lock (`build.mjs --no-captions` gives the captionless twin with identical timing). The
-`walkthrough-film` skill walks through both decisions.
+a voiceover needs holds sized for speech, a script, paid TTS (per line with a cache, or one take) and a ducked
+mix. Both can come from one picture lock (`build.mjs --no-captions` gives the captionless twin with identical
+timing). Picture-first is the default; for a tutorial whose narration leads, the voice is placed first and
+`build.mjs --fit-audio` holds the picture until every line fits. The `walkthrough-film` skill walks through
+these decisions.
 
 ## Pipeline
 
@@ -148,12 +230,14 @@ picture lock (`build.mjs --no-captions` gives the captionless twin with identica
 
 | Folder | What it does | Reference |
 |---|---|---|
+| `bin/`, `cli/` | the `walkthrough` CLI: one file per command, project resolution, `state.json`, cost ledger, disk policy, `doctor` | [`docs/CLI.md`](docs/CLI.md) |
 | `studio/` | sandboxed app instance: APFS clone, own data, separate ports, production build, checkpoints | [`studio/README.md`](studio/README.md) |
-| `recorder/` | Playwright new-headless with GPU, desktop (1440x810 @2x) or phone (390x844 @3x), CDP screencast at 60 fps, invisible mouse on arcs, `events.json`, site-mode steps, `waitQuiet`, safe-area scrolling | [`recorder/README.md`](recorder/README.md), [`docs/CONTRACT.md`](docs/CONTRACT.md) |
-| `film/` | storyboard drafted from takes, `build.mjs` → HyperFrames compositions, one source→film mapping, `--audit`, `--no-captions` twin, scene sheets | [`film/README.md`](film/README.md), [`docs/STORYBOARD.md`](docs/STORYBOARD.md), [`docs/LOOK.md`](docs/LOOK.md) |
-| `sound/` | music bed fitted by bar-aligned loops, clicks, whooshes, riser, −16 LUFS, ducking, the `delivered:` guard | [`sound/README.md`](sound/README.md) |
-| `voiceover/` | script fitted to EDL windows, one TTS take, placement, re-timing fit check | [`voiceover/README.md`](voiceover/README.md) |
-| `delivery/` | masters and web encodes, clips, cropped stills, showcase sheets, README md/html/pdf, verify, zip | [`delivery/README.md`](delivery/README.md), [`docs/DELIVERY.md`](docs/DELIVERY.md) |
+| `recorder/` | Playwright new-headless with GPU, desktop (1440x810 @2x) or phone (390x844 @3x), CDP screencast at 60 fps, invisible mouse on arcs, `events.json`, site-mode steps, `waitQuiet`, safe-area scrolling, tour map, new tabs, downloads and dialogs, parallel takes | [`recorder/README.md`](recorder/README.md), [`docs/CONTRACT.md`](docs/CONTRACT.md) |
+| `film/` | storyboard drafted from takes, caption drafting, `build.mjs` → HyperFrames compositions, one source→film mapping, pointer bridging, aspect presets and phone bezel, `--fit-audio`, `--audit`, `--no-captions` twin, review bundle | [`film/README.md`](film/README.md), [`docs/STORYBOARD.md`](docs/STORYBOARD.md), [`docs/LOOK.md`](docs/LOOK.md), [`docs/CAPTIONS.md`](docs/CAPTIONS.md), [`docs/REVIEW.md`](docs/REVIEW.md) |
+| `sound/` | music by API key, beat grid, music bed fitted by bar-aligned loops, clicks, whooshes, riser, −16 LUFS, ducking, the `delivered:` guard | [`sound/README.md`](sound/README.md) |
+| `voiceover/` | script fitted to EDL windows, per-line TTS with a cache or one take, lexicon, language twins, placement, re-timing fit check, listening proxy | [`voiceover/README.md`](voiceover/README.md), [`docs/VOICE.md`](docs/VOICE.md) |
+| `delivery/` | presets (`sales`, `web`, `social`, `docs`), masters and web encodes, clips, GIFs, cropped stills, showcase sheets, README md/html/pdf, verify, zip | [`delivery/README.md`](delivery/README.md), [`docs/DELIVERY.md`](docs/DELIVERY.md) |
+| `test/` | the golden test of the film build (`npm test`) | [`CLAUDE.md`](CLAUDE.md) |
 | `skills/`, `agents/`, `.claude-plugin/` | 7 skills, 9 agent definitions, the plugin manifest | below |
 | `examples/brightpost/` | the first real project, anonymised | [its README](examples/brightpost/README.md) |
 
@@ -164,13 +248,13 @@ wrong the first time and the fix for each: [`docs/LESSONS.md`](docs/LESSONS.md).
 
 | Skill | Use it to |
 |---|---|
-| `walkthrough-film` | run the whole job as the lead: steps, gates, which agent and model for what, guardrails |
-| `record-takes` | studio, capture test, adapter, rehearsals, takes with checkpoints, INDEX.md |
-| `build-film` | storyboard, build, drafts, pointer treatments, holds audit, picture lock, captionless twin |
-| `review-film` | Haiku describers + Opus critic + rulings loop, contact sheets, holds |
-| `film-sound` | one music generation, bed extension, effects, mix, verified delivery |
-| `voiceover` | script fitted to windows, one TTS take, placement, re-timing fit checks |
-| `deliver-package` | the package: films, clips, stills, showcase, copy, README, verify, zip |
+| `walkthrough-film` | run the whole job as the lead with the CLI: steps, gates, which agent and model for what, guardrails |
+| `record-takes` | studio, tour map, capture test, adapter, rehearsals, takes with checkpoints or in parallel, INDEX.md |
+| `build-film` | storyboard, captions, aspect, pointer at cuts, build, drafts, audit, script-first timing, picture lock, captionless twin |
+| `review-film` | review bundle and page, Haiku describers + Opus critic + rulings loop |
+| `film-sound` | one music generation, beat grid, bed extension, effects, mix, verified delivery |
+| `voiceover` | script fitted to windows or voice-first, per-line TTS with a cache, lexicon, languages, placement, listening proxy |
+| `deliver-package` | the presets and the sales package: films, clips, stills, showcase, copy, README, verify, zip |
 
 | Agent | Model | Role |
 |---|---|---|
@@ -193,19 +277,21 @@ acts on it. Critical reviews are never skipped; everything else spends as few to
 long-lived and named, so the lead can send numbered rulings to the editor or a retake request to the take
 operator without re-briefing. Long reports come back as files. Why: [ADR-008](docs/adr/008-model-tier-orchestration.md).
 The roles and their briefs live in [`agents/`](agents/).
+On Codex, Antigravity, Cursor or Hermes, [`docs/MODELS.md`](docs/MODELS.md) gives the equivalent model for each
+tier and how to set it there.
 
 ## Documentation
 
 [`docs/README.md`](docs/README.md) lists every doc by purpose (tutorial, how-to, reference, explanation),
 including the architecture decision records in [`docs/adr/`](docs/adr/) and the
-[changelog](docs/CHANGELOG.md). What is planned but not built (only 16:9 films today, caption drafting,
-multi-tab flows, one CLI, package presets) is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Rules for agents
+[changelog](docs/CHANGELOG.md). What is still open (a guided login recorder, time-lapse auto-detection,
+themes, music fallbacks, hosting the review page) is in [`docs/ROADMAP.md`](docs/ROADMAP.md). Rules for agents
 working in this repo: [`CLAUDE.md`](CLAUDE.md).
 
 ## Contributing, versioning, licence
 
-- **Contributing**: [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the checks (`npm run check`, `npm run
-  check:site`), adding a skill, agent or tool, conventional commits and pull requests. Be kind:
+- **Contributing**: [`CONTRIBUTING.md`](CONTRIBUTING.md) covers the checks (`npm run check`, `npm test`,
+  `npm run check:site`), adding a skill, agent or tool, conventional commits and pull requests. Be kind:
   [code of conduct](CODE_OF_CONDUCT.md). Security problems: [`SECURITY.md`](SECURITY.md) (private reporting,
   not issues).
 - **Versioning**: [semver](https://semver.org/), one version across the plugin and package manifests, set by

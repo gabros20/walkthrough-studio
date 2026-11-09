@@ -1,0 +1,436 @@
+{
+  "schema": "walkthrough-take/1",
+  "take": "sample-mini",
+  "fps": 60,
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "scale": 2,
+  "video": {
+    "file": "master.mp4",
+    "width": 2880,
+    "height": 1620,
+    "frames": 480,
+    "duration": 7.999999999999999
+  },
+  "timeBase": "seconds on the master.mp4 clock; t = 0 is the first frame; frame n starts at n / fps",
+  "coordinates": "CSS px in the 1440x810 viewport, origin top-left; multiply by scale for master pixels",
+  "pointerStart": {
+    "x": 283.66,
+    "y": 727
+  },
+  "motion": {
+    "bend": 0.08,
+    "baseSeconds": 0.35,
+    "pxPerSecond": 2400,
+    "minSeconds": 0.4,
+    "maxSeconds": 0.9,
+    "clickLead": 0.18,
+    "pressSeconds": 0.09,
+    "ease": "power3.inOut"
+  },
+  "events": [
+    {
+      "type": "move",
+      "t": 1.0209,
+      "tEnd": 1.62,
+      "label": "send",
+      "role": "approach",
+      "from": {
+        "x": 283.66,
+        "y": 727
+      },
+      "to": {
+        "x": 881.43,
+        "y": 741
+      },
+      "control": {
+        "x": 583.67,
+        "y": 686.18
+      },
+      "duration": 0.5991,
+      "cursor": "pointer",
+      "cursorRaw": "pointer",
+      "id": 1
+    },
+    {
+      "type": "cursor",
+      "t": 1.4421,
+      "cursor": "default",
+      "raw": "auto",
+      "at": {
+        "x": 841,
+        "y": 734
+      },
+      "id": 2
+    },
+    {
+      "type": "cursor",
+      "t": 1.4579,
+      "cursor": "pointer",
+      "raw": "pointer",
+      "at": {
+        "x": 853,
+        "y": 736
+      },
+      "id": 3
+    },
+    {
+      "type": "down",
+      "t": 1.8012,
+      "label": "send",
+      "at": {
+        "x": 881.43,
+        "y": 741
+      },
+      "button": "left",
+      "box": {
+        "x": 845.87,
+        "y": 719,
+        "width": 71.13,
+        "height": 44
+      },
+      "id": 4
+    },
+    {
+      "type": "up",
+      "t": 1.8927,
+      "label": "send",
+      "at": {
+        "x": 881.43,
+        "y": 741
+      },
+      "button": "left",
+      "id": 5
+    },
+    {
+      "type": "waitStart",
+      "t": 1.8961,
+      "label": "saved",
+      "id": 6
+    },
+    {
+      "type": "waitEnd",
+      "t": 2.2487,
+      "label": "saved",
+      "outcome": "success",
+      "id": 7
+    },
+    {
+      "type": "mark",
+      "t": 2.2488,
+      "label": "status line",
+      "box": {
+        "x": 37,
+        "y": 344.8,
+        "width": 890,
+        "height": 22
+      },
+      "id": 8,
+      "text": "Saved"
+    },
+    {
+      "type": "move",
+      "t": 2.7696,
+      "tEnd": 3.3989,
+      "label": "option 2",
+      "role": "approach",
+      "from": {
+        "x": 881.43,
+        "y": 741
+      },
+      "to": {
+        "x": 482,
+        "y": 202.8
+      },
+      "control": {
+        "x": 724.77,
+        "y": 439.94
+      },
+      "duration": 0.6293,
+      "cursor": "pointer",
+      "cursorRaw": "pointer",
+      "id": 9
+    },
+    {
+      "type": "cursor",
+      "t": 2.9548,
+      "cursor": "default",
+      "raw": "auto",
+      "at": {
+        "x": 868,
+        "y": 717
+      },
+      "id": 10
+    },
+    {
+      "type": "cursor",
+      "t": 3.1558,
+      "cursor": "pointer",
+      "raw": "pointer",
+      "at": {
+        "x": 591,
+        "y": 317
+      },
+      "id": 11
+    },
+    {
+      "type": "down",
+      "t": 3.5795,
+      "label": "option 2",
+      "at": {
+        "x": 482,
+        "y": 202.8
+      },
+      "button": "left",
+      "box": {
+        "x": 337.66,
+        "y": 132.8,
+        "width": 288.67,
+        "height": 140
+      },
+      "id": 12
+    },
+    {
+      "type": "up",
+      "t": 3.6736,
+      "label": "option 2",
+      "at": {
+        "x": 482,
+        "y": 202.8
+      },
+      "button": "left",
+      "id": 13
+    },
+    {
+      "type": "move",
+      "t": 4.0828,
+      "tEnd": 4.5581,
+      "label": "option 3",
+      "role": "approach",
+      "from": {
+        "x": 482,
+        "y": 202.8
+      },
+      "to": {
+        "x": 782.67,
+        "y": 202.8
+      },
+      "control": {
+        "x": 632.33,
+        "y": 178.74
+      },
+      "duration": 0.4753,
+      "cursor": "pointer",
+      "cursorRaw": "pointer",
+      "id": 14
+    },
+    {
+      "type": "down",
+      "t": 4.7386,
+      "label": "option 3",
+      "at": {
+        "x": 782.67,
+        "y": 202.8
+      },
+      "button": "left",
+      "box": {
+        "x": 638.34,
+        "y": 132.8,
+        "width": 288.66,
+        "height": 140
+      },
+      "id": 15
+    },
+    {
+      "type": "up",
+      "t": 4.832,
+      "label": "option 3",
+      "at": {
+        "x": 782.67,
+        "y": 202.8
+      },
+      "button": "left",
+      "id": 16
+    },
+    {
+      "type": "move",
+      "t": 5.2454,
+      "tEnd": 5.6509,
+      "label": "edge chip",
+      "role": "approach",
+      "from": {
+        "x": 782.67,
+        "y": 202.8
+      },
+      "to": {
+        "x": 863,
+        "y": 308.8
+      },
+      "control": {
+        "x": 831.31,
+        "y": 249.37
+      },
+      "duration": 0.4054,
+      "cursor": "pointer",
+      "cursorRaw": "pointer",
+      "guard": {
+        "action": "shifted",
+        "asked": {
+          "x": 910.84,
+          "y": 308.8
+        }
+      },
+      "id": 17
+    },
+    {
+      "type": "cursor",
+      "t": 5.4944,
+      "cursor": "default",
+      "raw": "auto",
+      "at": {
+        "x": 845,
+        "y": 279
+      },
+      "id": 18
+    },
+    {
+      "type": "cursor",
+      "t": 5.5601,
+      "cursor": "pointer",
+      "raw": "pointer",
+      "at": {
+        "x": 858,
+        "y": 301
+      },
+      "id": 19
+    },
+    {
+      "type": "down",
+      "t": 5.8311,
+      "label": "edge chip",
+      "at": {
+        "x": 863,
+        "y": 308.8
+      },
+      "button": "left",
+      "box": {
+        "x": 826.5,
+        "y": 290.8,
+        "width": 99.22,
+        "height": 36
+      },
+      "id": 20
+    },
+    {
+      "type": "up",
+      "t": 5.924,
+      "label": "edge chip",
+      "at": {
+        "x": 863,
+        "y": 308.8
+      },
+      "button": "left",
+      "id": 21
+    },
+    {
+      "type": "move",
+      "t": 6.3358,
+      "tEnd": 6.8277,
+      "label": "history list",
+      "role": "move",
+      "from": {
+        "x": 863,
+        "y": 308.8
+      },
+      "to": {
+        "x": 1194,
+        "y": 388.88
+      },
+      "control": {
+        "x": 1034.91,
+        "y": 322.36
+      },
+      "duration": 0.4919,
+      "cursor": "text",
+      "cursorRaw": "auto",
+      "id": 22
+    },
+    {
+      "type": "cursor",
+      "t": 6.5426,
+      "cursor": "default",
+      "raw": "auto",
+      "at": {
+        "x": 938,
+        "y": 317
+      },
+      "id": 23
+    },
+    {
+      "type": "cursor",
+      "t": 6.69,
+      "cursor": "text",
+      "raw": "auto",
+      "at": {
+        "x": 1176,
+        "y": 381
+      },
+      "id": 24
+    },
+    {
+      "type": "scroll",
+      "t": 6.8431,
+      "tEnd": 7.4782,
+      "label": "history scroll",
+      "at": {
+        "x": 1194,
+        "y": 388.88
+      },
+      "dx": 0,
+      "dy": 640,
+      "container": {
+        "root": false,
+        "box": {
+          "x": 985,
+          "y": 132.8,
+          "width": 418,
+          "height": 640.2
+        }
+      },
+      "before": {
+        "left": 0,
+        "top": 0
+      },
+      "after": {
+        "left": 0,
+        "top": 640
+      },
+      "id": 25
+    },
+    {
+      "type": "cursor",
+      "t": 7.136,
+      "cursor": "default",
+      "raw": "auto",
+      "at": {
+        "x": 1194,
+        "y": 388.88
+      },
+      "id": 26
+    },
+    {
+      "type": "mark",
+      "t": 7.6299,
+      "label": "card 14",
+      "box": {
+        "x": 985,
+        "y": 454.8,
+        "width": 414,
+        "height": 64
+      },
+      "id": 27
+    }
+  ]
+}

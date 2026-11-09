@@ -78,6 +78,9 @@ def best_rows(paths, ims, avail_w, avail_h, gap, lab_h, cap):
 
 
 def main():
+    if any(x in ("-h", "--help") for x in sys.argv[1:]):
+        print(__doc__.strip())
+        sys.exit(0)
     if len(sys.argv) < 3:
         print(__doc__)
         sys.exit(1)

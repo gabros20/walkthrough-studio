@@ -23,6 +23,14 @@ const CONTENTS: { term: string; detail: React.ReactNode }[] = [
     term: "Captions or a voice",
     detail: "Captions of at most 10 words, each anchored to a logged event; or a voiceover over the captionless twin.",
   },
+  {
+    term: "Three aspects",
+    detail: "16:9, 9:16 or 1:1 from the same kit: the aspect sets every layout number, and a vertical film comes from a phone take.",
+  },
+  {
+    term: "Other languages",
+    detail: "Voiceover twins from the same picture lock: translation briefs with each line's window and word budget, then a per-line TTS cache.",
+  },
 ];
 
 const TWINS: { row: string; captions: string; voice: string }[] = [

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ridgeline 7 spec sheet</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 -apple-system, Helvetica, Arial, sans-serif; color: #141414; background: #fafaf9; }
+  header { padding: 18px 24px; background: #fff; border-bottom: 1px solid #e7e5e4; font-weight: 700; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 24px 120px; }
+  h1 { font-size: 40px; line-height: 1.1; margin: 24px 0 12px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  td, th { text-align: left; padding: 10px 14px; border-bottom: 1px solid #e7e5e4; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
+  button { height: 44px; padding: 0 18px; border: 0; border-radius: 12px; background: #0E7C86; color: #fff; font: 600 15px/1 inherit; cursor: pointer; }
+  button.quiet { background: #e7e5e4; color: #141414; }
+  @media (max-width: 600px) { h1 { font-size: 30px; } }
+</style>
+</head>
+<body>
+<header>Bike finder</header>
+<main>
+  <h1>Ridgeline 7 spec sheet</h1>
+  <p>Frame, gearing and weight for every size. <a href="#sizes">Jump to sizes</a></p>
+  <div class="row">
+    <button type="button" id="compare">Add to comparison</button>
+    <button type="button" class="quiet" id="clear">Delete saved comparison</button>
+  </div>
+  <h2 id="sizes">Sizes</h2>
+  <table>
+    <tr><th>Size</th><th>Rider height</th><th>Weight</th></tr>
+    <tr><td>S</td><td>155-168 cm</td><td>10.9 kg</td></tr>
+    <tr><td>M</td><td>167-178 cm</td><td>11.2 kg</td></tr>
+    <tr><td>L</td><td>177-188 cm</td><td>11.6 kg</td></tr>
+  </table>
+  <h2>Questions</h2>
+  <p><a href="/site.html">Back to the finder</a> or <a href="mailto:rides@example.com">write to the ride desk</a>.</p>
+</main>
+</body>
+</html>

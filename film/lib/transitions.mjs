@@ -4,7 +4,7 @@
 //   3. whip             Camera.whipOut()/whipIn() in the format montage (motion blur does the smear)
 //   4. hard cut         two scene hosts back to back (no code: the seam is the cut)
 
-import { COLOR, FILM, SHAPE } from "./config.mjs";
+import { COLOR, FILM, SHAPE, WIPE } from "./config.mjs";
 import { n, Timeline } from "./emit.mjs";
 
 const SLANT = SHAPE.wipeSlantDeg; // degrees, the lean of the panel ("/"); brand shape.wipeSlantDeg
@@ -15,8 +15,10 @@ const TAN = Math.tan((SLANT * Math.PI) / 180);
  * An accent-colour panel leaning "/" crosses the frame, led by a thin bar.
  * dir: 1 = left to right, -1 = right to left. The frame is fully red around `cut` (the travel
  * midpoint) for about 0.1 s; cut the scenes underneath there. power2.inOut, one tween.
+ * width: the panel's, wide enough to cover the frame while leaning (3400 at 16:9; lib/config.mjs
+ * WIPE.width derives it for the other aspects).
  */
-export function slantWipe({ id = "wipe", start, dur = 0.9, dir = 1, width = 3400 }) {
+export function slantWipe({ id = "wipe", start, dur = 0.9, dir = 1, width = WIPE.width }) {
   const H = FILM.height, W = FILM.width;
   const lean = (TAN * H) / 2; // horizontal offset of the top/bottom corners from the centre line
   const bar = 64, gap = 44;

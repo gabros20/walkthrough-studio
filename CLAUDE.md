@@ -9,13 +9,15 @@ It is used against *other* projects' apps. The rules below protect those project
 |---|---|
 | `skills/<name>/SKILL.md` | workflows; start with `skills/walkthrough-film`. Each finds the kit as `${CLAUDE_PLUGIN_ROOT}`, `$WALKTHROUGH_STUDIO_HOME`, `~/walkthrough-studio` or its own `../..` (keep that block identical in all 7) |
 | `agents/<name>.md` | specialised agent roles with their model tier |
-| `docs/` | `README.md` (index by purpose), `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md`, `INSTALL.md` (per-platform install; `INSTALL-RESEARCH.md` is the why), `ROADMAP.md` (planned, not built), `adr/` (decisions: do not re-litigate without a superseding ADR), `CHANGELOG.md`, `TUTORIAL-first-site-tour.md` |
+| `docs/` | `README.md` (index by purpose), `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md`, `CLI.md` (the `walkthrough` CLI and `state.json`), `CAPTIONS.md`, `REVIEW.md`, `VOICE.md`, `INSTALL.md` (per-platform install; `INSTALL-RESEARCH.md` is the why), `ROADMAP.md` (what is open), `DESIGN-batch-2.md` (design of the 0.2.0 work), `adr/` (decisions: do not re-litigate without a superseding ADR), `CHANGELOG.md`, `TUTORIAL-first-site-tour.md` |
 | `studio/` | isolated app instance scripts (clone, ports, checkpoints) |
 | `recorder/` | Playwright capture, invisible-mouse driving, `events.json` take format, take runner |
-| `film/` | HyperFrames film kit: `build.mjs`, components, review scripts |
-| `sound/` | music bed, effects, mix, mux with `delivered:` |
-| `voiceover/` | script fitting, placement, re-timing fit check |
-| `delivery/` | package scripts: films, clips, stills, sheets, README html/pdf, verify, zip |
+| `film/` | HyperFrames film kit: `build.mjs`, components in `lib/`, caption drafting, audit, review bundle |
+| `sound/` | music bed, music generation and beat grid, effects, mix, mux with `delivered:` |
+| `voiceover/` | script fitting, per-line TTS with a cache, lexicon, translations, placement, listening proxy |
+| `delivery/` | package scripts and presets (`sales`, `web`, `social`, `docs`): films, clips, stills, sheets, README html/pdf, verify, zip |
+| `test/` | the golden test of the film build (`test/run.mjs`, fixture, `test/golden/`) |
+| `bin/walkthrough.mjs`, `cli/` | the `walkthrough` CLI over all of the above (`docs/CLI.md`); one file per command in `cli/commands/`, shared helpers in `cli/lib/`; only the CLI writes a project's `state.json` |
 | `examples/brightpost/` | the first real project, anonymised: plan, configs, storyboard, voiceover, delivery copy |
 
 ## Guardrails
@@ -40,6 +42,17 @@ It is used against *other* projects' apps. The rules below protect those project
 - Do not publish, upload or share anything (packages, films, artifacts) without the owner's go-ahead.
 
 ## Before claiming done
+
+- `npm run check` must pass: syntax of every `.mjs`, `.py`, `.sh` and `.json`, skill and agent frontmatter,
+  version agreement, `docs/CLI.md` equal to `walkthrough help --all` (after changing a command's usage, run
+  `node scripts/cli-docs.mjs`), and `claude plugin validate .` when `claude` is on the PATH.
+- `npm test` must pass: the golden test builds a fixture with `film/build.mjs --dry` and `--emit-only` and
+  compares `edl.json`, `cues.json`, `captions.srt` and the composition hashes with `test/golden/`. Code in
+  `film/lib` and `film/build.mjs` is golden-tested: a change that moves the output must be deliberate, and
+  then you update the goldens with `npm run test:update` (it prints the diff; read it) and say why in the
+  commit. `npm run test:render` (local) compares rendered frames too.
+- Use the CLI (`node bin/walkthrough.mjs …`) the way the skills do when you test a flow; each command prints
+  the tool command it runs, so a failure can be reproduced without it.
 
 - Changed a script: run it (or its `--dry`/`--help`) on real or sample input and read the output.
 - Changed `skills/`, `agents/` or `.claude-plugin/`: `claude plugin validate .` must pass. Skills must also work

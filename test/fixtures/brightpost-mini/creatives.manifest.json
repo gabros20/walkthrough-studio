@@ -1,0 +1,50 @@
+[
+  {
+    "id": "placeholder-1",
+    "src": "assets/creatives/placeholder-1.png",
+    "w": 1080,
+    "h": 1080
+  },
+  {
+    "id": "placeholder-2",
+    "src": "assets/creatives/placeholder-2.png",
+    "w": 1080,
+    "h": 1350
+  },
+  {
+    "id": "placeholder-3",
+    "src": "assets/creatives/placeholder-3.png",
+    "w": 1080,
+    "h": 1920
+  },
+  {
+    "id": "placeholder-4",
+    "src": "assets/creatives/placeholder-4.png",
+    "w": 1080,
+    "h": 1350
+  },
+  {
+    "id": "placeholder-5",
+    "src": "assets/creatives/placeholder-5.png",
+    "w": 1080,
+    "h": 1080
+  },
+  {
+    "id": "placeholder-6",
+    "src": "assets/creatives/placeholder-6.png",
+    "w": 1080,
+    "h": 1350
+  },
+  {
+    "id": "placeholder-7",
+    "src": "assets/creatives/placeholder-7.png",
+    "w": 1080,
+    "h": 1080
+  },
+  {
+    "id": "placeholder-8",
+    "src": "assets/creatives/placeholder-8.png",
+    "w": 1080,
+    "h": 1920
+  }
+]

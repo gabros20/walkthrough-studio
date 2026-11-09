@@ -26,6 +26,19 @@ jobs:
           node-version: 24
       - run: npm run check
 
+  # Golden test: the fixture film's edl/cues/captions and composition hashes (test/run.mjs). No
+  # browser, no render; ffmpeg generates the fixture's take master.
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm test
+
   # The website builds from a clean install.
   site:
     runs-on: ubuntu-latest

@@ -45,7 +45,7 @@ export const SCENES_SNIPPET = `{
       "start": "/site.html",
       "steps": [
         { "hold": 0.6 },
-        { "mark": { "role": "heading", "name": "Find a bike for this winter" }, "label": "headline" },
+        { "mark": { "role": "heading", "name": "Find a bike for this spring" }, "label": "headline" },
         { "type": "ridgeline", "into": { "placeholder": "Search bikes" }, "label": "query" },
         { "click": { "role": "button", "name": "Search" }, "label": "search" },
         { "wait": { "quiet": { "ms": 600, "timeout": 15000 } }, "label": "results" },

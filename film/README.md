@@ -1,4 +1,4 @@
-# film: the HyperFrames project
+# film: the HyperFrames film kit
 
 Turns recorded takes into a finished walkthrough film. A build script reads a storyboard and the
 takes' event logs and writes static, deterministic HyperFrames compositions: the stage (ink ground,
@@ -6,27 +6,70 @@ app window, camera), a drawn pointer, spotlights, captions, transitions, the tit
 Every component is a plain ES module in `lib/` that returns strings, never touches the DOM, and
 emits only `fromTo` / `set` tweens with literal numbers and stable ids.
 
-HyperFrames is pinned at 0.9.16 (`npx --yes hyperframes@0.9.16 …`, or the npm scripts).
-`CLAUDE.md` / `AGENTS.md` here are the HyperFrames project instructions; read them before editing
-compositions by hand (you should not need to: edit the storyboard or `lib/`).
+HyperFrames is pinned at 0.9.16 (`npx --yes hyperframes@0.9.16 …`). `CLAUDE.md` / `AGENTS.md`
+are the HyperFrames project instructions (copied into every project); read them before editing
+compositions by hand (you should not need to: edit the storyboard, the brand or `lib/`).
+
+## Projects: the kit is never written to
+
+This folder is code. One film lives in a **project folder outside the kit**: it holds the inputs
+(`storyboard.json`, `brand.json`, `creatives.json`, `music.json`, `voiceover/`) and receives every
+output (`index.html`, `compositions/`, `assets/`, `cues.json`, `edl.json`, `captions.srt`,
+`renders/`, `sound-build/`). It is a HyperFrames project of its own, so
+`npx hyperframes@0.9.16 check` / `render` run inside it. Installed as a plugin, the kit can sit in a
+read-only cache; two films never collide, and a kit update never touches a render.
+
+Every kit command finds the project the same way (`lib/config.mjs`, `PROJECT_DIR`), first match
+wins: `--project <dir>`, `FILM_PROJECT=<dir>`, the storyboard's folder when it is a project (has
+`hyperframes.json`), the current directory when it holds a `storyboard.json` or `hyperframes.json`,
+else the kit's own `film/` (developing the kit itself). `scripts/init-project.mjs` makes a folder a
+project; `build.mjs` and `build-demo.mjs` also add any missing project file (`lib/project.mjs`:
+`hyperframes.json`, `meta.json`, `package.json` with the pinned scripts, `CLAUDE.md`, `AGENTS.md`,
+`.gitignore`, `compositions/`, and `kit.json`, which records where the kit is). Nothing existing is
+overwritten. The pointer code imports `../../recorder/motion.mjs` relative to the kit, so it
+resolves wherever the project is; keep `film/` and `recorder/` side by side in the kit.
+
+A new film, start to finish (`KIT` = the kit's root folder, `P` = the project, `T` = the takes):
 
 ```
-node scripts/draft-storyboard.mjs ../takes/take-1 ../takes/take-2 --out storyboard.json   # first-pass storyboard from the takes
+node $KIT/film/scripts/init-project.mjs $P                  # HyperFrames project files, brand.json, storyboard.example.json
+node $KIT/film/scripts/draft-storyboard.mjs $T/take-1 $T/take-2 --out $P/storyboard.json
+cd $P                                                        # from here on the project is the current directory
+node $KIT/film/build.mjs --takes $T --dry --audit            # durations table + audit, no files written
+node $KIT/film/scripts/sync-assets.mjs                       # logo (brand.json) + creatives (creatives.json) -> assets/
+node $KIT/film/build.mjs --takes $T --audit                  # cuts clips, writes index.html, compositions/, cues/edl/captions
+npx --yes hyperframes@0.9.16 check --json
+npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
+for f in cues.json edl.json; do cp $f renders/final.$f; done; cp captions.srt renders/final.captions.srt
+node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/my-film.mp4
+```
+
+Outside the project, add `--project $P` to each kit command (or set `FILM_PROJECT=$P`).
+
+## Commands
+
+All of these run against the project (above); paths are the kit's.
+
+```
+node scripts/init-project.mjs <dir>  # make <dir> a film project (adds only what is missing)
+node scripts/draft-storyboard.mjs <take>… --out storyboard.json   # first-pass storyboard from the takes
 node scripts/make-placeholder.mjs && node build-demo.mjs   # component demo on stand-in footage, no recording needed
-node scripts/sync-assets.mjs        # brand logo + creatives -> assets/, writes the manifests
+node scripts/sync-assets.mjs        # brand logo + creatives -> <project>/assets/, writes the manifests
 node build.mjs [storyboard.json]    # the real build: cuts clips, writes index.html, compositions/,
                                     #   cues.json, captions.srt, edl.json  (--no-cut reuses clips)
+node build.mjs --project <dir>      # the project (else FILM_PROJECT, the storyboard's folder, the current directory)
 node build.mjs --dry                # mapping + durations table only: no ffmpeg, no files written
 node build.mjs --audit              # build, then audit: holds, pointer jumps at cuts, dead air, captions, claims
 node build.mjs --dry --audit        # audit the would-be files (no holds check)
 node build.mjs --dry --dry-out /tmp/x   # also writes the would-be cues.json, edl.json, captions.srt there
-node build.mjs --takes ../takes     # where the take folders are (else WALKTHROUGH_TAKES, storyboard takesDir, ../takes)
-node build.mjs --brand my.json      # brand file (else FILM_BRAND, storyboard "brand", film/brand.json, neutral defaults)
+node build.mjs --takes ../takes     # where the take folders are (else WALKTHROUGH_TAKES, storyboard takesDir,
+                                    #   <project>/takes, ../takes next to the project)
+node build.mjs --brand my.json      # brand file (else FILM_BRAND, storyboard "brand", <project>/brand.json, neutral defaults)
 FILM_FPS=60 node build.mjs          # film rate (or "fps" in the storyboard); clips stay at storyboard.clipFps
 node build.mjs --no-captions        # voiceover twin: identical film, captions track not mounted
                                     #   (or "captions": false in the storyboard); cues.json records "captions": false
 node scripts/verify-pointer.mjs     # drawn pointer vs recorder/motion.mjs, sampled in Chrome
-npx --yes hyperframes@0.9.16 check --json
+npx --yes hyperframes@0.9.16 check --json            # inside the project
 npx --yes hyperframes@0.9.16 snapshot --at 1,4.5,12
 npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
 ```
@@ -37,14 +80,14 @@ After every render, copy `cues.json` and `edl.json` beside it as `renders/<name>
 voiceover tools read those, so a later rebuild cannot desync a render you already have.
 
 The storyboard schema is in `docs/STORYBOARD.md`, the design system in `docs/LOOK.md`. Start from
-`storyboard.example.json` (three short scenes over `takes/sample`).
+`storyboard.example.json` (three short scenes over `takes/sample`; `init-project.mjs` copies it into the project).
 
 ## Brand
 
 Colours, type, the slant, the lockup and the card lines come from a brand file. Every key is
 optional; `brand.example.json` shows the whole schema with the neutral defaults, and
 `examples/kleber-content-ai/brand.json` is a real one. Found as: `--brand <file>`, else
-`FILM_BRAND`, else the storyboard's `"brand"` (relative to the storyboard), else `film/brand.json`,
+`FILM_BRAND`, else the storyboard's `"brand"` (relative to the storyboard), else `<project>/brand.json`,
 else the defaults in `lib/config.mjs`. Paths inside it are relative to the brand file, and
 `${NAME}` expands an environment variable (so a brand file can point into another checkout).
 
@@ -234,10 +277,11 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
 |---|---|
 | `scripts/draft-storyboard.mjs <take>… [--take n] [--out f]` | First-pass storyboard: one scene per take, keep span, agent waits as time-lapses, a framing and a `TODO` caption per click, marks as `_candidates.spotlights` (docs/STORYBOARD.md, Drafting). |
 | `scripts/audit.mjs [storyboard] [--takes d] [--edl f --cues f --srt f] [--hold s] [--jump px] [--tail s] [--no-holds] [--json]` | Holds, pointer jumps at cuts, dead air after captions, caption lint, caption claims against mark text; exit 1 on errors only (also `build.mjs --audit`). |
-| `scripts/sync-assets.mjs [--brand f] [--creatives f]` | Logo + creatives into `assets/`, manifests. |
+| `scripts/init-project.mjs <dir>` | Make `<dir>` a film project: HyperFrames files, `kit.json`, `brand.json`, `storyboard.example.json` (adds only what is missing). |
+| `scripts/sync-assets.mjs [--project d] [--brand f] [--creatives f]` | Logo + creatives into `<project>/assets/`, manifests. |
 | `scripts/make-placeholder.mjs [seconds] [--creatives]` | Stand-in footage (+ stand-in creatives when there are none) for `build-demo.mjs`. |
 | `scripts/verify-pointer.mjs` | Drawn pointer vs the recorder's curve in headless Chrome (needs `playwright-core`). |
-| `scripts/holds.py [min_s] [storyboard.json] [--takes dir]` | Dead holds: stretches with no pointer move, no tween and no UI change (needs the cut clips and the built compositions; run from `film/`). |
+| `scripts/holds.py [min_s] [storyboard.json] [--takes dir]` | Dead holds: stretches with no pointer move, no tween and no UI change (needs the cut clips and the built compositions; run from the project). |
 | `scripts/scene-sheets.py <video> <edl.json> <outdir> [fps] [width]` | One contact sheet per scene of a render, labelled with film time. |
 | `scripts/list-events.py <take dir>…` | A take's events as a table: the labels refs are written with. |
 | `scripts/cadence.py <video> <t0> <t1> <w:h:x:y>` | Frame-change cadence of a crop (30 fps clips in a 60 fps film must change every 2nd frame). |
@@ -247,7 +291,9 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
 
 - `lib/` components and `lib/edl.mjs` (refs, anchors, mapping); `build.mjs` + a storyboard: the
   real build; `build-demo.mjs` + `demo/targets.mjs`: the placeholder demo.
-- Generated (git-ignored): `index.html`, `compositions/*.html`, `cues.json`, `captions.srt`,
-  `edl.json`, `demo/captions.srt`, `assets/footage/`, `assets/brand/`, `assets/creatives/` — edit
-  the storyboard, the brand or the generators, not these.
-- Also git-ignored: `renders/`, `review/`, `sound-build/`, `assets/audio/`, `.hyperframes/`, `node_modules/`.
+- `lib/project.mjs`: what makes a folder a project (`ensureProject`).
+- Generated into the project (and git-ignored there by the `.gitignore` the project gets):
+  `index.html`, `compositions/*.html`, `cues.json`, `captions.srt`, `edl.json`, `assets/footage/`,
+  `assets/brand/`, `assets/creatives/`, `renders/`, `review/`, `sound-build/`, `assets/audio/`,
+  `.hyperframes/` — edit the storyboard, the brand or the generators, not these. When developing in
+  the kit's own `film/`, the same files land here and the same ignore list applies.

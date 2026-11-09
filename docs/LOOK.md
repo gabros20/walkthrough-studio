@@ -1,7 +1,7 @@
 # The look
 
 The design system of a walkthrough film. The numbers are the defaults in `film/lib/config.mjs`;
-colours, type, the slant and the lockup come from the brand file (`film/brand.json`), layout numbers
+colours, type, the slant and the lockup come from the project's brand file (`brand.json`), layout numbers
 from its `look` section or the storyboard's. The film is a real recording of a real app, framed and
 explained. Everything on screen either is the app or points at the app.
 

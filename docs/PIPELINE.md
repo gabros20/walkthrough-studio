@@ -91,20 +91,27 @@ second request carry the saved rules. Note how long each turn takes.
 
 ## 5. Edit (`film/`, `docs/STORYBOARD.md`, `docs/LOOK.md`)
 
+- The kit is read-only during use. Each film has a **project folder** outside the kit
+  (`node $KIT/film/scripts/init-project.mjs $P`) holding its inputs (`storyboard.json`, `brand.json`,
+  `creatives.json`, `music.json`, `voiceover/`) and receiving every output (build files, `renders/`,
+  `sound-build/`, `out/`). Kit commands run from `$P`, or take `--project $P` / `FILM_PROJECT`; without a
+  project they fall back to the kit's own `film/` (dev mode). Full command list: skill `build-film`.
+
 - `storyboard.json` is the edit decision list: per scene, kept source ranges as event anchors
   (`"click:send"`), time-lapses (agent waits compressed, labelled "Time-lapse N×", loaders shown at normal
   speed first), slow-downs (no tag), excised stalls, camera framings by element box, spotlights, captions
   anchored to events, transitions.
 - One mapping for footage and every overlay: `film = filmIn + (source − srcIn) / rate`, with
   `rate = (srcOut − srcIn) / filmDur`, every bound snapped to a whole frame. Re-cutting never desyncs.
-- `film/scripts/draft-storyboard.mjs` drafts the first storyboard from `events.json` (clicks → framings and
+- `$KIT/film/scripts/draft-storyboard.mjs` drafts the first storyboard (`--out $P/storyboard.json`) from `events.json` (clicks → framings and
   caption placeholders, long waits → time-lapses); the editor refines it. `build.mjs --audit` (or `scripts/audit.mjs`)
   reports frozen holds, pointer jumps at cuts, dead air after captions, caption lint and caption claims
   (`"claims": "mark:<label>"`: every quoted phrase must be in that mark's logged text); errors exit 1; it runs before every
   review and before lock.
-- `node film/build.mjs --dry` prints the durations table without rendering; `--dry-out <dir>` writes the
+- `node $KIT/film/build.mjs --takes $T --dry` (from `$P`) prints the durations table without rendering; `--dry-out <dir>` writes the
   would-be `edl.json`, `cues.json`, `captions.srt` for downstream fit checks.
-- `--no-captions` builds the captionless twin for the voiceover version with identical timing.
+- `--no-captions` builds the captionless twin for the voiceover version with identical timing; renders go to
+  `$P/renders/final.mp4` and `final-vo.mp4`, each with its `cues.json`, `edl.json`, `captions.srt` copied beside it.
 - HyperFrames 0.9.16 contract: one paused timeline per composition, `fromTo` only, no timers or randomness,
   muted video, bundled fonts.
 - Look (details in `docs/LOOK.md`): canvas 1920x1080, flat ink ground, app window 1536x864 at 36 px from
@@ -124,7 +131,7 @@ second request carry the saved rules. Note how long each turn takes.
 
 Draft render → Haiku describers read 1 frame every 2 s in parallel ranges → Opus critic verifies their flags
 and does its own pass on contact sheets and strips around cuts, camera moves and captions → lead rules on the
-critic's list → editor fixes → `holds.py` audit → next draft. Two or three rounds were enough.
+critic's list → editor fixes → `build.mjs --audit` → next draft. Two or three rounds were enough.
 
 ## 7. Picture lock, then sound (`sound/`)
 
@@ -136,6 +143,9 @@ critic's list → editor fixes → `holds.py` audit → next draft. Two or three
   scene-level transitions (two alternating variants), one riser into the end card; each 3-6 dB over the bed.
 - Mix: fade in 0.4 s, out 2.5 s under the end card; −16 LUFS integrated, true peak ≤ −1 dBTP. Single mixed
   track muxed onto the picture-only render with ffmpeg; last line `delivered: <path>`.
+- `music.json` lives in the project folder (template `$KIT/sound/music.example.json`); from `$P`:
+  `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`
+  (`--project $P` from elsewhere; `--film` is an alias). Build files go to `$P/sound-build/`.
 
 ## 8. Voiceover twin (`voiceover/`)
 
@@ -145,6 +155,10 @@ critic's list → editor fixes → `holds.py` audit → next draft. Two or three
   timings → cut lines with short fades → `placement.json`, `vo-track.wav` (48 kHz, film length),
   `voiceover.srt`.
 - Picture is the captionless twin; music ducks about 10-12 dB under each line.
+- Files live in `$P/voiceover/`; the kit's tools run from `$P` with `--vo-dir voiceover` and
+  `--edl/--cues renders/final-vo.*`, then
+  `node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4`.
+  ElevenLabs calls: `docs/ELEVENLABS.md`.
 
 ## 9. Delivery (`delivery/`, `docs/DELIVERY.md`)
 

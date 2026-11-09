@@ -60,11 +60,15 @@ Details: `docs/PIPELINE.md`. What went wrong the first time and the fix for each
 
 - macOS (APFS clones for the studio; other systems need a copy-based `studio.config.sh`).
 - Node 24 (22+ works for the recorder), ffmpeg 8 with ffprobe, Python 3 with `numpy` and `Pillow`.
-- HyperFrames via `npx hyperframes@0.9.16` (pinned), and the `/hyperframes` and `/media-use` skills installed
-  in Claude Code (the film and sound steps load them).
+- HyperFrames via `npx hyperframes@0.9.16` (pinned).
+- The HyperFrames skills `/hyperframes`, `/media-use` and `/hyperframes-cli` in Claude Code; the film and sound
+  steps load them. Install or refresh them yourself with `npx hyperframes skills update` (the core set), then
+  start a new session. Agents only tell you to run it; they never install skills themselves. Without them,
+  `film/CLAUDE.md` and `docs/LOOK.md` carry the render-contract basics, and `npx --yes hyperframes@0.9.16
+  render` still works.
 - Playwright Chromium: `npm run setup` (= `cd recorder && npm install && npx playwright-core install chromium`).
 - ElevenLabs for music and voice: the claude.ai ElevenLabs connector (what the first film used) or an API key
-  in your environment. Check the licence terms of your plan before public or commercial use of the output.
+  in your environment (`ELEVENLABS_API_KEY`). The exact calls for both routes are in `docs/ELEVENLABS.md`. Check the licence terms of your plan before public or commercial use of the output.
 - Optional: `gh` for pushing the target app's fixes.
 
 ## Install
@@ -93,6 +97,26 @@ declarative steps (or a JS module using `take.waitQuiet` and `mark`); `recorder/
 template. If the site needs a login, save one with `recorder/tools/save-login.mjs` (the owner signs in by hand)
 and pass it with `--storage`; then ask for the film. No studio and no adapter unless a step needs
 code. `recorder/README.md` has the full reference.
+
+The kit stays read-only. Each film gets its own project folder outside the kit for its inputs
+(`storyboard.json`, `brand.json`, `creatives.json`, `music.json`, `voiceover/`) and every output. With `KIT` =
+this repo, `P` = the project folder and `T` = the takes folder:
+
+```bash
+node $KIT/film/scripts/init-project.mjs $P
+node $KIT/film/scripts/draft-storyboard.mjs $T/<take> [$T/<take> ...] --out $P/storyboard.json
+cd $P
+node $KIT/film/build.mjs --takes $T --dry --audit
+node $KIT/film/scripts/sync-assets.mjs            # after editing brand.json / adding creatives.json
+node $KIT/film/build.mjs --takes $T --audit
+npx --yes hyperframes@0.9.16 check --json
+npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
+for f in cues.json edl.json; do cp $f renders/final.$f; done; cp captions.srt renders/final.captions.srt
+node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4
+```
+
+From outside `$P`, add `--project $P` to each kit command or set `FILM_PROJECT=$P`. The voiceover twin is the
+same build with `--no-captions`, rendered to `renders/final-vo.mp4`; see the `voiceover` skill.
 
 Studio mode (an app you own):
 
@@ -150,7 +174,7 @@ the take operator without re-briefing. Long reports come back as files. The real
 .claude-plugin/plugin.json   plugin manifest
 skills/                      7 skills (SKILL.md each)
 agents/                      9 agent definitions
-docs/                        PIPELINE, LESSONS, CONTRACT, CAPTURE_TEST, STORYBOARD, LOOK, DELIVERY, ROADMAP
+docs/                        PIPELINE, LESSONS, CONTRACT, CAPTURE_TEST, STORYBOARD, LOOK, DELIVERY, ELEVENLABS, ROADMAP
 studio/                      bin/*.sh, README
 recorder/                    capture, motion, take runner, tools
 film/                        build.mjs, lib/, scripts/ (holds, scene sheets, assets)

@@ -1,20 +1,20 @@
-// Copies the brand's logo files and the creatives named in a creatives file into film/assets/, and
+// Copies the brand's logo files and the creatives named in a creatives file into <project>/assets/, and
 // writes the manifests the title and end cards read:
 //   assets/brand/manifest.json      { onDark: { src, w, h }, onLight: { src, w, h } }  (only with a logo)
 //   assets/creatives/manifest.json  [{ id, src, w, h, crop? }]
 //
-//   node scripts/sync-assets.mjs [--brand <brand.json>] [--creatives <creatives.json>]
+//   node <kit>/film/scripts/sync-assets.mjs [--project <dir>] [--brand <brand.json>] [--creatives <creatives.json>]
 //
-// The brand file is found as in lib/config.mjs (--brand, FILM_BRAND, film/brand.json). Logo paths in
+// The brand file is found as in lib/config.mjs (--brand, FILM_BRAND, <project>/brand.json). Logo paths in
 // it are relative to the brand file. The creatives file defaults to the brand's "assets.creatives",
-// else film/creatives.json; its "sourceDir" is relative to the creatives file, and an item's
+// else <project>/creatives.json; its "sourceDir" is relative to the creatives file, and an item's
 // "source" is relative to sourceDir unless absolute. Run again after editing either file.
 // Pixel sizes are read with ffprobe (raster) or the SVG's viewBox / width / height.
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, extname, isAbsolute, join, resolve } from "node:path";
-import { BRAND, BRAND_FILE, FILM_DIR, brandAsset, cliArgs } from "../lib/config.mjs";
+import { BRAND, BRAND_FILE, PROJECT_DIR, brandAsset, cliArgs } from "../lib/config.mjs";
 
 const { opts } = cliArgs();
 
@@ -36,20 +36,20 @@ function size(file) {
 
 // ---------- logos ----------
 const logo = BRAND.lockup.logo;
-mkdirSync(join(FILM_DIR, "assets/brand"), { recursive: true });
+mkdirSync(join(PROJECT_DIR, "assets/brand"), { recursive: true });
 if (logo) {
   const brandManifest = {};
   for (const tone of ["onDark", "onLight"]) {
     const from = brandAsset(logo[tone] ?? logo.onDark ?? logo.onLight);
     if (!from || !existsSync(from)) throw new Error(`logo ${tone}: file not found: ${from} (paths in ${BRAND_FILE} are relative to it)`);
     const rel = `assets/brand/logo-${tone === "onDark" ? "on-dark" : "on-light"}${extname(from).toLowerCase()}`;
-    copyFileSync(from, join(FILM_DIR, rel));
+    copyFileSync(from, join(PROJECT_DIR, rel));
     brandManifest[tone] = { src: rel, ...size(from) };
   }
-  writeFileSync(join(FILM_DIR, "assets/brand/manifest.json"), JSON.stringify(brandManifest, null, 2) + "\n");
+  writeFileSync(join(PROJECT_DIR, "assets/brand/manifest.json"), JSON.stringify(brandManifest, null, 2) + "\n");
   console.log(`synced the logo (${brandManifest.onDark.w}x${brandManifest.onDark.h}) from ${BRAND_FILE}`);
 } else {
-  writeFileSync(join(FILM_DIR, "assets/brand/manifest.json"), "{}\n");
+  writeFileSync(join(PROJECT_DIR, "assets/brand/manifest.json"), "{}\n");
   console.log("no logo in the brand: the lockup is text only");
 }
 
@@ -57,21 +57,21 @@ if (logo) {
 const cfgPath =
   typeof opts.creatives === "string" ? resolve(opts.creatives)
   : BRAND.assets?.creatives ? brandAsset(BRAND.assets.creatives)
-  : join(FILM_DIR, "creatives.json");
+  : join(PROJECT_DIR, "creatives.json");
 if (!existsSync(cfgPath)) {
   console.log(`no creatives file at ${cfgPath}: creatives not synced (node scripts/make-placeholder.mjs writes stand-ins)`);
   process.exit(0);
 }
 const cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
 const srcDir = cfg.sourceDir ? (isAbsolute(cfg.sourceDir) ? cfg.sourceDir : resolve(dirname(cfgPath), cfg.sourceDir)) : dirname(cfgPath);
-mkdirSync(join(FILM_DIR, "assets/creatives"), { recursive: true });
+mkdirSync(join(PROJECT_DIR, "assets/creatives"), { recursive: true });
 const out = [];
 for (const it of cfg.items) {
   const src = isAbsolute(it.source) ? it.source : join(srcDir, it.source);
   if (!existsSync(src)) throw new Error(`creative ${it.id}: file not found: ${src}`);
   const rel = `assets/creatives/${it.id}${extname(src).toLowerCase()}`;
-  copyFileSync(src, join(FILM_DIR, rel));
+  copyFileSync(src, join(PROJECT_DIR, rel));
   out.push({ id: it.id, src: rel, ...size(src), ...(it.crop ? { crop: it.crop } : {}) });
 }
-writeFileSync(join(FILM_DIR, "assets/creatives/manifest.json"), JSON.stringify(out, null, 2) + "\n");
+writeFileSync(join(PROJECT_DIR, "assets/creatives/manifest.json"), JSON.stringify(out, null, 2) + "\n");
 console.log(`synced ${out.length} creatives from ${cfgPath}`);

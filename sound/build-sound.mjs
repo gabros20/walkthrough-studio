@@ -15,8 +15,10 @@
 //   node sound/build-sound.mjs --help
 //
 // Options (paths are relative to the current directory):
-//   --film <dir>         the film project (default: ../film next to this folder); cues.json, edl.json,
-//                        captions.srt and music.json are looked up there
+//   --project <dir>      the film project (also --film; default: FILM_PROJECT, else the current
+//                        directory when it holds hyperframes.json or storyboard.json, else ../film next
+//                        to this folder); cues.json, edl.json, captions.srt and music.json are looked
+//                        up there, and sound-build/ is written there. The kit is never written to.
 //   --music <file>       music.json (default <film>/music.json); its "file" is the audio, relative to it
 //   --music-file <file>  use this WAV/MP3 instead of music.json's "file" (same measured grid)
 //   --sfx <dir>          the effect files (default: $HF_SFX_DIR, else the HyperFrames media-use skill's
@@ -103,7 +105,10 @@ if (flag("help") || args.length === 0) {
   process.exit(0);
 }
 const cwdPath = (p) => (p == null ? null : resolve(p));
-const FILM = cwdPath(opt("film")) ?? resolve(SOUND, "../film");
+// the film project: --project / --film, FILM_PROJECT, the current directory when it is a project
+// (has hyperframes.json or storyboard.json), else the kit's film/ (developing the kit itself)
+const FILM = cwdPath(opt("project") ?? opt("film")) ?? cwdPath(process.env.FILM_PROJECT)
+  ?? (["hyperframes.json", "storyboard.json"].some((f) => existsSync(join(process.cwd(), f))) ? process.cwd() : resolve(SOUND, "../film"));
 const WORK = cwdPath(opt("work")) ?? join(FILM, "sound-build");
 mkdirSync(WORK, { recursive: true });
 let videoArg = cwdPath(opt("video"));

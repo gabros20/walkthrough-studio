@@ -1,15 +1,20 @@
 // The real build: storyboard.json + take folders -> pre-cut scene clips, scene compositions,
 // captions, index.html, cues.json and the .srt.
 //
-//   node build.mjs [storyboard.json] [--takes <dir>] [--brand <brand.json>] [--no-cut] [--no-captions]
-//                 [--dry [--dry-out <dir>]] [--audit]
+//   node <kit>/film/build.mjs [storyboard.json] [--project <dir>] [--takes <dir>] [--brand <brand.json>]
+//                 [--no-cut] [--no-captions] [--dry [--dry-out <dir>]] [--audit]
 //
 // --audit runs scripts/audit.mjs on what was just written (holds, pointer jumps at cuts, dead air,
 // caption lint, caption claims) and exits with its status; with --dry it audits the would-be files
 // (in --dry-out, or a temporary folder) without the holds check.
 //
-// The storyboard defaults to film/storyboard.json. Take folders come from --takes, else WALKTHROUGH_TAKES,
-// else the storyboard's "takesDir" (relative to the storyboard), else ../takes next to film/.
+// Everything is written into the project folder (lib/config.mjs PROJECT_DIR: --project, FILM_PROJECT,
+// the storyboard's folder when it is a project, the current directory when it holds a storyboard.json
+// or hyperframes.json, else this film/ folder), which is made a HyperFrames project if it is not one
+// yet (lib/project.mjs). The kit is never written to. The storyboard defaults to
+// <project>/storyboard.json. Take folders come from --takes, else WALKTHROUGH_TAKES, else the
+// storyboard's "takesDir" (relative to the storyboard), else <project>/takes, else ../takes next to
+// the project.
 //
 // One mapping per scene (lib/edl.mjs) turns source time into film time; the footage cut, the
 // pointer, clicks, cursor shapes, camera, spotlights, captions, time-lapse tags and sound cues all
@@ -22,7 +27,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BRAND, CAPTURE, COLOR, FILM, K, WINDOW, cliArgs } from "./lib/config.mjs";
+import { BRAND, CAPTURE, COLOR, FILM, K, PROJECT_DIR, WINDOW, cliArgs } from "./lib/config.mjs";
+import { ensureProject } from "./lib/project.mjs";
 import { n, sceneFile } from "./lib/emit.mjs";
 import { Pointer, shapeForCursor, moveDuration } from "./lib/pointer.mjs";
 import { Camera } from "./lib/camera.mjs";
@@ -35,7 +41,8 @@ import { buildMapping, anchorTime, findRef, refBox, gridFps, snapTo, checkTakeSc
 import { parseIndex } from "./lib/takeindex.mjs";
 import { pointerAt } from "../recorder/motion.mjs";
 
-const film = dirname(fileURLToPath(import.meta.url));
+const kit = dirname(fileURLToPath(import.meta.url)); // this film/ folder: code only
+const film = PROJECT_DIR; // the project: inputs and every output
 const { opts, positional } = cliArgs();
 const sbPath = resolve(positional.find((a) => a.endsWith(".json")) ?? join(film, "storyboard.json"));
 if (!existsSync(sbPath)) throw new Error(`no storyboard at ${sbPath} (copy storyboard.example.json to storyboard.json, or pass a path)`);
@@ -48,12 +55,12 @@ const NO_CAPTIONS = Boolean(opts["no-captions"]) || sb.captions === false;
 const FPS = FILM.fps;
 const CLIP_FPS = sb.clipFps ?? FPS;
 const takesArg = typeof opts.takes === "string" ? resolve(opts.takes) : process.env.WALKTHROUGH_TAKES ? resolve(process.env.WALKTHROUGH_TAKES) : null;
-const takesDir = takesArg ?? (sb.takesDir ? (isAbsolute(sb.takesDir) ? sb.takesDir : resolve(dirname(sbPath), sb.takesDir)) : resolve(film, "../takes"));
+const takesDir = takesArg ?? (sb.takesDir ? (isAbsolute(sb.takesDir) ? sb.takesDir : resolve(dirname(sbPath), sb.takesDir)) : existsSync(join(film, "takes")) ? join(film, "takes") : resolve(film, "../takes"));
 if (!existsSync(takesDir)) throw new Error(`takes folder not found: ${takesDir} (pass --takes <dir> or set "takesDir" in the storyboard)`);
 // the creatives manifest is only needed to write the title and end cards (not for --dry)
 const manifestPath = join(film, "assets/creatives/manifest.json");
 const creatives = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, "utf8")) : null;
-if (!creatives && !DRY) throw new Error("no assets/creatives/manifest.json: run node scripts/sync-assets.mjs (or node scripts/make-placeholder.mjs for stand-ins)");
+if (!creatives && !DRY) throw new Error("no assets/creatives/manifest.json: run node <kit>/film/scripts/sync-assets.mjs (or scripts/make-placeholder.mjs for stand-ins) for this project");
 const warnings = [];
 const BRAND_NOTE = `, brand ${BRAND.name}`;
 const warn = (m) => warnings.push(m);
@@ -438,7 +445,7 @@ const durations = { filmTarget, total, scenes: rows };
 function audit(dir) {
   const extra = dir ? ["--edl", join(dir, "edl.json"), "--cues", join(dir, "cues.json"), "--srt", join(dir, "captions.srt"), "--no-holds"] : [];
   const brandArg = typeof opts.brand === "string" ? ["--brand", opts.brand] : [];
-  const r = spawnSync(process.execPath, [join(film, "scripts/audit.mjs"), sbPath, "--takes", takesDir, ...brandArg, ...extra], { stdio: "inherit" });
+  const r = spawnSync(process.execPath, [join(kit, "scripts/audit.mjs"), sbPath, "--project", film, "--takes", takesDir, ...brandArg, ...extra], { stdio: "inherit" });
   process.exit(r.status ?? 1);
 }
 
@@ -460,6 +467,8 @@ if (DRY) {
   process.exit(0);
 }
 
+const madeProject = ensureProject(film);
+if (madeProject.length) console.log(`project ${film}: wrote ${madeProject.join(", ")}`);
 mkdirSync(join(film, "compositions"), { recursive: true });
 // title/end lines: the storyboard's, else the brand's cards
 writeFileSync(join(film, "compositions/title.html"), titleScene({ id: "title", creatives, duration: TITLE, lines: sb.title?.lines ?? BRAND.cards.title }));
@@ -509,7 +518,7 @@ ${NO_CAPTIONS ? "      <!-- captions track left out (--no-captions) -->" : host(
 `,
 );
 
-console.log(`takes ${takesDir}${BRAND_NOTE}`);
+console.log(`project ${film}, takes ${takesDir}${BRAND_NOTE}`);
 console.log(`film ${n(total)} s @ ${FPS} fps (clips ${CLIP_FPS} fps): title 0-${TITLE}, ${scenes.map((s) => `${s.id} ${n(s.start)}-${n(s.start + s.duration)}`).join(", ")}, end ${n(tEnd)}-${n(total)}`);
 console.log(`${captions.length} captions${NO_CAPTIONS ? " (not mounted: --no-captions)" : ""}, ${cues.length} cues -> cues.json, captions.srt, edl.json`);
 console.table(table);

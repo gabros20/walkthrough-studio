@@ -6,33 +6,37 @@ description: Score a locked walkthrough film - generate the music bed once via E
 # Film sound
 
 The sound designer (`agents/sound-designer.md`, Opus) builds and mixes; you make the paid generation call.
-Read `sound/` (`build-sound.mjs --help`), the `media-use` skill, and `docs/LESSONS.md` section "Sound and
+Read `docs/ELEVENLABS.md` (the exact connector calls, the API-key route, costs, "busy" handling, licence),
+`sound/` (`build-sound.mjs --help`), the `media-use` skill, and `docs/LESSONS.md` section "Sound and
 voice". Example: `examples/kleber-content-ai/music.json` and `beat-grid.json`.
+
+All paths are in the film's project folder `$P` (skill `build-film`); run from `$P` (or pass
+`--project $P`; `--film` is kept as an alias). `KIT` is the kit root.
 
 ## Inputs
 
-- The locked render (`film/renders/final.mp4`) with its `.cues.json` and `.edl.json` beside it.
+- The locked render (`renders/final.mp4`) with its `.cues.json` and `.edl.json` beside it.
 - A music direction (genre, tempo, instruments, energy curve; no artist names, which the model may refuse).
-- For the voiceover version: `film/voiceover/vo-track.wav` and `placement.json` beside it (skill `voiceover`).
+- For the voiceover version: `voiceover/vo-track.wav` and `placement.json` beside it (skill `voiceover`).
 
 ## Steps
 
-- [ ] **Generate once (you, via the ElevenLabs connector).** Music model, instrumental, length = film +
-  2 s. One call. If the reply is "Free generations are busy", do not call again in this turn; retry on a later
+- [ ] **Generate once (you, via the ElevenLabs connector; steps in `docs/ELEVENLABS.md`).** Music model,
+  instrumental, length = film + 2 s. One call; sub-agents cannot reach the connector. If the reply is "Free generations are busy", do not call again in this turn; retry on a later
   turn. Download the result; note its real length (it may be shorter than asked).
 - [ ] **Brief the sound designer** with the paths, the direction, and: no generation calls; extend by loops if
   short; effects sparse; numbers to hit; prove delivery.
-- [ ] **Bed and grid.** It analyses tempo, bars, sections and the ending, writes `film/music.json` (template
-  `sound/music.example.json`; `file` is relative to it, WAV or MP3, plus the measured grid) and `beat-grid.json`; anchor bars to film time 0 so the editor can nudge scene changes onto bars with
+- [ ] **Bed and grid.** It analyses tempo, bars, sections and the ending, writes `$P/music.json` (template
+  `$KIT/sound/music.example.json`; `file` is relative to it, WAV or MP3, plus the measured grid) and `beat-grid.json`; anchor bars to film time 0 so the editor can nudge scene changes onto bars with
   holds only.
-- [ ] **Draft mix** on a draft picture: `node sound/build-sound.mjs --video film/renders/<draft>.mp4`.
-- [ ] **Delivery**: `node sound/build-sound.mjs --video film/renders/final.mp4 --deliver <out>/<film>.mp4`.
+- [ ] **Draft mix** on a draft picture: `node $KIT/sound/build-sound.mjs --video renders/<draft>.mp4`.
+- [ ] **Delivery**: `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`.
   The last line must be `delivered: <path>` (exit 0). `NOT DELIVERED (checks failed)` (exit 2) or
-  `no video given` means nothing was delivered. Outputs of the build go to `film/sound-build/`.
-- [ ] **Voiceover version**: `node sound/build-sound.mjs --video film/renders/final-vo.mp4 --voiceover
-  film/voiceover/vo-track.wav --deliver <out>/<film>-voiceover.mp4` (music ducked ~10-12 dB under each line).
+  `no video given` means nothing was delivered. Outputs of the build go to `$P/sound-build/`.
+- [ ] **Voiceover version**: `node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover
+  voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4` (music ducked ~10-12 dB under each line).
 - [ ] **Verify independently**: `ffprobe` shows an audio stream as long as the video; loudness in range at the
-  start, middle and end (`python3 -I delivery/verify.py <config> --loudness` does this for a package);
+  start, middle and end (`python3 -I $KIT/delivery/verify.py <config> --loudness` does this for a package);
   `npx hyperframes@0.9.16 audio <file> --json` for click positions.
 - [ ] **Hand over listening checks** to a human: the first bars, each splice time, a few clicks, every
   whoosh, the end-card fade, and for the voice: product names and any line the transcription flagged.

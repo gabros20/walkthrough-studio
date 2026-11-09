@@ -13,32 +13,33 @@
 //   claims    a caption with "claims": "mark:<label>" whose quoted phrase ("…") is not in that
 //             mark's logged text (an error: the caption says something the screen does not)
 //
-//   node scripts/audit.mjs [storyboard.json] [--takes dir] [--edl f] [--cues f] [--srt f]
+//   node <kit>/film/scripts/audit.mjs [storyboard.json] [--project dir] [--takes dir] [--edl f] [--cues f] [--srt f]
 //                          [--hold 1.0] [--jump 120] [--tail 1.0] [--no-holds] [--json]
 //
-// Defaults read film/edl.json, cues.json and captions.srt (what build.mjs last wrote). Prints one
+// Defaults read <project>/edl.json, cues.json and captions.srt (what build.mjs last wrote; the
+// project as in lib/config.mjs, or --project). Prints one
 // table; exit 1 when there is an error, 0 with warnings only. `node build.mjs --audit` runs it
 // after the build (after a --dry build on the would-be files, without the holds check).
 
 import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, isAbsolute, join, resolve } from "node:path";
-import { FILM_DIR, K } from "../lib/config.mjs";
+import { FILM_DIR, K, PROJECT_DIR } from "../lib/config.mjs";
 import { checkTakeSchema, eventText, findRef } from "../lib/edl.mjs";
 import { lintCaptions } from "../lib/captions.mjs";
 import { pointerAt } from "../../recorder/motion.mjs";
 
 const argv = process.argv.slice(2);
-const VALUED = ["--takes", "--edl", "--cues", "--srt", "--hold", "--jump", "--tail", "--brand"];
+const VALUED = ["--takes", "--edl", "--cues", "--srt", "--hold", "--jump", "--tail", "--brand", "--project"];
 const opt = (name, def = null) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : def; };
 const positional = argv.filter((a, i) => !a.startsWith("--") && !VALUED.includes(argv[i - 1]));
-const sbPath = resolve(positional.find((a) => a.endsWith(".json")) ?? join(FILM_DIR, "storyboard.json"));
+const sbPath = resolve(positional.find((a) => a.endsWith(".json")) ?? join(PROJECT_DIR, "storyboard.json"));
 const sb = JSON.parse(readFileSync(sbPath, "utf8"));
 const takesDir = opt("takes") ? resolve(opt("takes")) : process.env.WALKTHROUGH_TAKES ? resolve(process.env.WALKTHROUGH_TAKES)
-  : sb.takesDir ? (isAbsolute(sb.takesDir) ? sb.takesDir : resolve(dirname(sbPath), sb.takesDir)) : resolve(FILM_DIR, "../takes");
-const edlPath = resolve(opt("edl") ?? join(FILM_DIR, "edl.json"));
-const cuesPath = resolve(opt("cues") ?? join(FILM_DIR, "cues.json"));
-const srtPath = resolve(opt("srt") ?? join(FILM_DIR, "captions.srt"));
+  : sb.takesDir ? (isAbsolute(sb.takesDir) ? sb.takesDir : resolve(dirname(sbPath), sb.takesDir)) : (existsSync(join(PROJECT_DIR, "takes")) ? join(PROJECT_DIR, "takes") : resolve(PROJECT_DIR, "../takes"));
+const edlPath = resolve(opt("edl") ?? join(PROJECT_DIR, "edl.json"));
+const cuesPath = resolve(opt("cues") ?? join(PROJECT_DIR, "cues.json"));
+const srtPath = resolve(opt("srt") ?? join(PROJECT_DIR, "captions.srt"));
 const HOLD = Number(opt("hold", 1.0)), JUMP = Number(opt("jump", 120)), TAIL = Number(opt("tail", 1.0));
 
 const rows = [];
@@ -164,10 +165,10 @@ for (const s of sb.scenes) for (const c of s.captions ?? []) {
 
 // ---------- holds (python, on the real build) ----------
 if (!argv.includes("--no-holds")) {
-  const missing = scenes.find((s) => !existsSync(join(FILM_DIR, "compositions", `${s.id}.html`)) || !existsSync(join(FILM_DIR, "assets/footage", `${s.id}.mp4`)));
-  if (edlPath !== join(FILM_DIR, "edl.json") || missing) add("skip", "holds", null, null, missing ? `needs a real build (no clip or composition for ${missing.id})` : "runs on film/edl.json only");
+  const missing = scenes.find((s) => !existsSync(join(PROJECT_DIR, "compositions", `${s.id}.html`)) || !existsSync(join(PROJECT_DIR, "assets/footage", `${s.id}.mp4`)));
+  if (edlPath !== join(PROJECT_DIR, "edl.json") || missing) add("skip", "holds", null, null, missing ? `needs a real build (no clip or composition for ${missing.id})` : "runs on the project's own edl.json only");
   else {
-    const r = spawnSync("python3", [join(FILM_DIR, "scripts/holds.py"), String(HOLD), sbPath, "--takes", takesDir], { cwd: FILM_DIR, encoding: "utf8", maxBuffer: 1 << 26 });
+    const r = spawnSync("python3", [join(FILM_DIR, "scripts/holds.py"), String(HOLD), sbPath, "--takes", takesDir], { cwd: PROJECT_DIR, encoding: "utf8", maxBuffer: 1 << 26 });
     if (r.status !== 0) add("skip", "holds", null, null, `holds.py failed: ${(r.stderr || "").trim().split("\n").pop()}`);
     else for (const line of r.stdout.split("\n")) {
       const m = /^(\S+)\s+film\s+([\d.]+)-\s*([\d.]+) \(([\d.]+) s\)\s+(.*)$/.exec(line);
@@ -183,6 +184,6 @@ const errors = rows.filter((r) => r.level === "error").length, warns = rows.filt
 if (argv.includes("--json")) console.log(JSON.stringify({ errors, warnings: warns, rows }, null, 2));
 else {
   if (rows.length) console.table(rows);
-  console.log(`audit: ${errors} error(s), ${warns} warning(s) (holds > ${HOLD} s, jumps > ${JUMP} px, dead air > ${TAIL} s) on ${edlPath.replace(FILM_DIR + "/", "")}`);
+  console.log(`audit: ${errors} error(s), ${warns} warning(s) (holds > ${HOLD} s, jumps > ${JUMP} px, dead air > ${TAIL} s) on ${edlPath.replace(PROJECT_DIR + "/", "")}`);
 }
 process.exit(errors ? 1 : 0);

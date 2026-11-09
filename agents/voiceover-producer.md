@@ -18,7 +18,7 @@ Sonnet agent can do phase 2 (placement) from a finished script, with the lead ch
 1. The film: the captioned render, its `.srt`, `edl.json`, `cues.json`, the storyboard, `takes/INDEX.md`
    (what was typed and what the app answered), and the plan's story. Extract frames around each scene start
    and caption time into the scratchpad and look at them, so every line matches what is on screen.
-2. `voiceover/` in this kit, `docs/LESSONS.md` (E9, S3), and the `media-use` skill (transcribe command).
+2. `docs/ELEVENLABS.md` (how the lead generates the one take you will place), `voiceover/` in this kit, `docs/LESSONS.md` (E9, S3), and the `media-use` skill (transcribe command).
 
 ## Phase 1: script
 

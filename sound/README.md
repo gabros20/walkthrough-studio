@@ -5,6 +5,7 @@ rendered picture:
 
 - one music take (any WAV or MP3) and the measured facts about it (`music.json`),
 - the film's `cues.json` and `edl.json` (from `film/build.mjs`: clicks, transitions, scene starts),
+  read from the film project (see `film/README.md`, Projects),
 - optionally a film-length voice track and its `placement.json` (from `voiceover/place.py`).
 
 It needs node, ffmpeg and ffprobe, and finishes in about 15 s for a 3-minute film. Run it again
@@ -12,16 +13,19 @@ after every picture change.
 
 ```
 node sound/build-sound.mjs --help
-node sound/build-sound.mjs --video film/renders/draft.mp4                    # -> film/renders/draft-sound.mp4
-node sound/build-sound.mjs --video film/renders/final.mp4 --deliver out/my-film.mp4
-node sound/build-sound.mjs --video film/renders/final-vo.mp4 --voiceover film/voiceover/vo-track.wav \
-                           --deliver out/my-film-voiceover.mp4
-node sound/build-sound.mjs --duration 190 --bed-only                         # a bed of any length, no video
+# from the film project folder ($KIT = the kit's root)
+node $KIT/sound/build-sound.mjs --video renders/draft.mp4                    # -> renders/draft-sound.mp4
+node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/my-film.mp4
+node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav \
+                                --deliver out/my-film-voiceover.mp4
+node $KIT/sound/build-sound.mjs --duration 190 --bed-only                    # a bed of any length, no video
 ```
 
-Paths are relative to the current directory. By default the film project is `../film` next to this
-folder (`--film`), `music.json` is `<film>/music.json` (`--music`), and the outputs go to
-`<film>/sound-build/` (`--work`). The cues and edl are read from `<render>.cues.json` /
+Paths are relative to the current directory. The film project is `--project <dir>` (or `--film`),
+else `FILM_PROJECT`, else the current directory when it holds `hyperframes.json` or
+`storyboard.json`, else `../film` next to this folder (developing the kit). `music.json` is
+`<project>/music.json` (`--music`), and the outputs go to `<project>/sound-build/` (`--work`). The
+kit is never written to. The cues and edl are read from `<render>.cues.json` /
 `<render>.edl.json` beside the video when they exist (also for `<render>.picture-only.mp4`), else
 from the film's live files; `--cues` / `--edl` override. It stops when the video is more than a
 frame away from `cues.json`'s duration, because the cues would then belong to another build
@@ -171,7 +175,7 @@ in the muxed audio independently of the mix.
 `--voiceover <wav>` takes a film-length 48 kHz WAV that is silent between lines (from
 `voiceover/place.py`), `placement.json` beside it (`{"lines": [{"id", "text", "start", "end"}]}`,
 film seconds; `--placement` overrides) and exactly one `.srt` beside it (`--srt` overrides). It
-belongs on the captionless twin of the picture (`node film/build.mjs --no-captions`): `cues.json`
+belongs on the captionless twin of the picture (`node $KIT/film/build.mjs --no-captions`): `cues.json`
 records `"captions": false` for it, and putting the voice on a captioned picture stops the build.
 
 - The voice sits 3 dB over the music's normal (unducked groove) level; lines are levelled toward

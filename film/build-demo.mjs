@@ -11,7 +11,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { COLOR, FILM, snap } from "./lib/config.mjs";
+import { COLOR, FILM, PROJECT_DIR, snap } from "./lib/config.mjs";
+import { ensureProject } from "./lib/project.mjs";
 import { n, sceneFile, merge } from "./lib/emit.mjs";
 import { Pointer, moveDuration, MOTION } from "./lib/pointer.mjs";
 import { Camera } from "./lib/camera.mjs";
@@ -21,7 +22,8 @@ import { captionsScene, lintCaptions, toSrt } from "./lib/captions.mjs";
 import { titleScene, endScene } from "./lib/titlecards.mjs";
 import { TARGETS as T, center } from "./demo/targets.mjs";
 
-const film = dirname(fileURLToPath(import.meta.url));
+const film = PROJECT_DIR; // written into the project (the kit's film/ only when developing in it)
+ensureProject(film);
 const FOOTAGE = "assets/footage/placeholder.mp4";
 if (!existsSync(join(film, FOOTAGE))) throw new Error("run node scripts/make-placeholder.mjs first");
 if (!existsSync(join(film, "assets/creatives/manifest.json"))) throw new Error("no assets/creatives/manifest.json: run node scripts/make-placeholder.mjs (stand-ins) or node scripts/sync-assets.mjs");
@@ -122,7 +124,7 @@ writeFileSync(join(film, "compositions/title.html"), titleScene({ id: "title", c
 for (const sc of scenes) writeFileSync(join(film, `compositions/${sc.id}.html`), sc.file);
 writeFileSync(join(film, "compositions/end.html"), endScene({ id: "end", creatives, duration: END }));
 writeFileSync(join(film, "compositions/captions.html"), captionsScene({ id: "captions", duration: total, items: captions }));
-writeFileSync(join(film, "demo/captions.srt"), toSrt(captions));
+writeFileSync(join(film, "captions.srt"), toSrt(captions));
 
 const host = (id, start, duration, z, kind = "graphics") =>
   `      <div id="${id}" data-composition-id="${id}" data-composition-src="compositions/${id}.html" data-start="${n(start)}" data-duration="${n(duration)}" data-track-index="${z}" data-track-kind="${kind}" data-width="${FILM.width}" data-height="${FILM.height}" style="z-index:${z}"></div>`;

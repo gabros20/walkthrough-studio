@@ -2,27 +2,28 @@
 
 A voiceover version of the film is the captioned film with its captions taken out and a narrator
 carrying everything the captions said. The picture stays identical to the frame
-(`node film/build.mjs --no-captions`); the voice is written against the picture's clock, generated
+(`node $KIT/film/build.mjs --no-captions`); the voice is written against the picture's clock, generated
 in one take, cut into lines and placed on that clock, and the sound build ducks the music under it.
 
 ```
-python3 -I voiceover/make_script.py lines.json --out film/voiceover --edl film/edl.json --cues film/cues.json
+# from the film project folder ($KIT = the kit's root); everything lands in ./voiceover
+python3 -I $KIT/voiceover/make_script.py lines.json --out voiceover --edl edl.json --cues cues.json
 #   -> script.json, script.txt; exit 1 if a line does not fit its window
-#   TTS: script.txt -> one take (ElevenLabs connector), saved as film/voiceover/vo-take1.mp3
-npx --yes hyperframes@0.9.16 transcribe film/voiceover/vo-take1.mp3 --json > film/voiceover/words.json
-python3 -I voiceover/place.py film/voiceover/vo-take1.mp3 film/voiceover/words.json --vo-dir film/voiceover \
-        --edl film/renders/final-vo.edl.json --cues film/renders/final-vo.cues.json --dry     # look first
-python3 -I voiceover/place.py …same… --name my-film    # -> vo-track.wav, placement.json, voiceover.srt
-node sound/build-sound.mjs --video film/renders/final-vo.mp4 --voiceover film/voiceover/vo-track.wav \
+#   TTS: script.txt -> one take (ElevenLabs connector), saved as voiceover/vo-take1.mp3
+npx --yes hyperframes@0.9.16 transcribe voiceover/vo-take1.mp3 --json > voiceover/words.json
+python3 -I $KIT/voiceover/place.py voiceover/vo-take1.mp3 voiceover/words.json --vo-dir voiceover \
+        --edl renders/final-vo.edl.json --cues renders/final-vo.cues.json --dry     # look first
+python3 -I $KIT/voiceover/place.py …same… --name my-film    # -> vo-track.wav, placement.json, voiceover.srt
+node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav \
         --deliver out/my-film-voiceover.mp4
-python3 -I voiceover/compare-twins.py film/renders/final.picture-only.mp4 film/renders/final-vo.picture-only.mp4
+python3 -I $KIT/voiceover/compare-twins.py renders/final.picture-only.mp4 renders/final-vo.picture-only.mp4
 ```
 
 The tools need Python 3 with numpy (`place.py`, `compare-twins.py`), ffmpeg and ffprobe.
 
 ## 1. Write the script against the picture
 
-Look at the picture before writing: contact sheets per scene (`python3 film/scripts/scene-sheets.py
+Look at the picture before writing: contact sheets per scene (`python3 $KIT/film/scripts/scene-sheets.py
 <render> <edl.json> <outdir> 2`) and frames around each scene start and each caption. Every line
 must match what is on screen while it is spoken.
 
@@ -107,13 +108,13 @@ the voice:
   maps the windows through anchors shared by both cuts (scene starts and ends, labelled cues),
   places each line exactly as `place.py` would and lists every line short of 0.3 s slack, with how
   much time it needs. Exit 1 when any line is short. Override a window by hand with
-  `L21=141.0,150.2`. Iterate with the editor on dry runs (`node film/build.mjs --dry --dry-out`)
+  `L21=141.0,150.2`. Iterate with the editor on dry runs (`node $KIT/film/build.mjs --dry --dry-out`)
   until all lines fit, then render once.
 - `place.py … --windows windows.json`: place for real on the new clock.
 
 ## 5. The twin picture and the mix
 
-- Build the twin with `node film/build.mjs --no-captions` (same storyboard, same cues; `cues.json`
+- Build the twin with `node $KIT/film/build.mjs --no-captions` (same storyboard, same cues; `cues.json`
   says `"captions": false`) and render it as `<name>-vo.mp4`. Keep its `.cues.json` / `.edl.json`.
 - `compare-twins.py <captioned> <captionless>`: the two renders may differ only in the caption band;
   more than 200 changed pixels above y 940 in a sampled frame means they are not twins (two encodes

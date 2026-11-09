@@ -20,6 +20,14 @@ Docs (read the ones your step needs, not all): `docs/PIPELINE.md` (the pipeline 
 Worked example (studio mode, both twins): `examples/kleber-content-ai/` (`PLAN.md`, configs, storyboard,
 voiceover, delivery, and the real agent briefs in `agent-briefs/`).
 
+## Prerequisite skills
+
+The film build depends on the HyperFrames skills `/hyperframes` (render contract, work loop), `/media-use`
+(audio, SFX, transcription) and `/hyperframes-cli`. If they are not installed, tell the user to run
+`npx hyperframes skills update` (it installs the core set) and start a new session. Never install them
+yourself. Until then, `film/CLAUDE.md` and `docs/LOOK.md` carry the render-contract basics, and rendering
+with `npx --yes hyperframes@0.9.16 render` still works.
+
 ## First decisions (ask the owner if unclear; they change the plan)
 
 ### 1. Entry mode
@@ -100,7 +108,8 @@ a scratchpad file plus a short message. Tell worker agents not to spawn sub-agen
 
 - [ ] **0. Preflight.** Free disk (renders need 3-8 GB of frame cache; if a step would leave < 5 GB, use an
   external buffer for render caches only). Node 24, ffmpeg 8, Python 3 with numpy and Pillow, `npm run setup`
-  (Playwright Chromium), `npx hyperframes@0.9.16`, the `/hyperframes` and `/media-use` skills, ElevenLabs
+  (Playwright Chromium), `npx hyperframes@0.9.16`, the `/hyperframes`, `/media-use` and `/hyperframes-cli`
+  skills (see "Prerequisite skills"), ElevenLabs
   connector or key (names only). Studio mode: note the owner's dev-server ports.
 - [ ] **1. Decide** mode, viewport preset, captions / voiceover / both, target length (3:00-3:15 worked; take
   the owner's number when given). Defaults when the owner does not say: site mode for a URL you do not run,
@@ -125,7 +134,7 @@ a scratchpad file plus a short message. Tell worker agents not to spawn sub-agen
   Repeat until the must-fix list is empty. App bugs (studio mode) go to `app-fixer`, then a retake.
 - [ ] **9. Picture lock.** `build.mjs --audit` clean, `hyperframes check` clean, durations in range. Render
   the captioned film and, if wanted, the `--no-captions` twin from the same lock. Show the owner a preview.
-- [ ] **10. Music** (skill `film-sound`): you generate the bed (one call; film length + 2 s); `sound-designer`
+- [ ] **10. Music** (skill `film-sound`, `docs/ELEVENLABS.md`): you generate the bed (one call; film length + 2 s); `sound-designer`
   builds bed, SFX and mix; **gate: `delivered:` line** for each twin.
 - [ ] **11. Voiceover** (skill `voiceover`), if chosen: script → one TTS take → placement → ducked mix.
 - [ ] **12. Owner review.** Fix notes: retake (from the right checkpoint in studio mode), re-frame, dry run,

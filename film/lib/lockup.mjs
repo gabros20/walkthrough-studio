@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { BRAND, COLOR, FILM_DIR, brandAsset } from "./config.mjs";
+import { BRAND, COLOR, PROJECT_DIR, brandAsset } from "./config.mjs";
 import { esc, n, Timeline } from "./emit.mjs";
 
 const L = BRAND.lockup;
@@ -21,11 +21,11 @@ const M = L.metrics;
 
 /**
  * The logo files to use: assets/brand/manifest.json (written by scripts/sync-assets.mjs) when it
- * lists them, else brand paths that already sit inside film/. null when the brand has no logo.
+ * lists them, else brand paths that already sit inside the project. null when the brand has no logo.
  */
 export function logoFiles() {
   if (!L.logo) return null;
-  const manifest = join(FILM_DIR, "assets/brand/manifest.json");
+  const manifest = join(PROJECT_DIR, "assets/brand/manifest.json");
   if (existsSync(manifest)) {
     const m = JSON.parse(readFileSync(manifest, "utf8"));
     if (m.onDark || m.onLight) {
@@ -35,11 +35,11 @@ export function logoFiles() {
   }
   const inFilm = (p) => {
     const abs = brandAsset(p);
-    const rel = abs && relative(FILM_DIR, abs);
+    const rel = abs && relative(PROJECT_DIR, abs);
     return rel && !rel.startsWith("..") && existsSync(abs) ? rel.split(sep).join("/") : null;
   };
   const dark = inFilm(L.logo.onDark ?? L.logo.onLight), light = inFilm(L.logo.onLight ?? L.logo.onDark);
-  if (!dark) throw new Error("the brand names a logo but it is not in film/assets/brand: run node scripts/sync-assets.mjs");
+  if (!dark) throw new Error("the brand names a logo but it is not in <project>/assets/brand: run node <kit>/film/scripts/sync-assets.mjs");
   return { onDark: dark, onLight: light ?? dark, aspect: L.logo.aspect ?? 4 };
 }
 

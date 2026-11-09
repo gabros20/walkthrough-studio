@@ -3,7 +3,8 @@
 The storyboard is the film's edit decision list. `film/build.mjs` reads it together with the take
 folders (`events.json` + `master.mp4` per take, see `docs/CONTRACT.md`) and writes the whole
 HyperFrames project: one pre-cut clip per scene, one composition per scene, the title and end cards,
-the captions track, `cues.json`, `captions.srt` and `edl.json`.
+the captions track, `cues.json`, `captions.srt` and `edl.json`, all into the film project folder
+(`film/README.md`, Projects); the storyboard normally lives there too, as `storyboard.json`.
 
 Nothing in the storyboard is a film time. Every moment is an **anchor** into a take's event log, and
 one mapping turns source time into film time for the footage and every overlay at once. Re-cut a
@@ -53,8 +54,8 @@ ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), 
 
 | Key | Default | Meaning |
 |---|---|---|
-| `takesDir` | `../takes` next to `film/` | Folder of take folders. Relative to the storyboard. Overridden by `--takes <dir>` or `WALKTHROUGH_TAKES`. |
-| `brand` | `film/brand.json` if present | Brand file for this film, relative to the storyboard (see `film/README.md`, Brand). `--brand` and `FILM_BRAND` win over it. |
+| `takesDir` | `<project>/takes`, else `../takes` next to the project | Folder of take folders. Relative to the storyboard. Overridden by `--takes <dir>` or `WALKTHROUGH_TAKES`. |
+| `brand` | `<project>/brand.json` if present | Brand file for this film, relative to the storyboard (see `film/README.md`, Brand). `--brand` and `FILM_BRAND` win over it. |
 | `look` | none | Layout overrides for this film only (same keys as the brand file's `look`). |
 | `fps` | 30 | Film frame rate. `FILM_FPS` wins. Use 60 when the capture test passed at 60. |
 | `clipFps` | film fps | Rate of the pre-cut scene clips. |

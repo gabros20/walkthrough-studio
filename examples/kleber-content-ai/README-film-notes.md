@@ -15,14 +15,23 @@ logos are the client's and are not in this repo.
 | `beat-grid.json` | The film-time bar grid of the delivered bed: splices, final chord, every transition's nearest bar. |
 | `voiceover/` | `script.txt` and `script.json` (27 lines, written for the first 192 s cut), `placement.json` and `voiceover.srt` (placed on the final 182 s cut). |
 
-To rebuild the picture you need the takes (`--takes <studio>/takes`), the client's logo
-(`KLEBER_REPO=<kleber-content-ai checkout>`) and the creatives (`creatives.json` `sourceDir`):
+To rebuild the picture you need the takes, the client's logo (`KLEBER_REPO=<kleber-content-ai
+checkout>`) and the creatives (`creatives.json` `sourceDir`, relative to this folder). Build it as a
+film project outside the kit ($KIT = this repo, $T = the studio's takes folder):
 
 ```
-cd film
-KLEBER_REPO=… node scripts/sync-assets.mjs --brand ../examples/kleber-content-ai/brand.json
-node build.mjs ../examples/kleber-content-ai/storyboard.json --takes <studio>/takes --dry
+node $KIT/film/scripts/init-project.mjs ~/films/kleber
+cp $KIT/examples/kleber-content-ai/{storyboard.json,brand.json,creatives.json,music.json} ~/films/kleber/
+cd ~/films/kleber        # then set creatives.json "sourceDir" to the studio's assets/creatives-final
+KLEBER_REPO=… node $KIT/film/scripts/sync-assets.mjs
+FILM_FPS=60 node $KIT/film/build.mjs --takes $T --dry --audit
+FILM_FPS=60 node $KIT/film/build.mjs --takes $T --audit
+npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
 ```
+
+(`storyboard.json` names `"brand": "brand.json"` and `"fps": 60`, so the brand is found next to it;
+`FILM_FPS` is only belt and braces.) Or build in place for a quick look, without a project:
+`cd $KIT/film && node build.mjs ../examples/kleber-content-ai/storyboard.json --takes $T --dry`.
 
 When this repo was made, that build reproduced the delivered film's 13 scene compositions, the
 captions track, `index.html`, `cues.json` and `edl.json` byte for byte (title and end card differ

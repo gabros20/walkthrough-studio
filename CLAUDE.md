@@ -9,7 +9,7 @@ It is used against *other* projects' apps. The rules below protect those project
 |---|---|
 | `skills/<name>/SKILL.md` | workflows; start with `skills/walkthrough-film` |
 | `agents/<name>.md` | specialised agent roles with their model tier |
-| `docs/` | `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md` |
+| `docs/` | `PIPELINE.md` (overview), `LESSONS.md` (read before planning), `CONTRACT.md`, `CAPTURE_TEST.md`, `STORYBOARD.md`, `LOOK.md`, `DELIVERY.md`, `ELEVENLABS.md` |
 | `studio/` | isolated app instance scripts (clone, ports, checkpoints) |
 | `recorder/` | Playwright capture, invisible-mouse driving, `events.json` take format, take runner |
 | `film/` | HyperFrames film kit: `build.mjs`, components, review scripts |

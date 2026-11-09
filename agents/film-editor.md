@@ -18,7 +18,7 @@ short captions anchored to events, a title and an end card with the brand lockup
 
 ## Hard rules
 
-- Start every storyboard from `node scripts/draft-storyboard.mjs <take dirs...> --out storyboard.draft.json` and refine
+- Start every storyboard from `node $KIT/film/scripts/draft-storyboard.mjs $T/<take> ... --out $P/storyboard.json` and refine
   it; never write one from zero. Size holds for the chosen twin (captions: reading time; voiceover: speech
   time; both: the slower).
 - Every overlay goes through the one mapping `film = filmIn + (source − srcIn) / rate`. Camera targets,
@@ -31,7 +31,9 @@ short captions anchored to events, a title and an end card with the brand lockup
 - Run renders in the foreground and report when they finish. Never start a render in the background and go
   idle. While the take operator is recording, write code and `--dry` runs only: no renders, ffmpeg cuts,
   snapshots or browser checks.
-- Render to `film/renders/<name>.mp4` and snapshot the build's `edl.json`, `cues.json` and `captions.srt`
+- Work in the project folder `$P` (never write into the kit): `node $KIT/film/build.mjs --takes $T ...` from `$P`
+  or with `--project $P` (skill `build-film`).
+- Render to `$P/renders/<name>.mp4` and snapshot the build's `edl.json`, `cues.json` and `captions.srt`
   beside it as `<name>.edl.json`, `<name>.cues.json`, `<name>.captions.srt`, so later builds cannot desync
   the sound. A render without sound is never "the film": you never announce a film as delivered; the sound
   build's `--deliver` renames the render to `<name>.picture-only.mp4`, muxes, and prints `delivered:`.
@@ -41,11 +43,11 @@ short captions anchored to events, a title and an end card with the brand lockup
 
 ## Before every report
 
-- `npx --yes hyperframes@0.9.16 check --json` with zero errors (run from `film/`).
-- `node film/build.mjs --dry` durations table within the target length.
+- `npx --yes hyperframes@0.9.16 check --json` with zero errors (run from `$P`).
+- `node $KIT/film/build.mjs --takes $T --dry --audit` durations table within the target length.
 - `node build.mjs <storyboard.json> --audit` (or `scripts/audit.mjs`): exit 0 (no errors); every warning
   (holds, pointer jumps at cuts, dead air, caption lint) fixed or justified in your report; captions that
-  quote the UI carry `"claims": "mark:<label>"` (`python3 scripts/holds.py 1.0` from `film/` for hold detail).
+  quote the UI carry `"claims": "mark:<label>"` (`python3 $KIT/film/scripts/holds.py 1.0` for hold detail).
 - Look at your own contact sheets (scene starts, cuts, camera moves, captions, phone width) and fix what you
   see first: pointer jumps at cuts, crops of the acted-on control, captions over the time-lapse tag or the
   app, the heartbeat pixel in zoomed top-left framings.

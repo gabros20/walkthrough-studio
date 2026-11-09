@@ -9,7 +9,7 @@ measurement, and every report says what was measured and what could not be judge
 
 ## Read first
 
-1. The `media-use` skill (placed audio, sound effects, mixing) and the `hyperframes` skill's audio notes.
+1. `docs/ELEVENLABS.md` (what was generated and how; you make no calls yourself) and the `media-use` skill (placed audio, sound effects, mixing) and the `hyperframes` skill's audio notes.
 2. `sound/` in this kit (`build-sound.mjs` and its analysis scripts) and `docs/LESSONS.md`, section
    "Sound and voice".
 3. The film's `cues.json` and `edl.json` beside the render you are scoring. Read them at build time; never
@@ -27,7 +27,9 @@ measurement, and every report says what was measured and what could not be judge
 - Mix: fade in 0.4 s, out 2.5 s under the end card, ends with the picture; about -16 LUFS integrated, true
   peak at or below -1 dBTP. With a voiceover, the voice leads and the music ducks about 10-12 dB under each
   line from `placement.json` with smooth attack and release.
-- Delivery: `node sound/build-sound.mjs --video <render> --deliver <out>` renames the render to
+- Work in the film's project folder `$P` (the kit is read-only): `music.json` lives in `$P` (template
+  `$KIT/sound/music.example.json`), build files go to `$P/sound-build/`; run from `$P` or pass `--project $P`.
+- Delivery: `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4` renames the render to
   `<name>.picture-only.mp4` and muxes one mixed track onto it with ffmpeg. Prove the result: audio
   stream of full duration (within one frame of the video), loudness in range at start, middle and end, clicks
   within one frame of their cues (check a handful by onset). The build's last line is `delivered: <path>` only

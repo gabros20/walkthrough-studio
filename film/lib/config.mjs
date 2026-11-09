@@ -4,21 +4,27 @@
 // Where the values come from, later wins:
 //   1. the defaults below (a neutral brand on the proven layout)
 //   2. a brand file: --brand <file> on the command line, else FILM_BRAND, else the storyboard's
-//      "brand" field (relative to the storyboard), else film/brand.json when it exists
+//      "brand" field (relative to the storyboard), else <project>/brand.json when it exists
 //   3. the brand file's "look" section (layout numbers: film, capture, window, camera, caption,
 //      type, pointer)
 //   4. the storyboard's "look" section (same keys), for one film only
 // The schema is documented in film/brand.example.json and film/README.md ("Brand").
+//
+// The project folder (PROJECT_DIR) holds one film's inputs and receives every output; the kit's
+// film/ folder (FILM_DIR) is code only. Found as, first match wins: --project <dir>, FILM_PROJECT,
+// the storyboard's folder when it is a project (has hyperframes.json), the current directory when
+// it has a storyboard.json or hyperframes.json, else the kit's film/ (developing the kit itself).
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** The kit's film/ folder: code, never written to during use (except when developing in it). */
 export const FILM_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Command-line options that take a value. A storyboard path is the first argument that is neither
 // an option nor an option's value.
-const VALUE_OPTS = new Set(["--brand", "--takes", "--dry-out", "--creatives"]);
+const VALUE_OPTS = new Set(["--brand", "--takes", "--dry-out", "--creatives", "--project"]);
 export function cliArgs(argv = process.argv.slice(2)) {
   const opts = {};
   const positional = [];
@@ -129,11 +135,22 @@ try {
   storyboard = null; // not readable here; the build reports bad JSON itself
 }
 
+function projectDir() {
+  if (typeof opts.project === "string") return resolve(opts.project);
+  if (process.env.FILM_PROJECT) return resolve(process.env.FILM_PROJECT);
+  if (sbArg && existsSync(join(dirname(resolve(sbArg)), "hyperframes.json"))) return dirname(resolve(sbArg));
+  const cwd = process.cwd();
+  if (["storyboard.json", "hyperframes.json"].some((f) => existsSync(join(cwd, f)))) return cwd;
+  return FILM_DIR;
+}
+/** The film project: inputs and every output live here. */
+export const PROJECT_DIR = projectDir();
+
 function brandPath() {
   if (typeof opts.brand === "string") return resolve(opts.brand);
   if (process.env.FILM_BRAND) return resolve(process.env.FILM_BRAND);
   if (storyboard?.brand) return isAbsolute(storyboard.brand) ? storyboard.brand : resolve(dirname(resolve(sbArg)), storyboard.brand);
-  const local = join(FILM_DIR, "brand.json");
+  const local = join(PROJECT_DIR, "brand.json");
   return existsSync(local) ? local : null;
 }
 
@@ -146,7 +163,7 @@ const look = deepMerge(deepMerge(LOOK_DEFAULTS, brandRaw.look ?? {}), storyboard
 /**
  * Resolve a path written in the brand file: "${NAME}" is replaced by the environment variable NAME
  * (so a brand file can point into another checkout without a machine-specific path), then a
- * relative path is taken relative to the brand file (film/ when there is none).
+ * relative path is taken relative to the brand file (the project when there is none).
  */
 export const brandAsset = (p) => {
   if (!p) return null;
@@ -154,7 +171,7 @@ export const brandAsset = (p) => {
     if (!process.env[name]) throw new Error(`brand path ${p}: environment variable ${name} is not set`);
     return process.env[name];
   });
-  return isAbsolute(x) ? x : resolve(BRAND_FILE ? dirname(BRAND_FILE) : FILM_DIR, x);
+  return isAbsolute(x) ? x : resolve(BRAND_FILE ? dirname(BRAND_FILE) : PROJECT_DIR, x);
 };
 
 // ---------- the constants every component uses ----------

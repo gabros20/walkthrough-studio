@@ -1,5 +1,7 @@
 // Stand-ins for the component demo (build-demo.mjs), so it runs without any recording or client file:
 //
+// Written into the project folder (lib/config.mjs PROJECT_DIR).
+//
 // 1. assets/footage/placeholder.mp4: a flat take master at 2x the capture size (2880x1620 for
 //    1440x810 CSS px), paper ground, a 90 px capture grid, the demo target boxes outlined, and a bar
 //    that moves with time (so playback and seeking are visible).
@@ -11,10 +13,10 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { CAPTURE, COLOR, FILM_DIR } from "../lib/config.mjs";
+import { CAPTURE, COLOR, PROJECT_DIR } from "../lib/config.mjs";
 import { TARGETS } from "../demo/targets.mjs";
 
-const film = FILM_DIR;
+const film = PROJECT_DIR; // stand-ins go into the project, never the kit
 const secs = Number(process.argv.slice(2).find((a) => /^\d+(\.\d+)?$/.test(a)) ?? 30);
 const hex = (c) => (/^#[0-9a-f]{6}$/i.test(c) ? "0x" + c.slice(1) : "0xF4F2EE");
 const W = CAPTURE.width * 2, H = CAPTURE.height * 2;

@@ -20,8 +20,7 @@
       "ranges": [
         {
           "from": {
-            "ref": "sync:start",
-            "offset": 0.2
+            "ref": "keep:from"
           },
           "to": {
             "ref": "type:prompt text"
@@ -119,8 +118,7 @@
             "offset": 0.12
           },
           "to": {
-            "ref": "sync:end",
-            "offset": -0.13
+            "ref": "keep:to"
           }
         }
       ],
@@ -131,8 +129,7 @@
             "ref": "mark:card 14"
           },
           "end": {
-            "ref": "sync:end",
-            "offset": -0.13
+            "ref": "keep:to"
           }
         }
       ],

@@ -19,12 +19,14 @@ npm run check        # should pass before you change anything
 
 | Command | What it runs | When |
 |---|---|---|
-| `npm run check` | `node --check` on every `.mjs`, Python syntax of every `.py`, `bash -n` on every `.sh`, `JSON.parse` of every `.json`, skill and agent frontmatter, the same version in every manifest, and `claude plugin validate . --profile directory` (skipped with a message when `claude` is not on your PATH) | every PR |
+| `npm run check` | `node --check` on every `.mjs`, Python syntax of every `.py`, `bash -n` on every `.sh`, `JSON.parse` of every `.json`, skill and agent frontmatter, the same version in every manifest, `docs/CLI.md` against `walkthrough help --all` (`node scripts/cli-docs.mjs` rewrites it), and `claude plugin validate . --profile directory` (skipped with a message when `claude` is not on your PATH) | every PR |
+| `npm test` | the golden test: a fixture built with `film/build.mjs --dry` and `--emit-only`, compared with `test/golden/` (`npm run test:update` rewrites the goldens after a deliberate change; `npm run test:render` compares rendered frames, local only) | every PR; after any change in `film/` |
 | `npm run lint:skills` | the frontmatter check on its own | after editing `skills/` or `agents/` |
 | `npm run check:site` | `npm ci && npm run build` in `site/` | when `site/` changed |
 
-CI runs the same three as the jobs `check`, `skills-lint` and `site` on every pull request; `check` and
-`site` must pass before a merge. These checks are about syntax and structure. They do not record, render or
+CI runs them as the jobs `check`, `test`, `skills-lint` and `site` on every pull request; `check` and `site`
+must pass before a merge (the ruleset in [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md)), and a red `test` is
+not merged either. These checks are about syntax and structure. They do not record, render or
 mix anything, so the per-area checks in [`CLAUDE.md`](CLAUDE.md) ("Before claiming done") still apply: run a
 changed script on real or sample input (or its `--dry`/`--help`) and read the output.
 

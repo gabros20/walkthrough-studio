@@ -10,21 +10,30 @@ For each film in the config:
   01_Films/web/<product>_Walkthrough_<Variant>_1080p30_web.mp4  H.264 high, CRF 23, AAC 160k, +faststart
   01_Films/web/<product>_Walkthrough_<Variant>_720p30_web.mp4   same at 1280x720
 """
-import hashlib
 import os
 import shutil
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib import FFMPEG, die, ensure, load_config, probe, run, srt_to_vtt_text, usage  # noqa: E402
+from lib import sha256 as sha  # noqa: E402
 
 
-def sha(p):
-    h = hashlib.sha256()
-    with open(p, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
+def scale_short_side(short):
+    """Scale filter that sets the short side (1080, 720) and keeps the shape: 16:9 -> 1920x1080, 9:16 -> 1080x1920."""
+    return f"scale='if(gte(iw,ih),-2,{short})':'if(gte(iw,ih),{short},-2)':flags=lanczos"
+
+
+def web_encode(src, dst, short=1080, fps=30, crf=23):
+    """The web encode: H.264 high, yuv420p, CRF 23, AAC 160k 48 kHz, +faststart (audio only if the source has it)."""
+    run([FFMPEG, "-v", "error", "-y", "-i", src, "-vf", f"fps={fps},{scale_short_side(short)},format=yuv420p",
+         "-c:v", "libx264", "-profile:v", "high", "-preset", "slow", "-crf", str(crf),
+         "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", dst])
+    return probe(dst)
+
+
+def poster(src, dst, t, short=1080):
+    run([FFMPEG, "-v", "error", "-y", "-ss", str(t), "-i", src, "-frames:v", "1", "-vf", scale_short_side(short), "-q:v", "2", dst])
 
 
 def main():
@@ -54,17 +63,13 @@ def main():
             open(os.path.join(out, stem + ".vtt"), "w", encoding="utf-8").write(srt_to_vtt_text(open(f["srt"], encoding="utf-8-sig").read()))
             print(f"subs    {stem}.srt / .vtt")
         t = f.get("poster_t", 4.0)
-        run([FFMPEG, "-v", "error", "-y", "-ss", str(t), "-i", f["master"], "-frames:v", "1", "-vf", "scale=1920:1080:flags=lanczos", "-q:v", "2", os.path.join(out, stem + "_poster_1920x1080.jpg")])
+        poster(f["master"], os.path.join(out, stem + "_poster_1920x1080.jpg"), t)
         print(f"poster  {stem}_poster_1920x1080.jpg at {t} s")
         if skip_web:
             continue
-        for h, crf in ((1080, 23), (720, 23)):
-            w = 1920 if h == 1080 else 1280
+        for h in (1080, 720):
             dst = os.path.join(web, f"{prod}_Walkthrough_{f['variant']}_{h}p30_web.mp4")
-            run([FFMPEG, "-v", "error", "-y", "-i", f["master"], "-vf", f"fps=30,scale={w}:{h}:flags=lanczos,format=yuv420p",
-                 "-c:v", "libx264", "-profile:v", "high", "-preset", "slow", "-crf", str(crf),
-                 "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", dst])
-            p = probe(dst)
+            p = web_encode(f["master"], dst, h)
             print(f"web     {dst}  ({p['size'] / 1e6:.1f} MB, audio {'yes' if p['audio'] else 'NO'})")
 
 

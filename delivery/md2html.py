@@ -66,6 +66,8 @@ def body(md):
 
 def main():
     a = sys.argv[1:]
+    if any(x in ("-h", "--help") for x in a):
+        print(__doc__.strip()); sys.exit(0)
     if len(a) < 2:
         print(__doc__); sys.exit(1)
     src, dst = a[0], a[1]

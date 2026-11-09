@@ -1,31 +1,60 @@
 // Title card and end card. Both are full scene files built from:
 //   creatives: [{ src, w, h }] (the manifest), lines: [string, string], timings in scene seconds.
+//
+// Two layouts (lib/config.mjs CARDS.layout, from the aspect):
+//   side     16:9: the lockup and the two lines left-aligned at the window's left edge (x 192),
+//            the creatives in a slant-edged column on the right
+//   stacked  9:16 and 1:1: the lockup on top, the lines under it (each wrapped to the width when it
+//            would not fit), the creatives in a strip along the bottom; the title wall has more rows
+//            and the end cascade is sized to the canvas
 
-import { BRAND, COLOR, FILM, SHAPE, TYPE, WINDOW } from "./config.mjs";
+import { BRAND, CARDS, COLOR, FILM, SHAPE, TYPE } from "./config.mjs";
 import { esc, n, sceneFile, Timeline, merge } from "./emit.mjs";
 import { lockup, lockupIn, lockupOut } from "./lockup.mjs";
 import { slantWipe } from "./transitions.mjs";
 
 const T = TYPE.title;
 
-/** Two title lines, left-aligned at x, each word its own span (ids <id>-l<i>-w<j>). */
-function titleLines({ id, lines, x, y }) {
+// average glyph width of the title type in em (weight 900, -1.5% tracking), for wrapping estimates only
+const TITLE_EM = 0.56;
+
+/**
+ * A title line split into the visual lines it takes inside maxWidth (greedy, from the glyph-width
+ * estimate): [[word, ...], ...]; one visual line when maxWidth is not given or it fits.
+ */
+function wrapLine(text, maxWidth) {
+  const words = text.split(/\s+/);
+  if (!maxWidth) return [words];
+  const fits = (ws) => ws.join(" ").length * T.size * TITLE_EM <= maxWidth;
+  const out = [[]];
+  for (const w of words) {
+    const cur = out[out.length - 1];
+    if (cur.length && !fits([...cur, w])) out.push([w]);
+    else cur.push(w);
+  }
+  return out;
+}
+
+/**
+ * Two title lines, left-aligned at x, each word its own span (ids <id>-l<i>-w<j>). maxWidth
+ * (stacked layout): a line wider than that breaks onto more rows inside its own line block, so the
+ * word ids and the line-by-line entrances stay the same.
+ */
+function titleLines({ id, lines, x, y, maxWidth = null }) {
   const lh = T.size * T.lineHeight;
   const css = `
     #${id} { position: absolute; left: ${x}px; top: ${y}px; font-family: ${FILM.fontStack}; font-size: ${T.size}px; font-weight: ${T.weight}; letter-spacing: ${T.tracking}; line-height: ${n(lh)}px; color: ${COLOR.white}; white-space: nowrap; }
     #${id} .w { display: inline-block; }`;
+  const rows = lines.map((l) => wrapLine(l, maxWidth));
   const html = `    <div id="${id}">
 ${lines
-  .map(
-    (l, i) =>
-      `      <div id="${id}-l${i}">${l
-        .split(/\s+/)
-        .map((w, j) => `<span class="w" id="${id}-l${i}-w${j}">${esc(w)}</span>`)
-        .join(" ")}</div>`,
-  )
+  .map((l, i) => {
+    let j = 0;
+    return `      <div id="${id}-l${i}">${rows[i].map((ws) => ws.map((w) => `<span class="w" id="${id}-l${i}-w${j++}">${esc(w)}</span>`).join(" ")).join("<br>")}</div>`;
+  })
   .join("\n")}
     </div>`;
-  return { css, html, height: lh * lines.length };
+  return { css, html, height: lh * rows.reduce((a, r) => a + r.length, 0) };
 }
 
 /** Per word: blur 6 -> 0 and opacity 0 -> 1 in 0.13 s, 0.067 s apart, no translate. */
@@ -44,16 +73,31 @@ function lineBlurIn(tl, id, line, at) {
   tl.fromTo(`#${id}-l${line}`, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "expo.out" }, at);
 }
 
-// The text block: lockup above two title lines, left edge on the window's left edge (x 192),
-// optically centred a little above the middle.
-function textBlock({ id, lines, logoHeight = 84 }) {
-  const gap = 64;
+// The text block: lockup above two title lines. Side: left edge on the window's left edge (x 192),
+// optically centred a little above the middle. Stacked: at CARDS.x, the lines wrapped to the
+// width, centred in the area above the bottom strip.
+function textBlock({ id, lines, logoHeight = CARDS.lockupHeight }) {
+  const gap = CARDS.gap;
+  if (CARDS.layout === "stacked") {
+    const maxWidth = FILM.width - 2 * CARDS.x;
+    const probe = titleLines({ id: `${id}-tx`, lines, x: 0, y: 0, maxWidth });
+    const blockH = logoHeight + gap + probe.height;
+    const top = Math.round((FILM.height - CARDS.strip.height - blockH) / 2);
+    const lk = lockup({ id: `${id}-lk`, logoHeight, x: CARDS.x, y: top });
+    const tx = titleLines({ id: `${id}-tx`, lines, x: CARDS.x - 3, y: top + logoHeight + gap, maxWidth });
+    return { lk, tx };
+  }
   const lh = T.size * T.lineHeight * lines.length;
   const blockH = logoHeight + gap + lh;
   const top = Math.round((FILM.height - blockH) / 2 - 24);
-  const lk = lockup({ id: `${id}-lk`, logoHeight, x: WINDOW.left, y: top });
-  const tx = titleLines({ id: `${id}-tx`, lines, x: WINDOW.left - 4, y: top + logoHeight + gap });
+  const lk = lockup({ id: `${id}-lk`, logoHeight, x: CARDS.x, y: top });
+  const tx = titleLines({ id: `${id}-tx`, lines, x: CARDS.x - 4, y: top + logoHeight + gap });
   return { lk, tx };
+}
+
+/** The creatives beside or under the text: the slant column (side) or the bottom strip (stacked). */
+function cardPanel({ pool, ...args }) {
+  return CARDS.layout === "stacked" ? stripPanel({ ...args, pool }) : slantPanel(args);
 }
 
 /**
@@ -64,20 +108,23 @@ function textBlock({ id, lines, logoHeight = 84 }) {
  * Holds, then the text blurs out by `duration` for a hard cut to the stage.
  */
 export function titleScene({ id = "title", creatives, lines = BRAND.cards.title, duration = 8, panelItems = [8, 9, 10] }) {
-  // Two rows of the creatives at their own aspect (never cropped), each row scaled to span the
-  // frame inside a 10 px ink margin, rows centred vertically. 10 px ink gutters.
+  // Rows of the creatives at their own aspect (never cropped), each row scaled to span the frame
+  // inside a 10 px ink margin, rows centred vertically (taller than the frame in portrait: the
+  // wall is cropped top and bottom). 10 px ink gutters. Two rows of four at 16:9; CARDS.wallRows.
   const g = 10;
   const cells = creatives.slice(0, 8);
-  const rows = [cells.slice(0, Math.ceil(cells.length / 2)), cells.slice(Math.ceil(cells.length / 2))];
+  const per = Math.ceil(cells.length / CARDS.wallRows);
+  const rows = Array.from({ length: CARDS.wallRows }, (_, r) => cells.slice(r * per, (r + 1) * per)).filter((row) => row.length);
   const rowHs = rows.map((row) => (FILM.width - 2 * g - g * (row.length - 1)) / row.reduce((a, c) => a + c.w / c.h, 0));
-  const top0 = (FILM.height - rowHs[0] - rowHs[1] - g) / 2;
+  const top0 = (rowHs.reduce((a, h) => a - h, FILM.height) - g * (rows.length - 1)) / 2;
+  const rowYs = rowHs.reduce((ys, h, r) => (r === 0 ? [top0] : [...ys, ys[r - 1] + rowHs[r - 1] + g]), []);
   const placed = [];
   rows.forEach((row, r) => {
     const rowH = rowHs[r];
     let x = g;
     row.forEach((c, j) => {
       const w = (rowH * c.w) / c.h;
-      placed.push({ c, x, y: r === 0 ? top0 : top0 + rowHs[0] + g, w, h: rowH, col: j, row: r, n: row.length });
+      placed.push({ c, x, y: rowYs[r], w, h: rowH, col: j, row: r, n: row.length });
       x += w + g;
     });
   });
@@ -118,7 +165,7 @@ ${placed
   text.tl.fromTo(`#${id}-tx`, { opacity: 1, filter: "blur(0px)" }, { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power3.in" }, out);
   text.tl.add(lockupOut({ id: `${id}-lk`, at: out, dur: 0.22 }));
   // the creatives stay in the picture: a slant-edged column on the right, drifting up
-  const panel = slantPanel({ id: `${id}-pn`, items: pick(creatives, panelItems), start: wipe.cut, end: duration, dir: -1 });
+  const panel = cardPanel({ id: `${id}-pn`, items: pick(creatives, panelItems), start: wipe.cut, end: duration, dir: -1, pool: creatives });
 
   const m = merge(wall, panel, text, wipe);
   return sceneFile({ id, duration, ...m });
@@ -127,8 +174,8 @@ ${placed
 const pick = (creatives, idx) => idx.map((i) => creatives[i % creatives.length]);
 
 // The right-hand column: its left edge leans like the brand's button ("/", shape.slantDeg) and passes ~85 px
-// clear of the end of the longest title line (x ~1425 at y ~700).
-const PANEL = { deg: SHAPE.slantDeg, through: { x: 1510, y: 700 }, gap: 12, speed: 42 };
+// clear of the end of the longest title line (x ~1425 at y ~700; CARDS.through).
+const PANEL = { deg: SHAPE.slantDeg, through: CARDS.through ?? { x: 1510, y: 700 }, gap: 12, speed: 42 };
 
 /**
  * slantPanel({ id, items, start, end, dir }) -> part
@@ -170,6 +217,48 @@ ${items
 }
 
 /**
+ * stripPanel({ id, items, start, end, dir }) -> part   (stacked layout)
+ * A full-width strip along the bottom of the frame (CARDS.strip.height tall) holding the creatives
+ * side by side at full brightness, drifting at a constant 42 px/s (dir -1 left, +1 right). When the
+ * items are too few to keep the frame covered over the whole drift, more creatives from `pool` are
+ * added (ones not shown yet first; repeats only when the pool runs out).
+ */
+export function stripPanel({ id, items, start, end, dir = -1, pool = [] }) {
+  const h = CARDS.strip.height, top = FILM.height - h;
+  const cr = (c) => c.crop ?? [0, 0, 1, 1];
+  const widthOf = (c) => { const [x0, y0, x1, y1] = cr(c); return (h * (c.w * (x1 - x0))) / (c.h * (y1 - y0)); };
+  const travel = PANEL.speed * (end - start);
+  const list = [...items];
+  const total = () => list.reduce((a, c) => a + widthOf(c), 0) + PANEL.gap * (list.length - 1);
+  const extra = [...pool.filter((c) => !list.some((x) => x.src === c.src)), ...items];
+  for (let k = 0; extra.length && total() < FILM.width + travel && k < 24; k++) list.push(extra[k % extra.length]);
+  const rowW = total();
+  const spare = Math.max(0, (rowW - FILM.width - travel) / 2);
+  const x0 = dir < 0 ? -spare : FILM.width - rowW + spare;
+  const css = `
+    #${id} { position: absolute; left: 0; top: ${top}px; width: ${FILM.width}px; height: ${h}px; overflow: hidden; }
+    #${id}-row { position: absolute; left: 0; top: 0; height: ${h}px; width: ${n(rowW)}px; }
+    #${id}-row .pi { position: absolute; top: 0; height: ${h}px; overflow: hidden; }
+    #${id}-row .pi img { position: absolute; display: block; }`;
+  let x = 0;
+  const cells = list.map((c, i) => {
+    const [cx0, cy0, cx1, cy1] = cr(c);
+    const w = widthOf(c);
+    const iw = w / (cx1 - cx0), ih = h / (cy1 - cy0);
+    const cell = `        <div class="pi" id="${id}-i${i}" style="left:${n(x)}px; width:${n(w)}px"><img src="${esc(c.src)}" alt="" style="width:${n(iw)}px; height:${n(ih)}px; left:${n(-cx0 * iw)}px; top:${n(-cy0 * ih)}px" /></div>`;
+    x += w + PANEL.gap;
+    return cell;
+  });
+  const html = `    <div id="${id}" class="clip" data-start="${n(start)}" data-duration="${n(end - start)}" data-layout-allow-overflow>
+      <div id="${id}-row">
+${cells.join("\n")}
+      </div>
+    </div>`;
+  const tl = new Timeline().fromTo(`#${id}-row`, { x: x0 }, { x: x0 + dir * travel, duration: end - start, ease: "none" }, start);
+  return { css, html, tl };
+}
+
+/**
  * endScene({ id, creatives, lines, duration }) -> scene file source.
  * 0-1.1 s: the kit files deal out into a clean cascade (upright, even step, bottoms on one
  * baseline, each over the last), then hold while the cascade pushes in slightly. 2.4 s: the accent
@@ -179,7 +268,16 @@ ${items
 export function endScene({ id = "end", creatives, lines = BRAND.cards.end, duration = 7, panelItems = [16, 17, 18], cascadeItems = [11, 12, 13, 14, 15], wipeStart = 2.4 }) {
   const cards = pick(creatives, cascadeItems);
   const N = cards.length;
-  const H = 640, base = 870, margin = 150;
+  const { margin } = CARDS.cascade; // 640 tall, baseline 870, margins 150 at 16:9
+  let H = CARDS.cascade.height, base = CARDS.cascade.base;
+  // stacked (narrow canvas): the cards shrink until the widest one ends inside the right margin
+  if (CARDS.layout === "stacked") {
+    const A = FILM.width - 2 * margin;
+    const w = cards.map((c) => (H * c.w) / c.h);
+    const f = Math.min(1, ...w.map((wi, i) => { const over = wi - (i * w[N - 1]) / (N - 1); return over > 0 && i < N - 1 ? (A * (N - 1 - i)) / (N - 1) / over : 1; }));
+    H = Math.floor(H * f);
+    base = Math.round(base - (CARDS.cascade.height - H) / 2); // stays centred where it was
+  }
   const ws = cards.map((c) => (H * c.w) / c.h);
   const step = (FILM.width - 2 * margin - ws[N - 1]) / (N - 1);
   const xs = cards.map((_, i) => margin + i * step);
@@ -205,7 +303,7 @@ ${cards.map((c, i) => `      <div class="card" id="${id}-k${i}" style="left:${n(
   text.tl.add(lockupIn({ id: `${id}-lk`, at: land }));
   lineBlurIn(text.tl, `${id}-tx`, 0, land + 0.35);
   lineBlurIn(text.tl, `${id}-tx`, 1, land + 0.5);
-  const panel = slantPanel({ id: `${id}-pn`, items: pick(creatives, panelItems), start: wipe.cut, end: duration, dir: 1 });
+  const panel = cardPanel({ id: `${id}-pn`, items: pick(creatives, panelItems), start: wipe.cut, end: duration, dir: 1, pool: creatives });
 
   const m = merge(cas, panel, text, wipe);
   return sceneFile({ id, duration, ...m });

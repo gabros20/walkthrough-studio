@@ -17,14 +17,33 @@ export function checkTakeSchema(events, name = events?.take ?? "?") {
 }
 
 /**
+ * The usable span's edge from the take's sync flashes: side "start" -> the end of the last start
+ * flash, "end" -> the start of the first end flash. Flashes are labelled "start 1..3" / "end 1..3"
+ * (single-flash takes: "start" / "end"; numbered only when numberedOnly). null when there are none.
+ */
+function flashEdge(take, side, numberedOnly = false) {
+  const re = numberedOnly ? new RegExp(`^${side} \\d+$`) : new RegExp(`^${side}( \\d+)?$`);
+  const flashes = (take.events ?? []).filter((e) => e.type === "sync" && re.test(e.label ?? ""));
+  if (!flashes.length) return null;
+  const f = side === "start" ? flashes[flashes.length - 1] : flashes[0];
+  return { ...f, label: side, t: side === "start" ? f.t + (f.duration ?? 0) : f.t, tEnd: undefined };
+}
+
+/**
  * Find an event by reference "type:label" or "type:label#n" (n-th match, 1-based). type "*" matches
  * any type. Throws with the available labels when nothing matches.
  */
 export function findRef(take, ref) {
-  // "keep:from" / "keep:to": the take's usable span between its sync flashes (take.json sync.keep)
+  // "keep:from" / "keep:to": the take's usable span between its sync flashes (take.json sync.keep;
+  // a take without it: the end of the last start flash / the start of the first end flash, two master
+  // frames inward, as the recorder pads sync.keep)
   if (ref === "keep:from" || ref === "keep:to") {
-    if (!take.keep) throw new Error(`take ${take.take} has no sync.keep in take.json`);
-    return { type: "keep", label: ref.slice(5), t: take.keep[ref.slice(5)] };
+    const side = ref.slice(5);
+    if (take.keep) return { type: "keep", label: side, t: take.keep[side] };
+    const f = flashEdge(take, side === "from" ? "start" : "end");
+    if (!f) throw new Error(`take ${take.take} has no sync.keep in take.json and no sync flashes to derive it from`);
+    const pad = 2 / (take.fps ?? 60);
+    return { type: "keep", label: side, t: side === "from" ? f.t + pad : f.t - pad };
   }
   const i = ref.indexOf(":");
   if (i < 1) throw new Error(`bad event ref "${ref}" (want "type:label" or "type:label#n")`);
@@ -37,6 +56,13 @@ export function findRef(take, ref) {
   if (!hits.length) {
     const m = /^(.*)#(\d+)$/.exec(rest);
     if (m) { hits = match(m[1]); nth = Number(m[2]); }
+  }
+  // Older storyboards anchor to a bare "sync:start" / "sync:end" (single-flash takes). In a take
+  // with three flashes a side ("start 1..3", "end 1..3") and no event labelled exactly that, they
+  // mean the edges of the usable span: the end of the last start flash, the start of the first end flash.
+  if (!hits.length && type === "sync" && (rest === "start" || rest === "end")) {
+    const f = flashEdge(take, rest, true);
+    if (f) return f;
   }
   const ev = hits[nth - 1];
   if (!ev) {
@@ -161,4 +187,46 @@ export function buildMapping(take, ranges, { grid, excise = [], warn = () => {} 
     return true;
   };
   return { ranges: out, duration, map, inverse, contiguous, excised: gaps };
+}
+
+/** Event types that mean something on screen is moving or about to change (rest spans avoid them). */
+export const BUSY_EVENTS = Object.freeze(["move", "down", "up", "key", "type", "scroll", "mark", "sync"]);
+
+/**
+ * restSpans(take, from, to) -> [{ from, to, length, quiet }] in source seconds, longest first.
+ * The spans inside [from, to] with the pointer at rest and nothing logged: no move, click, key,
+ * typing, scroll, mark or sync flash (an event with tEnd covers t..tEnd), and not inside an agent
+ * wait (waitStart..waitEnd: the UI is loading). A wait that ended "quiet" (take.waitQuiet: no DOM
+ * mutation for its last `quietMs`, 800 ms by default) gives that tail back as rest, marked
+ * quiet: true (the recorder saw no UI change there). Ties in length go to the quiet span.
+ */
+export function restSpans(take, from, to) {
+  const busy = [];
+  const evs = take.events ?? [];
+  for (const e of evs) if (BUSY_EVENTS.includes(e.type)) busy.push([e.t, e.tEnd ?? e.t]);
+  const quiet = [];
+  for (const ws of evs.filter((e) => e.type === "waitStart")) {
+    const we = evs.find((e) => e.type === "waitEnd" && e.label === ws.label && e.t >= ws.t);
+    const end = we?.t ?? Infinity;
+    const tail = we?.outcome === "quiet" ? Math.min(end - ws.t, (we.quietMs ?? 800) / 1000) : 0;
+    busy.push([ws.t, end - tail]);
+    if (tail > 0) quiet.push([end - tail, end]);
+    busy.push([end, end]);
+  }
+  busy.sort((a, b) => a[0] - b[0]);
+  const out = [];
+  let cursor = from;
+  const push = (a, b) => {
+    if (b - a <= 1e-9) return;
+    const q = quiet.some(([qa, qb]) => qa <= a + 1e-6 && qb >= b - 1e-6);
+    out.push({ from: a, to: b, length: b - a, quiet: q });
+  };
+  for (const [a, b] of busy) {
+    if (b < cursor) continue;
+    if (a >= to) break;
+    push(cursor, Math.min(a, to));
+    cursor = Math.max(cursor, b);
+  }
+  if (cursor < to) push(cursor, to);
+  return out.sort((p, q) => q.length - p.length || Number(q.quiet) - Number(p.quiet));
 }

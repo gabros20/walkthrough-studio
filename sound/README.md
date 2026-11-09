@@ -52,6 +52,21 @@ fit below makes up the difference. Any WAV or MP3 works, generated or licensed, 
 groove and a real ending. Put the file beside `music.json` (its `"file"` is relative to it) or pass
 `--music-file <path>`.
 
+### Generating a take with an API key
+
+```
+node $KIT/sound/generate-music.mjs --prompt-file music.prompt.txt --seconds 184 --instrumental
+#   -> music-take1.mp3 (checked with ffprobe; its real length printed), a cost row in sound-build/cost.jsonl
+```
+
+`POST /v1/music` with `ELEVENLABS_API_KEY` (never printed), model `music_v2_5` unless `--model`
+(`music_v1`, the API's default, is deprecated). `--seconds` is the film length + 2 s (`walkthrough
+sound music` takes it from the last render). An existing take is never overwritten: it cost credits;
+write `--out music-take2.mp3` instead. A take shorter than asked is normal: do not regenerate, the
+fit below loops it. Without a key it prints the connector steps; `ELEVENLABS_MOCK=1` prints the
+request and saves a 1 s silent file, for testing without credits. Prompt rules and the connector
+route: `docs/ELEVENLABS.md`.
+
 Do not trust a tempo detector for the grid. `npx hyperframes audio --only bpm` reported 128 BPM for
 the example take; it is 96.000. Measure it.
 
@@ -68,6 +83,21 @@ Python 3 with numpy, scipy and soundfile. Decode first:
 | `chroma.py take.wav` | Chord profile per loop bar and of the intro / outro / final chord (edit its spans first), plus a key estimate. |
 | `splice.py take.wav [music.json]` | Every bar-aligned loop splice candidate in the splice window, by spectral distance, waveform correlation and level jump. |
 | `fine.py take.wav <from> <to> <step>` / `bandsovertime.py take.wav <step> <end>` | RMS and band levels over time, to find where sections and the release really start. |
+
+`beat-grid.mjs` runs the first two for you and writes the result into `music.json`:
+
+```
+node $KIT/sound/beat-grid.mjs music-take1.mp3 [--bpm 96] [--groove 10,110] [--dry]
+#   decodes to sound-build/analysis/take.wav, analyze.py over the groove, grid.py at the rough tempo
+#   -> music.json: bpm, beat, bar, beatsPerBar, duration, gridOffset, gridEvidence
+```
+
+The rough tempo is the autocorrelation's beat peak refined by the longest strong peak that is a
+whole number of beats (a bar or a loop: one analysis hop is about 1% of a beat, more than the
+±0.25% `grid.py` searches). `gridOffset` is set to the first beat's phase; the downbeat is not
+measured, so confirm which beat is "1" with `struct.py`, `grid.py`'s kick profile and your ears, and
+move it by whole beats if needed. On a synthetic 100 BPM track with its first beat at 0.37 s it
+measured 100.002 BPM and 0.362 s. It needs a take longer than about 20 s (grid.py folds 8-125 s).
 
 ### music.json
 

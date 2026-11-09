@@ -14,6 +14,12 @@ passed. Steps 6-9 on that test-site take, through to a rendered film. Step 10 on
 which the delivery guard refused (`NOT DELIVERED`, true peak), as it should for that signal. **Not run here:**
 the sign-in sidebar, and step 10 with real music.
 
+**The `walkthrough` command beside each step.** Every by-hand step below is followed by a **CLI** line: the
+`walkthrough` command that does the same ([`CLI.md`](CLI.md)), prints the by-hand command it runs and records
+the step in `$P/state.json`. Use either. Of those lines, `walkthrough init`, `walkthrough doctor` and
+`walkthrough build --dry --audit` were run (2026-11-09, on a scratch project made from the kit's test fixture);
+the others are marked *(not run here)*.
+
 ## Before you start
 
 - The kit is installed and `npm run setup` has run in it (see the [README](../README.md#install)).
@@ -23,6 +29,9 @@ the sign-in sidebar, and step 10 with real music.
   export KIT=~/walkthrough-studio
   export P=~/films/my-site-tour
   ```
+
+  **CLI:** `walkthrough doctor` checks the machine (node, ffmpeg, Python, HyperFrames, Chromium, disk) and, inside
+  a project, its config and base URL (`walkthrough` = `node $KIT/bin/walkthrough.mjs`).
 
 - Do not record a site in a way that creates orders, payments, messages to real people or public posts; use a
   test account if it needs one.
@@ -35,6 +44,9 @@ Start from the working site-mode template:
 mkdir -p $P
 cp $KIT/recorder/site-test/walkthrough.config.mjs $KIT/recorder/site-test/scenes.json $P/
 ```
+
+**CLI:** `walkthrough init $P --url https://www.example.org` writes a site-mode config and a one-scene
+`scenes.json` (plus the film files of step 6 and `state.json`) instead of copying the template.
 
 ## 2. Point the config at the site
 
@@ -64,6 +76,9 @@ Open each page you want to show at the take's viewport. Nothing is recorded:
 node $KIT/recorder/tools/inspect.mjs --config $P/walkthrough.config.mjs --path / --out $P/inspect
 node $KIT/recorder/tools/inspect.mjs --config $P/walkthrough.config.mjs --path /pricing --out $P/inspect
 ```
+
+**CLI:** there is no `walkthrough` command for `inspect.mjs`; `walkthrough explore /` maps the reachable pages
+into `tour-map.md`, thumbnails and a `scenes.draft.json` *(not run here)*.
 
 Each run prints the interactive elements in view with their boxes and names, for example
 `a [679,743 82x19] "Learn more"`, and saves a screenshot in `$P/inspect/`. Open the screenshot. Write your
@@ -126,6 +141,8 @@ Close anything heavy (renders, encodes, other browsers): a busy machine causes f
 node $KIT/recorder/takes/run.mjs --config $P/walkthrough.config.mjs --auto
 ```
 
+**CLI:** `walkthrough take --auto` (from `$P`; records each take in `state.json`) *(not run here)*.
+
 The runner opens one browser session and records the scenes in order. For each take it prints a line such
 as `take 1: ok=true sync=true gapOut=49.27ms -> …/takes/take-1-home` and writes `$P/takes/<take>/`
 (`master.mp4`, `events.json`, `take.json`, `verify/sheet.jpg`). Open each `verify/sheet.jpg` and check the
@@ -138,6 +155,8 @@ pages look right: no cookie banner, no half-loaded images.
 node $KIT/recorder/takes/run.mjs --config $P/walkthrough.config.mjs 2 --auto
 ```
 
+**CLI:** `walkthrough take 2 --auto` *(not run here)*.
+
 A take that fails only on a capture gap is usually the machine being busy; record it again on a quiet machine
 rather than loosening the gate.
 
@@ -148,6 +167,10 @@ node $KIT/film/scripts/init-project.mjs $P
 node $KIT/film/scripts/draft-storyboard.mjs $P/takes/take-1-home $P/takes/take-2-… $P/takes/take-3-… \
      --out $P/storyboard.json
 ```
+
+**CLI:** `walkthrough init $P --force` (keeps your config, scenes and takes; never overwrites a file), then
+`walkthrough draft` (every take with an `events.json`, in name order; `storyboard.json` when there is none).
+`init` was run here; `draft` *(not run here)*.
 
 `init-project.mjs` adds the HyperFrames project files, a neutral `brand.json` and `storyboard.example.json`
 to `$P` without touching your config or takes. The draft has one scene per take, a camera framing and a
@@ -172,6 +195,9 @@ Then check it without writing any files:
 cd $P
 node $KIT/film/build.mjs --dry --audit
 ```
+
+**CLI:** `walkthrough build --dry --audit` (run here: it printed the durations and audit tables and
+`build recorded: dry, aspect 16:9, captions on, audit 0 error(s) 1 warning(s), exit 0`).
 
 You get a durations table (title, each scene, end, the total against the target range) and an audit table.
 Fix every `error` (for example `caption 1: overlaps caption 0`: delete one or move it) and read every
@@ -204,6 +230,9 @@ and copy them, with the logo, into the project:
 node $KIT/film/scripts/sync-assets.mjs
 ```
 
+**CLI:** `walkthrough build` runs `sync-assets.mjs` itself before a real build when `creatives.json` lists
+images that are not synced yet *(not run here)*.
+
 It prints `synced <n> creatives` (and `the lockup is text only` when `brand.json` names no logo).
 
 ## 9. Build and render
@@ -214,6 +243,9 @@ npx --yes hyperframes@0.9.16 check --json
 npx --yes hyperframes@0.9.16 render -o renders/final.mp4 --fps 60
 for f in cues.json edl.json; do cp $f renders/final.$f; done; cp captions.srt renders/final.captions.srt
 ```
+
+**CLI:** `walkthrough build --audit`, then `walkthrough render --name final` (checks free disk, rebuilds first
+when the build is stale, renders at 60 fps and copies the three sidecars); `check` has no CLI command *(not run here)*.
 
 The build cuts one clip per scene and writes the compositions, `cues.json`, `edl.json` and `captions.srt`.
 `check` must report `"ok": true`. The render of a 27 s test film took 39 s here. The copies beside the
@@ -232,6 +264,8 @@ Then:
 node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/my-site-tour.mp4
 ```
 
+**CLI:** `walkthrough sound build --video renders/final.mp4 --deliver out/my-site-tour.mp4` *(not run here)*.
+
 The build renames the silent render to `renders/final.picture-only.mp4`, fits the bed, adds clicks and
 whooshes, mixes to −16 LUFS, muxes, measures the result and copies the captions beside it as
 `out/my-site-tour.srt`. Its last line is either `delivered: <path>` (exit 0): the film is done, or
@@ -241,6 +275,8 @@ sent. To run it again after a failure, pass the renamed render:
 ```bash
 node $KIT/sound/build-sound.mjs --video renders/final.picture-only.mp4 --deliver out/my-site-tour.mp4
 ```
+
+**CLI:** `walkthrough sound build --video renders/final.picture-only.mp4 --deliver out/my-site-tour.mp4` *(not run here)*.
 
 Listen to the result on headphones and on laptop speakers before you send it: the numbers say the sound is
 there and in range, not that it sounds right.

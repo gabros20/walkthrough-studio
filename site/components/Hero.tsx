@@ -11,6 +11,7 @@ const NAV = [
   { href: "#quality", label: "Quality" },
   { href: "#quick-start", label: "Quick start" },
   { href: "#install", label: "Install" },
+  { href: "#cli", label: "CLI" },
 ];
 
 export function Header() {

@@ -37,6 +37,48 @@ def fix_boundary(t, lines, total):
     return t, None
 
 
+def safe_span(a, z, lines, total, name, strict=True):
+    """Move a clip's start and end out of any spoken line (fix_boundary). strict: stop when a line cannot be kept
+    whole (speech); otherwise leave that boundary and add a note (captions only)."""
+    notes = []
+    for which in ("start", "end"):
+        t = a if which == "start" else z
+        nt, line = fix_boundary(t, lines, total)
+        if nt is None:
+            if strict:
+                die(f"clip {name}: {which} {mmss(t)} cuts the spoken line {line!r} and no gap is within {MAX_SHIFT} s. Merge this clip with its neighbour.")
+            notes.append(f"{which} {mmss(t)} is inside {line!r} (no gap within {MAX_SHIFT} s; left as is)")
+            continue
+        if line:
+            notes.append(f"{which} moved {mmss(t)} -> {mmss(nt)} to keep {line!r} whole")
+            if which == "start":
+                a = nt
+            else:
+                z = nt
+    return round(a, 3), round(z, 3), notes
+
+
+def cut(src, a, dur, dst, vf="fps=30,scale=1920:1080:flags=lanczos,format=yuv420p", crf=20, extra_inputs=(), filter_complex=None, cwd=None, audio=True):
+    """Frame-accurate re-encode of [a, a+dur] with 0.3 s audio fades. filter_complex (with extra_inputs, each a list
+    of input arguments) replaces vf when overlays are drawn on the picture; it must label its output [v]. Film time in
+    the filters starts at 0 (the input is seeked). cwd: run ffmpeg there (relative paths inside filters)."""
+    cmd = [FFMPEG, "-v", "error", "-y", "-ss", str(a), "-i", src]
+    for x in extra_inputs:
+        cmd += x
+    cmd += ["-t", str(dur)]  # an output option: after every input
+    if filter_complex:
+        cmd += ["-filter_complex", filter_complex, "-map", "[v]", "-map", "0:a?"]
+    else:
+        cmd += ["-vf", vf]
+    if audio:
+        cmd += ["-af", f"afade=t=in:st=0:d={FADE},afade=t=out:st={max(0, dur - FADE):.3f}:d={FADE}",
+                "-c:a", "aac", "-b:a", "160k", "-ar", "48000"]
+    else:  # a silent source (a test render): no audio stream to fade
+        cmd += ["-an"]
+    cmd += ["-c:v", "libx264", "-profile:v", "high", "-crf", str(crf), "-preset", "slow", "-movflags", "+faststart", dst]
+    run(cmd, cwd=cwd)
+
+
 def plan(cfg, f):
     spans = {sid: (a, z) for sid, a, z in scene_spans(f["edl"])}
     total = max(z for a, z in spans.values())
@@ -46,20 +88,8 @@ def plan(cfg, f):
         missing = [s for s in c["scenes"] if s not in spans]
         if missing:
             die(f"clip {c['name']}: scenes {missing} not in {f['edl']} (have {list(spans)})")
-        a, z = spans[c["scenes"][0]][0], spans[c["scenes"][-1]][1]
-        notes = []
-        for which in ("start", "end"):
-            t = a if which == "start" else z
-            nt, line = fix_boundary(t, lines, total)
-            if nt is None:
-                die(f"clip {c['name']}: {which} {mmss(t)} cuts the spoken line {line!r} and no gap is within {MAX_SHIFT} s. Merge this clip with its neighbour.")
-            if line:
-                notes.append(f"{which} moved {mmss(t)} -> {mmss(nt)} to keep {line!r} whole")
-                if which == "start":
-                    a = nt
-                else:
-                    z = nt
-        out.append((c["name"], round(a, 3), round(z, 3), notes))
+        a, z, notes = safe_span(spans[c["scenes"][0]][0], spans[c["scenes"][-1]][1], lines, total, c["name"])
+        out.append((c["name"], a, z, notes))
     return out
 
 
@@ -81,11 +111,7 @@ def main():
             if dry:
                 continue
             dst = os.path.join(d, f"{prod}_{name}_{f['variant']}.mp4")
-            run([FFMPEG, "-v", "error", "-y", "-ss", str(a), "-i", f["master"], "-t", str(dur),
-                 "-vf", "fps=30,scale=1920:1080:flags=lanczos,format=yuv420p",
-                 "-af", f"afade=t=in:st=0:d={FADE},afade=t=out:st={max(0, dur - FADE):.3f}:d={FADE}",
-                 "-c:v", "libx264", "-profile:v", "high", "-crf", "20", "-preset", "slow",
-                 "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", dst])
+            cut(f["master"], a, dur, dst)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@
 //   - JSON.parse of every .json
 //   - skill and agent frontmatter (scripts/lint-skills.mjs)
 //   - the same version in every manifest (scripts/version.mjs --verify)
+//   - docs/CLI.md's usage block equals `walkthrough help --all` (scripts/cli-docs.mjs --check)
 //   - claude plugin validate . --profile directory: the local `claude` binary if there is one; in CI
 //     (CI=true) `npx @anthropic-ai/claude-code@latest`, which needs no login; otherwise skipped.
 // Files are the ones git tracks plus untracked files it does not ignore, so node_modules, .next and
@@ -120,6 +121,12 @@ step("versions agree", () => {
   const r = run(process.execPath, ["scripts/version.mjs", "--verify"]);
   if (r.status !== 0) failures.push(`versions\n    ${firstLines(r.stderr, 10)}`);
   return { text: (r.stdout || "").trim() };
+});
+
+step("CLI docs match the usage", () => {
+  const r = run(process.execPath, ["scripts/cli-docs.mjs", "--check"]);
+  if (r.status !== 0) failures.push(`cli docs\n    ${firstLines(r.stderr || r.stdout, 10)}`);
+  return { text: (r.stdout || "").trim() || undefined };
 });
 
 step("claude plugin validate", () => {

@@ -1,0 +1,15 @@
+{
+  "take": "sample-mini",
+  "note": "Trimmed from the kit's sample take (recorder/sample-take.mjs): source 5.2-13.2 s, times shifted by -5.2 s; the master is generated at test time (test/run.mjs).",
+  "mode": "shell",
+  "fps": 60,
+  "scale": 2,
+  "master": {
+    "codec_name": "h264",
+    "width": 2880,
+    "height": 1620,
+    "r_frame_rate": "60/1",
+    "nb_read_packets": "480",
+    "duration": "8.000000"
+  }
+}

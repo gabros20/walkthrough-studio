@@ -1,8 +1,10 @@
 # Shared helpers for the delivery scripts: config loading, EDL scene spans, ffprobe, SRT parsing.
 # Stdlib only (Pillow is imported by the scripts that draw). Run every script with `python3 -I`.
+import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -84,9 +86,20 @@ def film(cfg, variant):
     die(f"no film with variant {variant!r} in config (have: {[f['variant'] for f in cfg['films']]})")
 
 
-def run(cmd, quiet=True):
-    """Run a command list; raise with its stderr on failure."""
-    r = subprocess.run(cmd, capture_output=True, text=True)
+# WALKTHROUGH_ECHO=1 (set by run_preset.py and the CLI) prints every command before it runs, prefixed "›".
+ECHO = os.environ.get("WALKTHROUGH_ECHO") == "1"
+
+
+def show(cmd, cwd=None):
+    if ECHO:
+        print(f"› {shlex.join(str(c) for c in cmd)}{f'   (in {cwd})' if cwd else ''}", flush=True)
+
+
+def run(cmd, quiet=True, cwd=None, echo=True):
+    """Run a command list; raise with its stderr on failure. echo=False for read-only probes."""
+    if echo:
+        show(cmd, cwd)
+    r = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
     if r.returncode != 0:
         raise RuntimeError(f"{' '.join(cmd[:3])}... failed:\n{r.stderr[-2000:]}")
     return r.stdout
@@ -94,7 +107,7 @@ def run(cmd, quiet=True):
 
 def probe(path):
     """Duration, size, fps, and whether an audio stream exists (with its duration)."""
-    out = run([FFPROBE, "-v", "error", "-show_streams", "-show_format", "-of", "json", path])
+    out = run([FFPROBE, "-v", "error", "-show_streams", "-show_format", "-of", "json", path], echo=False)
     d = json.loads(out)
     v = next((s for s in d["streams"] if s["codec_type"] == "video"), None)
     a = next((s for s in d["streams"] if s["codec_type"] == "audio"), None)
@@ -167,3 +180,107 @@ def mmss(t):
 def ensure(path):
     os.makedirs(path, exist_ok=True)
     return path
+
+
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def fmt_srt_ts(t):
+    ms = int(round(max(0.0, t) * 1000))
+    return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
+
+
+def cues_to_srt(cues):
+    return "".join(f"{i}\n{fmt_srt_ts(a)} --> {fmt_srt_ts(z)}\n{t}\n\n" for i, (a, z, t) in enumerate(cues, 1))
+
+
+def slice_cues(cues, a, z, min_len=0.2):
+    """The cues inside [a, z], clipped to it and shifted so a is 0. Fragments shorter than min_len are dropped."""
+    out = []
+    for s, e, t in cues:
+        s2, e2 = max(s, a), min(e, z)
+        if e2 - s2 >= min_len:
+            out.append((round(s2 - a, 3), round(e2 - a, 3), t))
+    return out
+
+
+def chapter_ts(t):
+    """YouTube chapter time: m:ss (h:mm:ss past an hour), whole seconds rounded down."""
+    s = int(t)
+    return f"{s // 3600}:{s // 60 % 60:02d}:{s % 60:02d}" if s >= 3600 else f"{s // 60}:{s % 60:02d}"
+
+
+def slug(text):
+    s = re.sub(r"[^A-Za-z0-9]+", "-", text.strip().lower()).strip("-")
+    return s or "part"
+
+
+def scene_groups(edl_path, storyboard_path=None, cues=None):
+    """The film's features: runs of consecutive app scenes that share a storyboard "group", each with a name.
+
+    Name: storyboard groups[<g>].name, else the group key; an ungrouped scene is its own group, named by its first
+    caption (cues = srt_cues(...)) or else its scene id. Title and end cards are not included.
+    Returns [{"key", "name", "scenes": [ids], "start", "end"}] in film order.
+    """
+    sb = {}
+    if storyboard_path and os.path.exists(storyboard_path):
+        sb = json.load(open(storyboard_path, encoding="utf-8"))
+    sb_group = {s.get("id"): s.get("group") for s in sb.get("scenes", [])}
+    names = {k: (v or {}).get("name") for k, v in (sb.get("groups") or {}).items()}
+    out = []
+    for sid, a, z in scene_spans(edl_path):
+        if sid in ("title", "end"):
+            continue
+        g = sb_group.get(sid)
+        if g is not None and out and out[-1]["key"] == g:
+            out[-1]["scenes"].append(sid)
+            out[-1]["end"] = z
+            continue
+        out.append({"key": g if g is not None else sid, "grouped": g is not None, "scenes": [sid], "start": a, "end": z})
+    for o in out:
+        first = next((t for s, e, t in (cues or []) if o["start"] <= s < o["end"]), None)
+        o["name"] = (names.get(o["key"]) if o["grouped"] else None) or (str(o["key"]) if o["grouped"] else None) or first or o["key"]
+        del o["grouped"]
+    return out
+
+
+def write_manifest(root, title=""):
+    """MANIFEST.txt in root: one tab-separated row per file (path, bytes, duration in s for media, sha256).
+    Check it with: python3 -I delivery/verify.py --dir ROOT (or shasum: see docs/DELIVERY.md)."""
+    rows = []
+    for d, dirs, fs in os.walk(root):
+        dirs.sort()
+        for f in sorted(fs):
+            if f in ("MANIFEST.txt", ".DS_Store"):
+                continue
+            p = os.path.join(d, f)
+            dur = ""
+            if f.lower().endswith((".mp4", ".mov", ".gif", ".m4a", ".mp3", ".wav")):
+                try:
+                    dur = f"{probe(p)['duration']:.3f}"
+                except Exception:
+                    dur = "?"
+            rows.append((os.path.relpath(p, root), os.path.getsize(p), dur, sha256(p)))
+    total = sum(r[1] for r in rows)
+    with open(os.path.join(root, "MANIFEST.txt"), "w", encoding="utf-8") as fh:
+        fh.write(f"# MANIFEST{': ' + title if title else ''}. {len(rows)} files, {total} bytes ({total / 1e6:.1f} MB).\n")
+        fh.write("# file\tbytes\tduration_s\tsha256\n")
+        for r in rows:
+            fh.write("\t".join(str(x) for x in r) + "\n")
+    return rows
+
+
+def read_manifest(path):
+    rows = []
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("#") or not line.strip():
+            continue
+        parts = line.rstrip("\n").split("\t")
+        if len(parts) == 4:
+            rows.append((parts[0], int(parts[1]), parts[2], parts[3]))
+    return rows

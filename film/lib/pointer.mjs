@@ -158,6 +158,20 @@ export class Pointer {
     this.cur = shape;
     return this;
   }
+  /** Fade the pointer out over `dur` s, ending at `end` (a cut). */
+  fadeOut({ end, dur = CUT_FADE.out }) {
+    this.tl.fromTo(`#${this.id}-press`, { opacity: 1 }, { opacity: 0, duration: dur, ease: "power2.in" }, end - dur);
+    return this;
+  }
+  /**
+   * Keep the pointer invisible from `cut` and fade it in `after` s later (at its current point).
+   * With `hidden` (a scene's first frame) it is set invisible at `cut` explicitly.
+   */
+  fadeIn({ cut, after = CUT_FADE.after, dur = CUT_FADE.in, hidden = false }) {
+    if (hidden) this.tl.set(`#${this.id}-press`, { opacity: 0 }, cut);
+    this.tl.fromTo(`#${this.id}-press`, { opacity: 0 }, { opacity: 1, duration: dur, ease: "power2.out" }, cut + after);
+    return this;
+  }
   part() {
     const css = this.parts.map((p) => p.css).join("\n");
     const html = this.parts.map((p) => p.html).join("");
@@ -165,6 +179,49 @@ export class Pointer {
     for (const p of this.parts) tl.add(p.tl);
     return { css, html, tl };
   }
+}
+
+// ---------- pointer continuity at cuts ----------
+// Where a cut moves the drawn pointer (between scenes, between non-contiguous ranges of a scene)
+// and the storyboard gives no treatment, the build applies one by distance in stage px at wide
+// framing: up to jump.bridge nothing (a small hop reads as part of the cut), up to jump.fade a
+// bridge (a short arc move from the old point to the new one, starting at the cut, on the
+// recorder's curve and ease), beyond that a fade (out before the cut, back in at the new point just
+// after it).
+
+/** Treatment timings in seconds. A bridge capped below minSeconds by the next logged action becomes a fade. */
+export const CUT_BRIDGE = Object.freeze({ seconds: 0.35, minSeconds: 0.2 });
+export const CUT_FADE = Object.freeze({ out: 0.15, after: 0.2, in: 0.15 });
+/** Default distance thresholds (stage px at wide framing); the storyboard's top-level "jump" overrides. */
+export const JUMP = Object.freeze({ bridge: 120, fade: 400 });
+export const CUT_MODES = Object.freeze(["auto", "bridge", "fade", "none"]);
+
+/**
+ * cutTreatment({ px, mode, override, jump }) -> { kind: "bridge" | "fade" | null, by: "auto" | "storyboard" }
+ * mode: the storyboard's "pointerAtCuts" ("auto" by default); override: a per-cut "pointer" value
+ * from a scene's exit or a range (wins over mode). An override of "bridge" or "fade" applies to any
+ * visible change (> 1 px); the film-wide modes only above jump.bridge.
+ */
+export function cutTreatment({ px, mode = "auto", override = null, jump = JUMP }) {
+  const j = { ...JUMP, ...(jump ?? {}) };
+  for (const m of [mode, override]) if (m != null && !CUT_MODES.includes(m)) throw new Error(`pointer at cuts: unknown value ${JSON.stringify(m)} (want ${CUT_MODES.join(" | ")})`);
+  if (override && override !== "auto") {
+    if (override === "none" || !(px > 1)) return { kind: null, by: "storyboard" };
+    return { kind: override, by: "storyboard" };
+  }
+  if (!(px > j.bridge) || mode === "none") return { kind: null, by: "auto" };
+  if (mode === "bridge" || mode === "fade") return { kind: mode, by: "auto" };
+  return { kind: px > j.fade ? "fade" : "bridge", by: "auto" };
+}
+
+/**
+ * Bridge length for a cut at `cut` when the next logged move or click starts at `next` (Infinity
+ * when none): CUT_BRIDGE.seconds, capped so it never runs into that action; null when the room left
+ * is under CUT_BRIDGE.minSeconds (the caller fades instead).
+ */
+export function bridgeSeconds(cut, next) {
+  const d = Math.min(CUT_BRIDGE.seconds, next - cut);
+  return d >= CUT_BRIDGE.minSeconds - 1e-9 ? d : null;
 }
 
 export { MOTION, moveDuration, controlPoint };

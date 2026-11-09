@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import { ChevronDown } from "lucide-react";
 import { CopyBlock } from "./CopyBlock";
 import { InstallTabs } from "./InstallTabs";
 import { Code, Heading, Shell } from "./Shell";
-import { BUILD_COMMANDS, REPO, ROADMAP, SETUP, blob } from "@/lib/content";
+import { BUILD_COMMANDS, CLI_COMMANDS, REPO, ROADMAP_OPEN, ROADMAP_ORDER, blob } from "@/lib/content";
 
 /**
  * Version and licence of the kit, read from the repo root's package.json at build time (the page is
@@ -40,8 +41,9 @@ export function QuickStart() {
               title="Quick start"
               lede={
                 <>
-                  Install it for your agent, then ask for the film. The <Code>walkthrough-film</Code> skill takes it from
-                  there: plan, your approval, capture test, takes, cut, review, sound, voiceover, delivery.
+                  Install it for your agent, then ask for the film: the <Code>walkthrough-film</Code> skill plans, waits for
+                  your approval, and runs the takes, cut, review, sound, voiceover and delivery. Or run every step yourself
+                  with one CLI.
                 </>
               }
             />
@@ -53,6 +55,10 @@ export function QuickStart() {
                 </li>
               ))}
             </ul>
+            <p className="mt-4 text-[0.95rem] text-muted">
+              <Code>walkthrough doctor</Code> checks the tools above, free disk, whether the ElevenLabs key is set (never its
+              value) and the project&apos;s config, and exits 1 on any failure.
+            </p>
           </div>
 
           <div className="lg:col-span-7 lg:pt-3">
@@ -60,24 +66,54 @@ export function QuickStart() {
               <h3 className="sr-only">Install</h3>
               <InstallTabs />
             </div>
-            <h3 className="heading mt-12 text-heading">The recorder and film tooling</h3>
-            <p className="mt-3 max-w-measure text-muted">
-              The skills drive scripts that live in the repo. The Claude Code plugin carries the whole repo; on the
-              skills.sh routes, clone it once and set it up.
-            </p>
-            <CopyBlock className="mt-6" title="clone, set up, load as a plugin" code={SETUP} prompt />
           </div>
         </div>
 
-        <div className="mt-16 md:mt-20">
-          <h3 className="heading text-heading">Or drive the kit by hand</h3>
-          <p className="mt-3 max-w-[52rem] text-muted">
-            With <Code>KIT</Code> = this repo, <Code>P</Code> = the film’s project folder and <Code>T</Code> = the takes
-            folder. The kit stays read-only; every output lands in <Code>$P</Code>. The voiceover twin is the same build with{" "}
-            <Code>--no-captions</Code>, rendered to <Code>renders/final-vo.mp4</Code>.
-          </p>
-          <CopyBlock className="mt-6" title="build a film from takes (README.md)" code={BUILD_COMMANDS} prompt />
-          <div>
+        <div className="mt-16 grid grid-cols-1 gap-10 md:mt-20 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-5">
+            <h3 id="cli" className="heading scroll-mt-6 text-heading">
+              One film from the CLI
+            </h3>
+            <p className="mt-4 text-muted">
+              <Code>walkthrough</Code> is one command over every stage: no npm dependencies, Node 22+. Each command prints
+              the command it runs (<Code>›</Code>), so the CLI is a shortcut and never the only way. The Claude Code plugin
+              carries the whole repo; to run the CLI from a project folder, clone the kit once.
+            </p>
+            <p className="mt-4 text-muted">
+              Without the alias: <Code>node $KIT/bin/walkthrough.mjs &lt;command&gt;</Code> from anywhere, or{" "}
+              <Code>npm run cli -- &lt;command&gt;</Code> inside the kit. <Code>walkthrough help --all</Code> prints every
+              command&apos;s usage; the reference is{" "}
+              <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("docs/CLI.md")}>
+                docs/CLI.md
+              </a>
+              .
+            </p>
+          </div>
+          <div className="lg:col-span-7">
+            <CopyBlock title="a site tour, from init to delivery" code={CLI_COMMANDS} prompt wrap groups />
+          </div>
+        </div>
+
+        <details className="group mt-16 border-y border-cyc-deep md:mt-20">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 [&::-webkit-details-marker]:hidden">
+            <span className="heading text-heading">Or drive the kit by hand</span>
+            <span className="flex items-center gap-2 font-mono text-label text-muted">
+              <span className="hidden sm:inline">the tools without the CLI</span>
+              <ChevronDown
+                size={18}
+                strokeWidth={2.25}
+                aria-hidden
+                className="transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+              />
+            </span>
+          </summary>
+          <div className="pb-10 pt-1">
+            <p className="max-w-[52rem] text-muted">
+              With <Code>KIT</Code> = this repo, <Code>P</Code> = the film’s project folder and <Code>T</Code> = the takes
+              folder. The kit stays read-only; every output lands in <Code>$P</Code>. The voiceover twin is the same build
+              with <Code>--no-captions</Code>, rendered to <Code>renders/final-vo.mp4</Code>.
+            </p>
+            <CopyBlock className="mt-6" title="build a film from takes (README.md)" code={BUILD_COMMANDS} prompt />
             <p className="mt-6 text-muted">
               Full reference:{" "}
               <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("README.md")}>
@@ -94,38 +130,50 @@ export function QuickStart() {
               .
             </p>
           </div>
-        </div>
+        </details>
       </Shell>
     </section>
   );
 }
 
-const DOCS = ["PIPELINE", "LOOK", "STORYBOARD", "CONTRACT", "LESSONS", "ROADMAP", "ELEVENLABS", "DELIVERY"];
+const DOCS = ["CLI", "PIPELINE", "LOOK", "STORYBOARD", "CAPTIONS", "REVIEW", "VOICE", "DELIVERY", "CONTRACT", "LESSONS", "ROADMAP", "ELEVENLABS"];
 
 export function Roadmap() {
   return (
     <section aria-labelledby="next" className="on-ink bg-ink pb-16 pt-16 text-white md:pt-24">
       <Shell>
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
-          <Heading
-            id="next"
-            tone="ink"
-            className="lg:col-span-5"
-            title="What comes next"
-            lede="Built for one film of one app, now being turned into a general studio. The suggested order from docs/ROADMAP.md:"
-          />
-          <ol className="lg:col-span-7 lg:pt-3">
-            {ROADMAP.map((r, i) => (
-              <li key={r.what} className="grid grid-cols-[2.5rem_1fr] gap-2 border-b border-ink-line py-4 first:border-t">
-                <span className="font-mono text-label text-muted-ink">{i + 1}</span>
-                <span>
+          <div className="lg:col-span-5">
+            <Heading
+              id="next"
+              tone="ink"
+              title="What comes next"
+              lede="Built for one film of one app, now a general studio. Version 0.2.0 folded in the whole suggested order from docs/ROADMAP.md; this is what is still open, in the order the roadmap gives."
+            />
+            <h3 className="mt-10 font-mono text-label text-muted-ink">the 0.1.0 suggested order, all folded in</h3>
+            <ol className="mt-3 divide-y divide-ink-line border-y border-ink-line">
+              {ROADMAP_ORDER.map((r, i) => (
+                <li key={r.what} className="grid grid-cols-[1.75rem_1fr_auto] items-baseline gap-2 py-2.5 text-[0.95rem]">
+                  <span className="font-mono text-label text-muted-ink">{i + 1}</span>
+                  <span>{r.what}</span>
+                  <span className="font-mono text-[0.75rem] text-muted-ink">{r.status}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <ul className="lg:col-span-7 lg:pt-3" aria-label="Open roadmap items">
+            {ROADMAP_OPEN.map((r) => (
+              <li key={r.what} className="border-b border-ink-line py-4 first:border-t">
+                <span className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                   <span className="font-bold">{r.what}</span>
-                  <span className="block text-[0.95rem] text-muted-ink">{r.why}</span>
-                  <span className="mt-1.5 block font-mono text-[0.75rem] text-muted-ink">{r.status}</span>
+                  <span className={`font-mono text-[0.75rem] ${r.status === "in progress" ? "text-key" : "text-muted-ink"}`}>
+                    {r.status}
+                  </span>
                 </span>
+                <span className="mt-1 block text-[0.95rem] text-muted-ink">{r.why}</span>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </Shell>
     </section>

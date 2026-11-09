@@ -65,6 +65,7 @@ export class Screencast {
     this.stored = 0;
     this.offset = 0;
     this.pending = null;
+    this.lastSlot = -Infinity; // slot of the last frame written (slots in frames.ndjson only increase)
     this.firstFrame = null;
     this.stopped = false;
     this.listeners = new Set();
@@ -77,9 +78,15 @@ export class Screencast {
     this.firstFrame = new Promise((resolve) => {
       this._resolveFirst = resolve;
     });
-    this._onFrame = (f) => this.onFrame(f);
-    this.cdp.on("Page.screencastFrame", this._onFrame);
-    await this.cdp.send("Page.startScreencast", {
+    await this.attach(this.cdp);
+  }
+
+  /** Listen to one CDP session's frames and start its screencast (frames are acked on that session). */
+  async attach(cdp) {
+    this.cdp = cdp;
+    this._onFrame = (f) => this.onFrame(f, cdp);
+    cdp.on("Page.screencastFrame", this._onFrame);
+    await cdp.send("Page.startScreencast", {
       format: "jpeg",
       quality: this.quality,
       maxWidth: this.width,
@@ -88,8 +95,22 @@ export class Screencast {
     });
   }
 
-  onFrame(f) {
-    this.cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
+  /**
+   * Move the screencast to another page (a followed popup) mid-take: same writer, same T0, same
+   * slots. Frame timestamps are system-clock seconds in every renderer, so the clock carries over;
+   * until the new page paints, the master holds the old page's last frame (a hard cut).
+   */
+  async switchTo(cdp) {
+    if (this.stopped || cdp === this.cdp) return;
+    const old = this.cdp;
+    old.off("Page.screencastFrame", this._onFrame);
+    await old.send("Page.stopScreencast").catch(() => {});
+    await this.attach(cdp);
+    this.switches = (this.switches ?? 0) + 1;
+  }
+
+  onFrame(f, cdp = this.cdp) {
+    cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
     if (this.stopped) return;
     const recv = nowWall();
     const ts = f.metadata.timestamp ?? recv;
@@ -101,8 +122,17 @@ export class Screencast {
     this.receivedWall.push(recv);
     const slot = Math.round((ts - this.T0) * this.fps);
     const frame = { ts, slot, data: f.data, recv };
-    if (this.pending && slot > this.pending.slot) this.write(this.pending);
-    this.pending = frame;
+    if (this.pending && ts < this.pending.ts) {
+      // Out of order: the browser delivered a frame older than the one held (seen under heavy CPU
+      // load, about 1 in 10 frames with two takes recording at once). It never replaces the newer
+      // held frame (that could be a sync flash): it is written first when its slot lies between the
+      // last written slot and the held one, and dropped otherwise (its slot is already shown).
+      this.outOfOrder = (this.outOfOrder ?? 0) + 1;
+      if (slot > this.lastSlot && slot < this.pending.slot) this.write(frame);
+    } else {
+      if (this.pending && slot > this.pending.slot) this.write(this.pending);
+      this.pending = frame;
+    }
     for (const l of this.listeners) l(frame);
   }
 
@@ -119,6 +149,7 @@ export class Screencast {
     fs.writeSync(this.idxFd, `${line}\n`);
     this.offset += buf.length;
     this.stored++;
+    this.lastSlot = frame.slot;
   }
 
   /** Subscribe to frames as they arrive (used for sync-flash detection). */
@@ -135,7 +166,7 @@ export class Screencast {
     this.pending = null;
     fs.closeSync(this.binFd);
     fs.closeSync(this.idxFd);
-    const stats = deliveryStats(this.delivered);
+    const stats = deliveryStats([...this.delivered].sort((a, b) => a - b));
     // Node receive time minus browser frame timestamp, early vs late: a direct read of clock drift
     // between the frame clock and the action clock (both should be the system clock).
     const off = this.receivedWall.map((r, i) => r - this.delivered[i]);
@@ -152,7 +183,7 @@ export class Screencast {
       path.join(this.dir, "raw", "delivered.json"),
       JSON.stringify({ T0: this.T0, ts: this.delivered }),
     );
-    return { T0: this.T0, stored: this.stored, bytes: this.offset, ...stats };
+    return { T0: this.T0, stored: this.stored, bytes: this.offset, ...(this.switches ? { pageSwitches: this.switches } : {}), ...(this.outOfOrder ? { outOfOrderFrames: this.outOfOrder } : {}), ...stats };
   }
 }
 

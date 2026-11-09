@@ -1,6 +1,6 @@
 {
   "name": "walkthrough-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Agent-driven toolkit for app walkthrough films: studio instance, recorder, HyperFrames film, sound, voiceover, delivery.",
@@ -9,7 +9,11 @@
   "engines": {
     "node": ">=22"
   },
+  "bin": {
+    "walkthrough": "bin/walkthrough.mjs"
+  },
   "scripts": {
+    "cli": "node bin/walkthrough.mjs",
     "setup": "npm --prefix recorder install && cd recorder && npx playwright-core install chromium",
     "capture-test": "node recorder/capture-test.mjs new 2 idle 30",
     "take": "node recorder/takes/run.mjs",
@@ -22,6 +26,9 @@
     "check": "node scripts/check.mjs",
     "check:site": "cd site && npm ci && npm run build",
     "lint:skills": "node scripts/lint-skills.mjs",
-    "version:set": "node scripts/version.mjs"
+    "version:set": "node scripts/version.mjs",
+    "test": "node test/run.mjs",
+    "test:update": "node test/run.mjs --update",
+    "test:render": "node test/run.mjs --render"
   }
 }

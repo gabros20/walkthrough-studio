@@ -1,9 +1,39 @@
 // Captions: one line at a time on a slanted ink plate (the brand's button lean) with an accent tick,
 // bottom centre in the band under the window. One composition holds every caption (one captions
 // track); each caption is its own clip, so it is hard-hidden outside [start, end).
+//
+// Portrait and square (lib/config.mjs CAPTION.maxWidth set: 92% of the canvas) wrap a caption that
+// would be wider than that into balanced lines, decided here from the character-width estimate so
+// the result is deterministic; the lint warns past CAPTION.maxLines (2). 16:9 never wraps.
 
 import { CAPTION, COLOR, FILM } from "./config.mjs";
 import { esc, n, sceneFile, Timeline } from "./emit.mjs";
+import { plateWidth } from "./tag.mjs";
+
+/**
+ * captionLines(text) -> [[word, ...], ...]: one line, or when the plate would be wider than
+ * CAPTION.maxWidth, the two-line break whose longer line is shortest (more lines, filled greedily,
+ * only when two do not fit).
+ */
+export function captionLines(text) {
+  const words = text.trim().split(/\s+/);
+  const fits = (ws) => plateWidth(ws.join(" ")) <= CAPTION.maxWidth;
+  if (!CAPTION.maxWidth || words.length < 2 || fits(words)) return [words];
+  let best = null;
+  for (let k = 1; k < words.length; k++) {
+    const a = words.slice(0, k), b = words.slice(k);
+    const w = Math.max(a.join(" ").length, b.join(" ").length);
+    if (!best || w < best.w) best = { w, lines: [a, b] };
+  }
+  if (best.lines.every(fits)) return best.lines;
+  const lines = [[]];
+  for (const w of words) {
+    const cur = lines[lines.length - 1];
+    if (cur.length && !fits([...cur, w])) lines.push([w]);
+    else cur.push(w);
+  }
+  return lines;
+}
 
 export const VARIANTS = ["wipe", "words", "tick"];
 
@@ -16,6 +46,10 @@ export function lintCaptions(items) {
   items.forEach((c, i) => {
     const words = c.text.trim().split(/\s+/).length;
     if (words > CAPTION.maxWords) out.push(`caption ${i}: ${words} words (max ${CAPTION.maxWords})`);
+    if (CAPTION.maxWidth) {
+      const lines = captionLines(c.text).length;
+      if (lines > (CAPTION.maxLines ?? 2)) out.push(`caption ${i}: wraps to ${lines} lines at ${CAPTION.maxWidth} px (max ${CAPTION.maxLines ?? 2})`);
+    }
     const need = captionHold(c.text, i === items.length - 1 && c.last);
     if (c.end - c.start < need - 1e-6) out.push(`caption ${i}: holds ${(c.end - c.start).toFixed(2)} s, needs ${need.toFixed(2)} s`);
     if (i > 0 && c.start < items[i - 1].end) out.push(`caption ${i}: overlaps caption ${i - 1}`);
@@ -32,18 +66,40 @@ const css = `
     .cap-tickw { position: absolute; left: 26px; top: 16px; width: 10px; height: 32px; transform-origin: 50% 100%; }
     .cap-tick { position: absolute; inset: 0; background: ${COLOR.accent}; transform: skewX(${CAPTION.slantDeg}deg); }
     .cap-text { position: relative; font-family: ${FILM.fontStack}; font-size: ${CAPTION.size}px; font-weight: ${CAPTION.weight}; line-height: 1; letter-spacing: -0.005em; color: ${COLOR.white}; white-space: nowrap; }
-    .cap-text .w { display: inline-block; }`;
+    .cap-text .w { display: inline-block; }${
+      CAPTION.maxWidth
+        ? `
+    .cap-row.ml { height: auto; }
+    .cap-text.ml { line-height: ${CAPTION.lineHeight}px; text-align: center; }`
+        : ""
+    }`;
+
+/** Plate height for a caption of `lines` lines: one line is CAPTION.height, each more adds a line height. */
+const plateHeight = (lines) => CAPTION.height + (lines - 1) * (CAPTION.lineHeight ?? CAPTION.height);
 
 function group(c, i) {
   const id = `cap-${i}`;
-  const words = c.text.trim().split(/\s+/);
-  const spans = words.map((w, j) => `<span class="w" id="${id}-w${j}">${esc(w)}</span>`).join(" ");
-  return `    <div id="${id}" class="cap clip" data-start="${n(c.start)}" data-duration="${n(c.end - c.start)}" data-layout-allow-caption-zone>
+  const lines = captionLines(c.text);
+  let j = 0; // word ids run on across lines, so the entrances address every word the same way
+  const spans = lines.map((ws) => ws.map((w) => `<span class="w" id="${id}-w${j++}">${esc(w)}</span>`).join(" ")).join("<br>");
+  if (lines.length === 1)
+    return `    <div id="${id}" class="cap clip" data-start="${n(c.start)}" data-duration="${n(c.end - c.start)}" data-layout-allow-caption-zone>
       <div class="cap-row">
         <div id="${id}-plate" class="cap-plate">
           <div id="${id}-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
           <div id="${id}-tickw" class="cap-tickw"><div class="cap-tick"></div></div>
           <div id="${id}-text" class="cap-text">${spans}</div>
+        </div>
+      </div>
+    </div>`;
+  // wrapped: a taller plate, the tick centred on it
+  const h = plateHeight(lines.length);
+  return `    <div id="${id}" class="cap clip" data-start="${n(c.start)}" data-duration="${n(c.end - c.start)}" data-layout-allow-caption-zone>
+      <div class="cap-row ml">
+        <div id="${id}-plate" class="cap-plate" style="height:${n(h)}px">
+          <div id="${id}-bgw" class="cap-bgw"><div class="cap-bg"></div></div>
+          <div id="${id}-tickw" class="cap-tickw" style="top:${n((h - 32) / 2)}px"><div class="cap-tick"></div></div>
+          <div id="${id}-text" class="cap-text ml">${spans}</div>
         </div>
       </div>
     </div>`;

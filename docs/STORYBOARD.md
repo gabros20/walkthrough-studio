@@ -32,7 +32,10 @@ film = filmIn + (source - srcIn) / rate        rate = (srcOut - srcIn) / filmDur
 - An anchor that falls in footage the storyboard did not keep is an error (it names the anchor and
   its source second).
 - A pointer move that crosses a cut is skipped with a warning; the pointer is placed where the mouse
-  was at the next range's first frame.
+  was at the next range's first frame. A move already in flight at a range's first frame (it started
+  in cut footage) is drawn from the pointer's point at the cut to the move's target, landing when the
+  mouse did.
+- Where a cut moves the drawn pointer far, the build bridges or fades it (see "Pointer at cuts").
 
 `lib/edl.mjs` `buildMapping()` is the only place this is computed. `edl.json` records every scene's
 ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), so other tools
@@ -46,7 +49,13 @@ ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), 
   of known labels (`python3 film/scripts/list-events.py takes/<take>` prints them too).
 - `"keep:from"` / `"keep:to"`: the take's usable span between its sync flashes (`take.json`
   `sync.keep`). Every range is clamped inward to that span, with a warning if it reached more than a
-  frame into the flashes.
+  frame into the flashes. Use these to open and close a take. A take without `sync.keep` (an older
+  take with no `take.json`) gets it from its flashes: two frames past the last start flash, two frames
+  before the first end flash.
+- `"sync:start"` / `"sync:end"` (older storyboards, from single-flash takes): in a take whose flashes are
+  labelled `start 1..3` / `end 1..3` and no event is labelled exactly `start` / `end`, they resolve to
+  the end of the last start flash and the start of the first end flash, the same edges as `keep:from` /
+  `keep:to`.
 - **Anchor**: `{ "ref": "...", "offset": 0, "edge": "start" | "end" }` (edge `end` uses the event's
   `tEnd`, e.g. the end of typing) or a bare number of source seconds.
 - **Box** (camera, spotlight, push target): a ref whose event has a box (`down`, `mark`, a scroll's
@@ -58,7 +67,7 @@ ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), 
 |---|---|---|
 | `takesDir` | `<project>/takes`, else `../takes` next to the project | Folder of take folders. Relative to the storyboard. Overridden by `--takes <dir>` or `WALKTHROUGH_TAKES`. |
 | `brand` | `<project>/brand.json` if present | Brand file for this film, relative to the storyboard (see `film/README.md`, Brand). `--brand` and `FILM_BRAND` win over it. |
-| `look` | none | Layout overrides for this film only (same keys as the brand file's `look`). |
+| `look` | none | Layout overrides for this film only (same keys as the brand file's `look`). `look.aspect` (`"16:9"`, `"9:16"`, `"1:1"`) makes this film another aspect without touching the brand; `look.bezel` (`"auto"`, `false`, `true`) and `look.allowLetterbox` (let 9:16 letterbox a landscape take) go with it. `--aspect` on the build wins over both. See `docs/LOOK.md`, "Aspect presets". |
 | `fps` | 30 | Film frame rate. `FILM_FPS` wins. Use 60 when the capture test passed at 60. |
 | `clipFps` | film fps | Rate of the pre-cut scene clips. |
 | `target` | `{ "min": 180, "max": 195 }` | Film length range for the durations table. |
@@ -68,7 +77,10 @@ ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), 
 | `heartbeatCover` | `{ "x": 0, "y": 0, "w": 3, "h": 3 }` | CSS px box over the recorder's 1 px timing marker; each frame the pixels just right of it are copied over it. `false` turns it off. |
 | `motionBlur` | `false` | Root `data-motion-blur`. Off: in 0.9.16 it showed no visible smear on these movers. |
 | `music` | none | `{ "beat": 0.625 }`: the music grid's beat in seconds, used by montages. |
+| `pointerAtCuts` | `"auto"` | What the build does where a cut moves the drawn pointer more than `jump.bridge` px and nothing else treats it: `"auto"` (bridge up to `jump.fade` px, fade beyond), `"bridge"`, `"fade"`, or `"none"` (leave the jump; the audit then reports it as an error). See "Pointer at cuts". |
+| `jump` | `{ "bridge": 120, "fade": 400 }` | Thresholds in stage px at wide framing for `pointerAtCuts`; `jump.bridge` is also the audit's default `--jump`. |
 | `groups` | none | `{ "<g>": { "name", "target" } }`: story scenes cut from several storyboard scenes get a subtotal row. |
+| `fitAudio` | none (picture-first) | Script-first timing: `"voiceover/placement.json"` (relative to the storyboard) or `{ "placement", "gap": 0.3, "max": 6 }`. `--fit-audio`, `--fit-gap`, `--fit-max` win. See "Script-first timing". |
 | `scenes` | required | The stage scenes in film order. |
 
 ## A scene
@@ -79,6 +91,7 @@ ranges as mapped (`srcIn`, `srcOut`, `filmIn`, `filmDur`, `rate`, `timelapse`), 
   "take": "take-2",           // folder in takesDir
   "target": 24.0,             // wanted film seconds (durations table only)
   "group": "2",               // optional: subtotal group
+  "intent": "Send a post",    // optional: what the scene shows, for the caption brief (CAPTIONS.md)
   "enter": "settle",          // optional: "settle" | "whip" | "hard" (default: caused by the previous exit)
   "ranges": [ ... ],          // kept source, in story order
   "excise": [ ... ],          // spans dropped from inside kept ranges
@@ -102,8 +115,9 @@ Each range is `{ "from": anchor, "to": anchor }` plus at most one of:
 
 | Option | Meaning |
 |---|---|
+| `"pointer": "bridge" \| "fade" \| "none" \| "auto"` | Treatment of the pointer at the cut *into* this range (for a scene's first range: the cut from the previous scene, unless that scene's `exit.pointer` says otherwise). Can sit beside any other option. |
 | `"timelapse": { "duration": s, "label": "Time-lapse" }` | Compressed to `duration` film seconds; an on-screen tag shows the label and the speed (`12×`) for exactly that span. Clicks inside are cued but get no click sound. |
-| `"stretch": { "duration": s }` | A still moment held longer (rate below 1), untagged. Only while the pointer is at rest. |
+| `"stretch": { "duration": s }` | A still moment held longer (rate below 1), untagged. Only while the pointer is at rest. `--fit-audio` adds these itself (see "Script-first timing"). |
 
 Sugar that expands into several ranges:
 
@@ -170,6 +184,8 @@ The window outside the box dims, a rounded outline traces the box. More than six
 
 `[{ "text": "...", "at": anchor, "hold": s | "end": anchor, "variant": "wipe" | "words" | "tick", "overCut": false }]`
 
+Writing the text of the draft's `TODO:` placeholders: [`CAPTIONS.md`](CAPTIONS.md) (`scripts/draft-captions.mjs brief` / `apply`).
+
 - Hold defaults to 0.5 s + 0.3 s a word. A caption is clipped 0.1 s before its scene's cut unless
   `"overCut": true`.
 - Lint (warnings): at most 10 words, hold at least 0.5 s + 0.3 s a word, no overlap; the film's last
@@ -191,6 +207,100 @@ reports a mismatch as an error. Example: `{ "text": "It says “Worked for 56 s�
 | `{ "type": "whip" }` | Whips out over the last 0.12 s; the next scene whips in. |
 | `{ "type": "hard" }` (default) | Hard cut. |
 
+Any exit may carry `"pointer": "bridge" | "fade" | "none" | "auto"`: the treatment of the pointer at
+this scene's last cut (`{ "pointer": "fade" }` alone is a hard cut with a fade).
+
+## Pointer at cuts
+
+At every cut where the drawn pointer's position changes (a hard cut between scenes, a cut between
+non-contiguous ranges of a scene, an excise), the build measures how far it moves in stage px at
+wide framing. A cut is already treated when the previous scene pushes or whips out, the scene whips
+in, the scene has `pointer.enterFrom`, the previous scene has `pointer.exit` or `pointer.hideAt`,
+the scene has `pointer.showAt`, either hides the pointer, or the cut is a montage slice. Every other
+cut gets, by `pointerAtCuts` (default `"auto"`) and the thresholds in `jump`:
+
+| Distance | `"auto"` does | What it looks like |
+|---|---|---|
+| up to `jump.bridge` (120) | nothing | a small hop reads as part of the cut |
+| up to `jump.fade` (400) | **bridge** | a 0.35 s arc move from the old point to the new one, starting at the cut, on the recorder's curve (`controlPoint`) and ease, so it reads as a recorded move; shortened so it never runs into the next logged move or click, and a fade instead when less than 0.2 s is left |
+| beyond | **fade** | the pointer fades out over the 0.15 s before the cut and back in at the new point from 0.2 s after it (sooner when a click comes first: it is always visible by the click) |
+
+`"bridge"` or `"fade"` apply that treatment to every jump over `jump.bridge`; `"none"` leaves them.
+A per-cut `pointer` on an exit or a range wins and applies to any visible move (> 1 px). The build
+prints one line per treatment (`pointer: bridge 268 px at 40.33 s (s2→s3)`) and lists them in
+`edl.json` `pointerTreatments`; the audit reports them as `ok (auto bridge)` / `ok (auto fade)`.
+
+## Script-first timing
+
+Picture-first is the default: the picture's timing is fixed and the voice is written to fit its
+windows (`voiceover/README.md`). For a film whose narration leads (a tutorial), the picture can make
+room for the voice instead:
+
+```
+node build.mjs --fit-audio voiceover/placement.json [--fit-gap 0.3] [--fit-max 6]
+```
+
+or `"fitAudio": "voiceover/placement.json"` in the storyboard (relative to it). The placement is the
+one `voiceover/place.py` or `tts.mjs` wrote. Per line the build reads `key` (else `id`), `scene`,
+`start` and `end` (or `duration`), and an optional `anchor`.
+
+**Matching a line to its window.**
+
+- A line belongs to its `scene`: `"title"`, `"end"` or a storyboard scene id (an unknown scene is an
+  error).
+- Its window opens at its `anchor` when it has one: a ref (`"mark:worked for"`) or
+  `{ "ref", "offset", "edge" }` into that scene's take, as anywhere in the storyboard. `tts.mjs`
+  copies a `script.json` line's `anchor` onto its placement line, so for a voice-first script (lines
+  back to back on their own clock) write the anchor once per line in the script; `place.py` does not
+  carry anchors, so add them to its placement by hand.
+- Otherwise it opens at its `start`, read on the clock of this storyboard built without fit-audio
+  (the cut the voice was placed on). The placement's `duration` must match that cut to the frame
+  (the title card's clock runs from 0 in any cut), and every line must start inside its scene; if
+  not, the build stops and says so: re-place the voice on this cut (`fitcheck.py`, then
+  `place.py --windows`) or add anchors.
+- It closes at the next line of the same scene (placement order; lines must be in film order) or at
+  the scene's cut, whichever comes first.
+- A line keeps its moment in the take, so a line after a hold moves later with its picture. A moment
+  this cut no longer keeps (a montage slice a frame shorter after a hold moved the beat) snaps to the
+  next kept frame, as `voiceover/remap.py` does.
+
+**What it adds.** A line fits when its clip (`end - start`) plus `--fit-gap` (0.3 s) is no longer than
+its window. For every line that does not, the build adds a `stretch` (the untagged slow hold of
+"ranges") of exactly the missing seconds, rounded up to the frame grid:
+
+- on the longest **rest moment** inside the window: a span of plain normal-speed footage (no
+  time-lapse, montage slice or storyboard stretch) with no logged move, click, key, typing, scroll,
+  mark or sync flash, and outside agent waits (the UI is loading there). A wait that ended `quiet`
+  (`take.waitQuiet`: no DOM mutation for its last 800 ms) gives that tail back as a rest moment, and
+  it wins a tie;
+- in the middle of that rest (at most 0.5 s of source, at least 0.15 s clear of the events either
+  side), the frame farthest from anything moving, held so the window grows by the shortfall;
+- after a push exit's click, nothing is held (the camera is already moving through).
+
+Everything goes through the one mapping, so the pointer, camera, captions and `cues.json` move with
+the hold. A hold can move a later montage onto a different beat; the build re-checks the scene until
+every line fits. It prints one line per hold (`fit: L19 +2.62 s at 124.32 s (s7; a 3.10 s hold on a
+1.42 s rest)`), adds a `fit` column to the durations table and writes `edl.json` `fitAudio`:
+`[{ line, scene, at, added, hold, reason }]` (`at`: film seconds where the hold starts; `added`: the
+seconds it added; `hold`: its film length). The audit lists each hold and warns on one over 2 s.
+
+**When it refuses.** The build stops (exit 1, nothing written, the durations table printed with the
+holds it could add) when a line
+
+- is on the title or end card and does not fit (there is no footage to hold: lengthen
+  `title.duration` / `end.duration`, or shorten the line);
+- needs more than `--fit-max` (6) seconds;
+- has no rest moment of 0.4 s in its window (the pointer moves, the UI is busy, or the window is
+  time-lapse or montage throughout).
+
+Each refusal names the line, its window and the shortfall, e.g. `L13 (s5) speaks 24.19 s + 0.30 s gap
+in a 6.64 s window (film 81.49-88.13 s, to the next line): 17.85 s short, more than --fit-max 6 s`.
+Re-cut the scene (a longer range, a shorter time-lapse), move the line, or shorten it.
+
+**The voice after a fit.** The holds move every line after them. Re-place the voice on the new cut:
+keep the edl of the build without `--fit-audio` (`--dry --dry-out <dir>`) as the old cut and run
+`voiceover/fitcheck.py` / `remap.py` against the new `edl.json`, then `place.py --windows`.
+
 ## What the build prints and writes
 
 Every build (and `--dry`) prints a durations table: scene, target, actual, delta, source seconds
@@ -203,11 +313,13 @@ excised, subtotals per group, title and end, and the total against `target`. The
 | `compositions/*.html` | One static composition per scene plus `title`, `end`, `captions`. |
 | `assets/footage/<scene>.mp4` | The pre-cut clip (ffmpeg trim + setpts per range, concat, constant `clipFps`, H.264 CRF 14, a keyframe every second, no audio); skipped when `<scene>.cut.json` says nothing changed. |
 | `cues.json` | `{ fps, duration, captions, cues: [...] }`: clicks (film time one frame after the press, `inTimelapse` when compressed), transitions (title wipe, pushes, whips, hard cuts, end cut, end wipe). The sound build reads it. |
-| `edl.json` | `{ fps, clipFps, durations, scenes: [{ id, start, duration, exit, ranges, excised, gapsAccepted }] }`. |
+| `edl.json` | `{ fps, clipFps, durations, scenes: [{ id, start, duration, exit, ranges, excised, gapsAccepted }], pointerTreatments }`. A montage slice's range carries `"montage": true`; `pointerTreatments` is `[{ scene, at, cut, kind, px, by: "auto" \| "storyboard", seconds?, note? }]`. With `--fit-audio`: `fitAudio` (below), a hold's range carries `"fit": "<line>"`, and each scene row in `durations` a `fit` (seconds added). |
 | `captions.srt` | The captions as a sidecar. |
 
 `--dry` writes nothing (no ffmpeg); `--dry-out <dir>` also writes the would-be `cues.json`,
-`edl.json` and `captions.srt` there. `--no-cut` reuses the existing clips. Keep a copy of `cues.json`
+`edl.json` and `captions.srt` there. `--no-cut` reuses the existing clips. `--emit-only` writes
+everything but the footage (no ffmpeg; the masters need not exist), each `<video src>` pointing at
+the clip a full build would cut; the golden test (`npm test`) compares its output. Keep a copy of `cues.json`
 and `edl.json` beside every render as `<render>.cues.json` / `<render>.edl.json`: the sound build and
 the voiceover tools read them.
 
@@ -238,13 +350,16 @@ the build wrote and prints one table. Exit 1 on errors only.
 | Check | Level | What it finds |
 |---|---|---|
 | holds | warning | Static stretches longer than `--hold` s: no pointer move, no tween, no UI change in the cut clip (`scripts/holds.py`; needs a real build and numpy; skipped after `--dry`). |
-| jump | warning | The pointer jumping more than `--jump` px (stage px at wide framing) at a hard cut between scenes or at a cut inside a scene. Cuts treated by a push, a whip, `pointer.enterFrom`, `pointer.exit` or a hidden pointer, and montage slices, are listed as `ok`. |
-| dead air | warning | A caption ends before the next cut, and nothing logged (move, click, typing, scroll, mark, wait end, time-lapse) happens for more than `--tail` s before that cut. |
+| jump | warning; error with `"pointerAtCuts": "none"` | The pointer jumping more than `--jump` px (default `jump.bridge`, 120; stage px at wide framing) at a hard cut between scenes or at a cut inside a scene. Cuts treated by a push, a whip, `pointer.enterFrom`, `pointer.exit` or a hidden pointer, montage slices, and the build's bridges and fades (`ok (auto bridge)`, `ok (auto fade)`) are listed as `ok`. |
+| dead air | warning | A caption ends before the next cut, and nothing logged (move, click, typing, scroll, mark, wait end, time-lapse) happens for more than `--tail` s before that cut. A `--fit-audio` hold counts as the voice speaking, not as dead air. |
+| fit | warning over 2 s, else ok | The holds `--fit-audio` added (`edl.json` `fitAudio`): line, film time, hold length. A hold longer than 2 s may read as a freeze. With `fitAudio` empty, one `ok` row says every line fits. |
 | captions | warning; overlap is an error | The caption lint: at most 10 words, hold 0.5 s + 0.3 s a word, the last caption 2.5 s, no overlap. |
 | claims | error | A caption's quoted phrase is not in its `claims` mark's text (warning when the mark has no text or the caption quotes nothing). |
 | edl | error | A scene in `edl.json` that the storyboard does not have (the edl is from another build). |
 
 On the example film the audit reports 0 errors: six cuts with the pointer 339-1080 px apart, all
-treated (two pushes, two whips, two `enterFrom`); the other hard cuts measure 0 px (the recorder
-chains the pointer from take to take); 18 montage-slice jumps in the format tour, marked `ok`; and
-two dead-air warnings (s2, s7).
+treated (two pushes, two whips, two `enterFrom`); one cut inside s5 (into the "add Newsletter"
+range, 78.60 s) faded by the build, back by the click 0.05 s later; the other hard cuts measure 0 px
+(the recorder chains the pointer from take to take); 17 montage-slice jumps in the format tour,
+marked `ok`; and two dead-air warnings (s2, s7). With the six treatments removed from the
+storyboard, the build bridges two of those cuts (339, 364 px) and fades the other four.

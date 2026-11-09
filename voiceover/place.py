@@ -4,8 +4,8 @@ usage: python3 -I voiceover/place.py <narration audio> <words.json> --vo-dir <vo
            (--edl film/edl.json --cues film/cues.json | --windows windows.json) [--name film] [--dry]
 
 The narration is ONE TTS take of script.txt (all lines, a blank line between them). words.json is
-the word-level transcript of that take from `npx hyperframes@0.9.16 transcribe <audio> --json`
-(a flat [{text, start, end}] list, or {"words": [...]}).
+the word-level transcript of that take: `npx hyperframes@0.9.16 transcribe <audio> --json --dir <vo dir>`
+writes it to <vo dir>/transcript.json (a flat [{text, start, end}] list; {"words": [...]} also works).
 
 How lines are found: the transcript's words are sequence-aligned to the script's words, which gives
 each line a rough span in the take; the take's 10 ms RMS envelope (silence threshold 12 dB over the

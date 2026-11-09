@@ -20,6 +20,7 @@ async function loadChromium() {
 }
 
 const [html, pdf, png] = process.argv.slice(2);
+if (["-h", "--help"].includes(html)) { console.log("usage: node delivery/html2pdf.mjs in.html out.pdf [out.png]"); process.exit(0); }
 if (!html || !pdf) { console.error("usage: node delivery/html2pdf.mjs in.html out.pdf [out.png]"); process.exit(1); }
 const chromium = await loadChromium();
 const browser = await chromium.launch({ headless: true });

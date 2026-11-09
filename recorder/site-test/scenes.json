@@ -76,6 +76,77 @@
           "hold": 0.8
         }
       ]
+    },
+    {
+      "name": "take-2-ride",
+      "start": "/site.html",
+      "steps": [
+        {
+          "hold": 0.6
+        },
+        {
+          "mark": {
+            "role": "heading",
+            "name": "Find a bike for this spring"
+          },
+          "label": "headline"
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "Size guide (CSV)"
+          },
+          "label": "size guide"
+        },
+        {
+          "hold": 0.8
+        },
+        {
+          "click": {
+            "role": "button",
+            "name": "Book a test ride"
+          },
+          "label": "book"
+        },
+        {
+          "wait": {
+            "visible": "#booking:not(:empty)"
+          },
+          "label": "booked"
+        },
+        {
+          "mark": {
+            "selector": "#booking"
+          },
+          "label": "booking note"
+        },
+        {
+          "hold": 0.8
+        },
+        {
+          "click": {
+            "role": "link",
+            "name": "Spec sheet"
+          },
+          "label": "spec sheet"
+        },
+        {
+          "wait": {
+            "quiet": {
+              "ms": 800,
+              "timeout": 10000
+            }
+          },
+          "label": "after spec sheet"
+        },
+        {
+          "mark": "h1",
+          "label": "page headline"
+        },
+        {
+          "hold": 1.0
+        }
+      ]
     }
   ]
 }

@@ -1,7 +1,7 @@
 // The camera: scale/x/y on the stage wrapper (#<stage>-cam, transform origin 0 0, canvas px).
 // A canvas point P is drawn at  scale * P + (x, y).
 
-import { CAMERA, FILM, K, WINDOW } from "./config.mjs";
+import { BAND, BEZEL, CAMERA, FILM, K, WINDOW } from "./config.mjs";
 import { Timeline } from "./emit.mjs";
 
 export const WIDE = Object.freeze({ scale: 1, x: 0, y: 0 });
@@ -18,7 +18,8 @@ export function boxToCanvas(b) {
  * box in capture CSS px (the recorder's logged element box). kind: "wide" | "pane" | "control".
  * The box is centred on CAMERA.focus (the middle of the area above the caption band), at the
  * largest scale that keeps it inside `fill` of the canvas, clamped to the kind's scale range,
- * then the view is clamped so the window covers the canvas above the caption band (y 0-900).
+ * then the view is clamped so the window covers the canvas above the caption band (y 0-900 at
+ * 16:9; lib/config.mjs BAND.top).
  * opts.scale forces a scale; opts.focus overrides the focus point.
  */
 export function framing(box, kind = "control", opts = {}) {
@@ -36,7 +37,7 @@ export function framing(box, kind = "control", opts = {}) {
   // caption never covers what the camera framed.
   const wl = WINDOW.left * scale, wr = (WINDOW.left + WINDOW.width) * scale;
   const wt = WINDOW.top * scale, wb = (WINDOW.top + WINDOW.height) * scale;
-  const band = WINDOW.top + WINDOW.height; // 900
+  const band = BAND.top; // 900 at 16:9
   if (wr - wl >= FILM.width) x = clamp(x, FILM.width - wr, -wl);
   if (wb - wt >= band) y = clamp(y, band - wb, -wt);
   return { scale, x, y };
@@ -63,8 +64,9 @@ export function cameraMove({ stage, from, to, at, dur = CAMERA.moveSeconds, ease
  *   cam.settleIn({ at: 0 });                       // the incoming scene arrives slightly large
  *   cam.whipOut({ at, dir }), cam.whipIn({ at, dir })
  */
-/** True when a framing puts the window's bottom edge well into the caption band. */
-export const bandNeeded = (st) => (WINDOW.top + WINDOW.height) * st.scale + st.y > WINDOW.top + WINDOW.height + 30;
+/** True when a framing puts the window's bottom edge (with a phone bezel: the bezel's) well into the caption band. */
+const BOTTOM = WINDOW.top + WINDOW.height + (BEZEL?.thickness ?? 0);
+export const bandNeeded = (st) => BOTTOM * st.scale + st.y > BAND.top + 30;
 
 export class Camera {
   constructor({ stage, start = WIDE }) {
@@ -79,7 +81,8 @@ export class Camera {
     const start = Math.max(at, this.until ?? 0);
     this.tl.add(cameraMove({ stage: this.stage, from: this.state, to: state, at: start, dur, ease }));
     // The caption band: zoomed, the window would run down into it; an ink band (#<stage>-band)
-    // covers y 900-1080 whenever the framed window reaches past y 930, fading with the move.
+    // covers y 900-1080 (BAND.top to the bottom) whenever the framed window reaches past y 930
+    // (BAND.top + 30), fading with the move.
     const need = bandNeeded(state);
     if (need !== this.bandOn) {
       this.tl.fromTo(`#${this.stage}-band`, { opacity: need ? 0 : 1 }, { opacity: need ? 1 : 0, duration: dur, ease: ease ?? CAMERA.ease }, start);
@@ -122,14 +125,15 @@ export class Camera {
     return this.to({ state: WIDE, at, dur, ease: "expo.out" });
   }
   /**
-   * Whip (0.32 s in all): the stage leaves in 0.12 s on a strong ease-in and the next one arrives in
-   * 0.2 s on expo.out from 1100 px, already overlapping the frame on its first frame. No blur: the
+   * Whip (0.32 s in all): the stage leaves in 0.12 s on a strong ease-in (1600 px at 16:9,
+   * CAMERA.whip.out) and the next one arrives in 0.2 s on expo.out from 1100 px (CAMERA.whip.in),
+   * already overlapping the frame on its first frame. No blur: the
    * render-time motion blur showed no smear here, so the speed itself has to read.
    */
   whipOut({ at, dir = -1, dur = 0.12 }) {
-    return this.to({ state: { ...this.state, x: this.state.x + dir * 1600 }, at, dur, ease: "power4.in" });
+    return this.to({ state: { ...this.state, x: this.state.x + dir * CAMERA.whip.out }, at, dur, ease: "power4.in" });
   }
-  whipIn({ at, dir = -1, dur = 0.2, state = WIDE, from = 1100 }) {
+  whipIn({ at, dir = -1, dur = 0.2, state = WIDE, from = CAMERA.whip.in }) {
     // Enters already overlapping the frame on its first frame, so the cut never shows empty ground.
     this.state = { ...state, x: state.x - dir * from };
     // a set at the same instant guarantees the first frame of the move already shows the

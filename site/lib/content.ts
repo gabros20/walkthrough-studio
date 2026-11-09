@@ -35,6 +35,7 @@ export const MODES: { row: string; studio: string; site: string }[] = [
   { row: "Clean frame", studio: "production build, no dev badges", site: "consent/cookie banners dismissed from a list" },
   { row: "Waiting", studio: "app-specific turn detection in an adapter", site: "generic waitQuiet (network idle + no DOM changes)" },
   { row: "Bad take", studio: "restore the checkpoint, redo", site: "idempotent scenes, or reset by hand" },
+  { row: "Parallel takes", studio: "refused: one database, one app state", site: "--parallel N: one browser and one take folder per take" },
 ];
 
 /** First steps of recorder/site-test/scenes.json, verbatim. */
@@ -74,47 +75,82 @@ export const LOGIN_SNIPPET = `node recorder/tools/save-login.mjs \\
 node recorder/takes/run.mjs --config walkthrough.config.mjs \\
   --storage <project>/login.storage.json`;
 
-/** docs/PIPELINE.md, in order. */
-export const STAGES: { dir: string; does: string; emits: string[] }[] = [
+/**
+ * docs/PIPELINE.md in order, with the batch-2 stages (docs/CHANGELOG.md Unreleased): `cli` is the
+ * `walkthrough` command that runs the stage (docs/CLI.md); `emits` are files and reports it writes.
+ */
+export const STAGES: { dir: string; cli?: string; does: string; emits: string[] }[] = [
+  {
+    dir: "bin/walkthrough.mjs",
+    cli: "walkthrough init · doctor",
+    does: "One project folder per film, outside the kit. The CLI scaffolds it, checks the machine, and records every take, build, render, review and cost in a state file only it writes.",
+    emits: ["state.json", "doctor.json"],
+  },
   {
     dir: "studio/",
+    cli: "walkthrough studio",
     does: "Studio mode: an APFS clone of your app with its own database, separate ports, a production build and checkpoints. Site mode skips it.",
     emits: ["CP0 … CPn"],
   },
   {
+    dir: "recorder/tools/explore.mjs",
+    cli: "walkthrough explore",
+    does: "The tour map: a same-site crawl that never clicks, types or submits. Per page the controls from the accessibility tree and a thumbnail; one drafted scene per page to edit into scenes.json.",
+    emits: ["tour-map.json", "scenes.draft.json"],
+  },
+  {
     dir: "recorder/",
-    does: "Playwright drives the app at 1440×810 @2x, 60 fps, with an invisible mouse on arcs. No cursor in the footage. Three green sync flashes at each end put every logged action on the master clock.",
+    cli: "walkthrough take",
+    does: "Playwright drives the app at 1440×810 @2x (or a 390×844 phone @3x), 60 fps, with an invisible mouse on arcs. No cursor in the footage. Three green sync flashes at each end put every logged action on the master clock.",
     emits: ["master.mp4", "events.json", "take.json"],
   },
   {
     dir: "film/scripts/draft-storyboard.mjs",
+    cli: "walkthrough draft",
     does: "Drafts the edit from the log: clicks become camera framings and caption placeholders, long waits become time-lapses. The editor refines it.",
     emits: ["storyboard.json"],
   },
   {
+    dir: "film/scripts/draft-captions.mjs",
+    cli: "walkthrough captions brief | apply",
+    does: "The tool prepares and checks; an agent writes the words. The brief gives each caption its intent, marks, window and word budget; apply writes the answers in, sets claims and runs the caption lint.",
+    emits: ["captions.brief.md", "captions.answers.json"],
+  },
+  {
     dir: "film/build.mjs",
-    does: "Builds the HyperFrames compositions: drawn pointer, camera from logged element boxes, captions anchored to events, title and end card.",
-    emits: ["edl.json", "cues.json", "captions.srt"],
+    cli: "walkthrough build",
+    does: "Builds the HyperFrames compositions at 16:9, 9:16 or 1:1: drawn pointer, camera from logged element boxes, captions anchored to events, title and end card. A pointer that would jump at a cut is bridged or faded.",
+    emits: ["edl.json pointerTreatments", "cues.json", "captions.srt"],
   },
   {
     dir: "film/build.mjs --audit",
-    does: "Checks the cut before every review and before picture lock. Errors exit 1.",
+    cli: "walkthrough audit",
+    does: "Checks the cut before every review and before picture lock, and lists every pointer bridge and fade the build applied. Errors exit 1.",
     emits: ["holds", "jumps", "dead air", "claims"],
   },
   {
+    dir: "film/scripts/review-bundle.mjs",
+    cli: "walkthrough review",
+    does: "One folder per render: a contact sheet per scene, strips around every cut, the audit, holds, audio and costs, REVIEW.md, and a static page where every finding seeks the video and takes a note.",
+    emits: ["review/<name>/index.html", "REVIEW.md"],
+  },
+  {
     dir: "sound/build-sound.mjs",
+    cli: "walkthrough sound build",
     does: "After picture lock: music bed fitted by bar-aligned loops, clicks and whooshes on the cues, −16 LUFS, ducking under a voiceover.",
     emits: ["delivered: <path>"],
   },
   {
     dir: "voiceover/",
-    does: "Script fitted to the EDL windows, one TTS take, transcribed and placed line by line on the captionless twin.",
+    cli: "walkthrough vo",
+    does: "Script fitted to the EDL windows, one TTS request per line from a cache (reword one line, regenerate one line), placed on the captionless twin; language twins from translation briefs.",
     emits: ["placement.json", "vo-track.wav"],
   },
   {
     dir: "delivery/",
-    does: "Masters and web encodes, per-feature clips, cropped stills, showcase sheets, README in md/html/pdf, a verify run, a zip.",
-    emits: ["the package"],
+    cli: "walkthrough deliver",
+    does: "Presets from the same renders: sales (the full package), web (encodes, poster, VTT, YouTube chapters), social (per-feature clips of at most 60 s, captions burned in, vertical from a 9:16 render), docs (10–30 s clips, an .srt and a GIF each).",
+    emits: ["MANIFEST.txt", "verify.py"],
   },
 ];
 
@@ -157,16 +193,70 @@ export const TIERS: { model: string; why: string; agents: { name: string; role: 
   },
 ];
 
-/** docs/ROADMAP.md "Suggested order". */
-export const ROADMAP = [
-  { what: "doctor + one CLI", why: "removes most setup friction for a new project", status: "open" },
-  { what: "Declarative scenes + tour map", why: "makes “any website” real without writing JS", status: "scenes in · tour map open" },
-  { what: "Caption drafting + pointer bridging + golden test", why: "finishes the editing-cost work", status: "open" },
-  { what: "Per-line VO cache + listening proxy", why: "makes the voiceover twin cheap to iterate", status: "open" },
-  { what: "Aspect presets + package presets", why: "new outputs from the same takes", status: "partly: 16:9 only today" },
+/** docs/MODELS.md "The matrix" (read 2026-11-09): the same three tiers on each agent. */
+export const MODEL_PLATFORMS = ["Claude Code", "Codex", "Antigravity", "Cursor", "Hermes"] as const;
+
+export const MODEL_TIERS: { tier: string; models: string[] }[] = [
+  {
+    tier: "Large",
+    models: ["Opus 5.5", "gpt-6.1-sol · high", "Gemini 4 Argon · High", "Opus 5.5 / GPT-5.6 Sol", "any provider: Opus 5.5"],
+  },
+  {
+    tier: "Medium",
+    models: ["Sonnet 5.5", "gpt-6.1-terra · medium", "Gemini 3.8 Flash · Medium", "Sonnet 5.5 / GPT-5.6 Terra", "model_map: Sonnet 5.5"],
+  },
+  {
+    tier: "Small",
+    models: ["Haiku 5.5", "gpt-6-luna · high", "Gemini 3.8 Flash · Low", "Haiku 5.5 / GPT-5.6 Luna", "model_map: Haiku 5.5"],
+  },
 ];
 
-/** README "Quick start for a new app", verbatim. */
+export const MODELS_DOC = blob("docs/MODELS.md");
+
+/** docs/ROADMAP.md "Next": the items still open or partly, in that list's order. */
+export const ROADMAP_OPEN: { what: string; why: string; status: string }[] = [
+  {
+    what: "A guided “record the login” command",
+    why: "Saved logins, consent dismissal and URL blocking are in; a command that walks the owner through the sign-in and checks the saved state is not.",
+    status: "open",
+  },
+  {
+    what: "Time-lapse auto-detection",
+    why: "Any wait longer than N s in kept footage becomes a labelled time-lapse unless the storyboard says otherwise.",
+    status: "open",
+  },
+  {
+    what: "Themes",
+    why: "Colours, font and lockup are in brand.json; named light and dark themes and lockup variants are open.",
+    status: "partly",
+  },
+  {
+    what: "Music fallbacks",
+    why: "The API-key route and the beat grid are in; a local library folder, the HeyGen catalog and nudging holds onto bars are open.",
+    status: "partly",
+  },
+  {
+    what: "Hosting the review page",
+    why: "The static page ships in every review bundle; publishing it (HyperFrames publish or an artifact page) so a stakeholder can comment is open.",
+    status: "partly",
+  },
+  {
+    what: "Parallel takes on their own ports",
+    why: "Site mode records independent takes in parallel; each take with its own server and checkpoint, so studio mode can too, is open.",
+    status: "partly",
+  },
+];
+
+/** The 0.1.0 roadmap's "Suggested order": everything on it was folded in by 0.2.0 (docs/CHANGELOG.md). */
+export const ROADMAP_ORDER: { what: string; status: string }[] = [
+  { what: "doctor + one CLI", status: "folded in" },
+  { what: "Tour map", status: "folded in" },
+  { what: "Caption drafting + pointer bridging + golden test", status: "folded in" },
+  { what: "Per-line VO cache + listening proxy", status: "folded in" },
+  { what: "Aspect presets + package presets", status: "folded in" },
+];
+
+/** README "Quick start for a new app", verbatim: the tools without the CLI. */
 export const BUILD_COMMANDS = `node $KIT/film/scripts/init-project.mjs $P
 node $KIT/film/scripts/draft-storyboard.mjs $T/<take> [$T/<take> ...] --out $P/storyboard.json
 cd $P
@@ -240,8 +330,44 @@ claude --plugin-dir ./walkthrough-studio`,
 ];
 
 export const INSTALL_DOC = blob("docs/INSTALL.md");
-export const SETUP = `git clone https://github.com/gabros20/walkthrough-studio
-cd walkthrough-studio
-npm run setup                 # Playwright Chromium for the recorder
-claude plugin validate .
-claude --plugin-dir "$PWD"`;
+
+/**
+ * One film from the CLI (docs/CLI.md "Running it" and the usage of each command). Lines starting
+ * with "#" are muted labels. The setup lines are the README's clone + `npm run setup` and CLI.md's
+ * WALKTHROUGH_STUDIO_HOME + alias.
+ */
+export const CLI_COMMANDS = `# once: the kit, the recorder's Chromium, the CLI on your path
+cd ~ && git clone https://github.com/gabros20/walkthrough-studio
+npm --prefix ~/walkthrough-studio run setup
+export WALKTHROUGH_STUDIO_HOME=~/walkthrough-studio
+alias walkthrough='node "$WALKTHROUGH_STUDIO_HOME/bin/walkthrough.mjs"'
+# a project folder for the film, then check the machine
+walkthrough init my-tour --mode site --url https://example.com
+cd my-tour
+walkthrough doctor
+# map the site, then edit scenes.draft.json into scenes.json
+walkthrough explore
+# record every scene, then draft the cut from the takes
+walkthrough take --auto
+walkthrough draft
+# the tool briefs, an agent fills captions.answers.json, apply checks it
+walkthrough captions brief
+walkthrough captions apply
+# check the cut, render it, build the review bundle
+walkthrough build --dry --audit
+walkthrough render
+walkthrough review
+# picture lock, one music take, its beat grid, the mix
+walkthrough state lock
+walkthrough sound music --prompt-file music.prompt.txt
+walkthrough sound beat-grid music-take1.mp3
+walkthrough sound build --deliver out/my-tour.mp4
+# the web package: 1080p30 + 720p, poster, .srt + .vtt, YouTube chapters
+walkthrough deliver --preset web --video out/my-tour.mp4`;
+
+/** recorder/README.md "Tour map" and the usage of `walkthrough explore`. */
+export const EXPLORE_SNIPPET = `walkthrough explore https://example.com --depth 2 --max-pages 20
+# tour-map.json      per page: landmarks, h1-h3, up to 80 controls
+# tour-map.md        the same, one controls table per page
+# thumbs/<n>.jpg     480 px wide thumbnails
+# scenes.draft.json  a scene per page; destructive ones under _skipped`;

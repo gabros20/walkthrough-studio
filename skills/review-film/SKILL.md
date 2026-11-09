@@ -1,6 +1,6 @@
 ---
 name: review-film
-description: The review loop for a walkthrough film draft or final (captioned or voiceover twin) - the build audit first (holds, pointer jumps at cuts, caption lint and truth), then cheap Haiku frame-describers read one frame every 2 s in parallel ranges, an Opus film-critic verifies their flags and reviews against the storyboard, LOOK.md and the honesty rules, the lead rules on the list, the editor fixes; plus contact sheets, strips around cuts, the frozen-holds audit and a final 1 fps read. Use after every draft render that matters, before picture lock, after owner notes, and before delivery.
+description: The review loop for a walkthrough film draft or final (captioned or voiceover twin) - the build audit first (holds, pointer jumps at cuts, caption lint and truth), then the review bundle (walkthrough review - contact sheets per scene, strips around every cut, the audit on the render, holds, audio measured not heard, costs, REVIEW.md and a static review page for the human reviewer), cheap Haiku frame-describers read the sheets in parallel ranges, an Opus film-critic rules on the bundle's audit and the describers' flags against the storyboard, LOOK.md and the honesty rules, the lead rules on the list, the editor fixes; plus the reviewer's exported notes and a final 1 fps read. Use after every draft render that matters, before picture lock, after owner notes, and before delivery.
 ---
 
 # Review a film
@@ -18,8 +18,9 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
 
 ## Inputs
 
-- The render (`film/renders/<name>.mp4` or the delivered file), its `edl.json`, `cues.json`,
-  captions `.srt`, the storyboard, the plan's story and honesty rules.
+- The render (`renders/<name>.mp4` in the project, or the delivered file) with its sidecars
+  (`renders/<name>.edl.json`, `.cues.json`, `.captions.srt`; `walkthrough render` copies them), the
+  storyboard, the plan's story and honesty rules.
 - A scratchpad folder for frames and reports (never inside the repo).
 - The list of known issues already being handled, so nobody spends tokens on them.
 
@@ -30,20 +31,36 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
   `mark` text. Each hold is deliberate (the moment is the point; spotlit) or a trim; each jump gets a
   treatment; each caption finding is fixed or the caption is cut. Do not spend describer or critic tokens on
   what the audit already found. `python3 scripts/holds.py 1.0` (from `film/`) details the holds.
-- [ ] **Contact sheets.** `python3 -I delivery/contact_sheet.py <render> <dir> --every 1 --width 480` for the
-  whole film (or per scene with `--from/--to`); strips around cuts and camera moves with
-  `--at t1,t2,... --cols 2 --width 960`. ffmpeg's `drawtext` may be missing; this uses Pillow.
+- [ ] **Bundle (required).** `walkthrough review [--render <name>]` (default: the last render in
+  `state.json`; by hand `node $KIT/film/scripts/review-bundle.mjs renders/<name>.mp4` in the project)
+  writes `review/<name>/` in the project and records it in `state.reviews`:
+  - `sheets/<scene>.jpg`: a contact sheet per scene (title and end card too), one frame per film second,
+    stamped with film time; `cuts/<nn>-<t>.jpg`: 3 frames either side of every cut and transition;
+  - `audit.json` / `audit.md`: the audit on the render's own sidecars (pointer jumps with the build's
+    bridges and fades, dead air, caption lint, claims), so it judges this render, not the latest build;
+  - `holds.md` (when the project's build is this render's), `audio.md` (EBU R128 loudness, true peak,
+    per-line voice over music: measured, not heard), `costs.md` (the ledger);
+  - `REVIEW.md`: film facts, what was measured and what was skipped, this skill's checklist as boxes and
+    an empty **Rulings** section; `bundle.json`;
+  - `index.html`: the static review page (no server; open from `file://`): every finding seeks the video,
+    tiles seek to their frame, each finding takes a note and a ruling, timed notes, and **Export notes**
+    downloads `review-notes.json` (`walkthrough-review-notes/1`).
+  Give the describers the sheets, the critic the bundle folder, and the owner or stakeholder the page with
+  the project's `renders/` and `review/` folders (`docs/REVIEW.md`). For other moments (camera moves, a
+  re-check): `python3 -I delivery/contact_sheet.py <render> <dir> --at t1,t2,... --cols 2 --width 960`.
 - [ ] **Describers.** Spawn three `frame-describer` agents (Haiku) in one message, on disjoint ranges of
   about a third of the film each, one frame every 2 s, each writing `frames-<a|b|c>.md` in the scratchpad.
   Give each the one-paragraph film description and the problem list from the agent file. (Or, without
   sub-agents, do that role's checklist yourself: see `agents/frame-describer.md` in the kit.)
-- [ ] **Critic.** Spawn `film-critic` (Opus) with the render, sheets, the describers' reports, the storyboard
-  and plan, the known-issues list, and a report file path. It rules on every describer flag (real / by design
-  / misread) and returns must fix / should fix / nice to have with times and concrete fixes, plus the three
-  strongest moments to protect. (Or, without sub-agents, do that role's checklist yourself: see
+- [ ] **Critic.** Spawn `film-critic` (Opus) with the render, the bundle folder (`review/<name>/`), the
+  describers' reports, the storyboard and plan, the known-issues list, and a report file path. It rules on
+  every row of `review/<name>/audit.json` and every describer flag (real / by design / misread), reads
+  `audio.md` as numbers only, and returns must fix / should fix / nice to have with times and concrete fixes,
+  plus the three strongest moments to protect; its verdicts can go into the bundle's `REVIEW.md` Rulings. (Or, without sub-agents, do that role's checklist yourself: see
   `agents/film-critic.md` in the kit; judge on a fresh pass, after the describing is done.)
-- [ ] **Rule.** Read the critic's summary (open the full file only where needed). Send the editor one
-  numbered list of rulings, saying which earlier messages it supersedes. App problems go to `app-fixer`
+- [ ] **Rule.** Read the critic's summary (open the full file only where needed) and any `review-notes.json`
+  the owner exported from the page. Send the editor one numbered list of rulings, saying which earlier
+  messages it supersedes. App problems go to `app-fixer`
   (then studio re-sync and retake), not into the edit.
 - [ ] **Re-check** the fixed draft on the items that were wrong (strips at those times), not the whole film,
   unless the cut changed broadly.
@@ -66,12 +83,16 @@ the claim is visible while it is said, and no line talks over a reveal it should
 
 ## Outputs
 
-`frames-a.md` … in the scratchpad, the critic's `REPORT.md`, your rulings message, and the editor's next
-draft. Nothing in the repo.
+`review/<name>/` in the project (the bundle and page; never in the kit), `frames-a.md` … in the scratchpad,
+the critic's `REPORT.md`, the owner's `review-notes.json`, your rulings message, and the editor's next draft.
+Nothing in the kit's repo.
 
 ## Pitfalls
 
 - Small models over-report and misread; never act on an unverified describer flag (`docs/LESSONS.md` E6).
+- The bundle's audit uses the render's sidecars; a render without them falls back to the live build files
+  only when the lengths match, and says so. Re-render through `walkthrough render`, or copy them.
+- `audio.md` and `listen-check` are measured, not heard: a human still listens before anything ships.
 - Long agent reports get cut off in transit; always ask for a file plus a short message (E7).
 - Do not review the storyboard instead of the frames: the settings-scene framing bug (E1) was invisible in
   the data and obvious in one frame.

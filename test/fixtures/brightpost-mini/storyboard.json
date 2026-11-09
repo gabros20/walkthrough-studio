@@ -1,0 +1,145 @@
+{
+  "note": "Golden-test fixture (test/run.mjs): two scenes over takes/sample-mini, an 8 s trim of the kit's sample take. Covers a camera framing, a caption with claims, a spotlight, a stretch, a time-lapse, an in-scene cut the build fades the pointer across (715 px) and a hard cut it bridges (142 px). Edit it only together with test/golden (npm run test:update).",
+  "brand": "brand.json",
+  "fps": 30,
+  "clipFps": 30,
+  "takesDir": "takes",
+  "target": {
+    "min": 8,
+    "max": 12
+  },
+  "title": {
+    "duration": 2
+  },
+  "end": {
+    "duration": 2,
+    "wipeStart": 0.5
+  },
+  "scenes": [
+    {
+      "id": "a",
+      "take": "sample-mini",
+      "target": 3.7,
+      "ranges": [
+        {
+          "from": 0.6,
+          "to": {
+            "ref": "waitStart:saved"
+          }
+        },
+        {
+          "from": {
+            "ref": "waitStart:saved"
+          },
+          "to": {
+            "ref": "waitEnd:saved"
+          },
+          "stretch": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:saved"
+          },
+          "to": 2.5
+        },
+        {
+          "from": 3.7,
+          "to": {
+            "ref": "down:option 3",
+            "offset": 0.3
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "down:send",
+            "offset": -0.6
+          },
+          "box": "down:send",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "waitEnd:saved",
+            "offset": 0.05
+          },
+          "wide": true
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:status line",
+          "duration": 1.2
+        }
+      ],
+      "captions": [
+        {
+          "text": "It says “Saved”",
+          "at": {
+            "ref": "mark:status line"
+          },
+          "hold": 1.4,
+          "claims": "mark:status line",
+          "variant": "wipe"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "take": "sample-mini",
+      "target": 1.85,
+      "ranges": [
+        {
+          "from": 5.95,
+          "to": {
+            "ref": "scroll:history scroll"
+          }
+        },
+        {
+          "from": {
+            "ref": "scroll:history scroll"
+          },
+          "to": {
+            "ref": "scroll:history scroll",
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 0.5,
+            "label": "Scrolling"
+          }
+        },
+        {
+          "from": {
+            "ref": "scroll:history scroll",
+            "edge": "end"
+          },
+          "to": 7.95
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "mark:card 14",
+            "offset": -0.4
+          },
+          "box": "mark:card 14",
+          "kind": "pane"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Every post, kept",
+          "at": {
+            "ref": "move:history list",
+            "offset": -0.3
+          },
+          "hold": 1.5,
+          "variant": "tick"
+        }
+      ]
+    }
+  ]
+}

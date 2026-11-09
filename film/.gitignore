@@ -11,7 +11,7 @@ assets/brand/
 assets/creatives/
 assets/audio/
 renders/
-review/
+/review/
 sound-build/
 # tools
 .hyperframes/

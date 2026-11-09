@@ -16,7 +16,7 @@ import {
   Screencast,
   sleep,
 } from "./capture.mjs";
-import { installRecorderPage } from "./inpage.mjs";
+import { installPopupPolicy, installRecorderPage } from "./inpage.mjs";
 import { bezier, controlPoint, MOTION, moveDuration, power3InOut } from "./motion.mjs";
 import { typingDelays } from "./rng.mjs";
 
@@ -89,6 +89,13 @@ const isBox = (t) => t && typeof t.width === "number" && typeof t.boundingBox !=
  * blockUrls: glob strings or RegExps; matching requests are aborted (analytics, chat widgets).
  * dismiss: targets (see locate) clicked off camera, if visible, before each take's start flashes.
  * safeArea: { top, bottom, on: ["click", "mark"] } safe band in CSS px (see scrollIntoViewSafe).
+ * popups: "same-tab" (default) | "follow" | "block": what happens when the page opens a new tab or
+ *   window (target=_blank, window.open). same-tab: an init script turns it into a navigation of the
+ *   same page; follow: the screencast moves to the new page (a hard cut); block: it is closed.
+ *   Each is logged as a nav event (popup: "same-tab" | "blocked", or newTab: true).
+ * dialogs: "accept" (default) | "dismiss": alert / confirm / prompt / beforeunload are answered at
+ *   once (a take never hangs on one) and logged as dialog events.
+ * Downloads are saved to <take>/downloads/ and logged as download events.
  */
 export async function openSession({
   mode = "new",
@@ -108,32 +115,26 @@ export async function openSession({
   blockUrls = [],
   dismiss = [],
   safeArea = null,
+  popups = "same-tab",
+  dialogs = "accept",
 } = {}) {
+  if (!["same-tab", "follow", "block"].includes(popups)) throw new Error(`popups must be "same-tab", "follow" or "block", not ${JSON.stringify(popups)}`);
+  if (!["accept", "dismiss"].includes(dialogs)) throw new Error(`dialogs must be "accept" or "dismiss", not ${JSON.stringify(dialogs)}`);
   const browser = await launchBrowser({ mode, scale, args: launchArgs });
   const context = await browser.newContext(
-    contextOptions({ width, height, scale, storageState, ...(device ?? {}), ...extraContext }),
+    contextOptions({ width, height, scale, storageState, acceptDownloads: true, ...(device ?? {}), ...extraContext }),
   );
   for (const pattern of blockUrls ?? []) await context.route(pattern, (route) => route.abort("blockedbyclient"));
-  const session = new Session({ browser, context, mode, scale, width, height, restGuard, calibrationDot, heartbeat, everyNthFrame, takesDir, device, dismiss: dismiss ?? [], safeArea });
+  const session = new Session({ browser, context, mode, scale, width, height, restGuard, calibrationDot, heartbeat, everyNthFrame, takesDir, device, dismiss: dismiss ?? [], safeArea, popups, dialogs });
   await context.exposeBinding("__recCursor", (_src, c) => session.onCursorChange(c));
+  await context.exposeBinding("__recPopup", (src, r) => session.onPopupReport(src.page, r));
   await context.addInitScript(installRecorderPage, { dot: calibrationDot, heartbeat });
+  if (popups === "same-tab") await context.addInitScript(installPopupPolicy);
   session.page = await context.newPage();
   session.cdp = await context.newCDPSession(session.page);
-  session.page.on("domcontentloaded", () => {
-    const p = session.pointer;
-    session.page.evaluate(([x, y]) => window.__rec?.knowMouse(x, y), [p.x, p.y]).catch(() => {});
-  });
-  session.page.on("framenavigated", (frame) => {
-    if (frame === session.page.mainFrame()) session.take?.onFrameNavigated(frame.url());
-  });
-  // Requests in flight, page-wide, for waitQuiet. Long-lived streams (EventSource, media) and
-  // websockets never finish, so they do not count.
-  const tracked = (req) => !["eventsource", "media", "websocket"].includes(req.resourceType());
-  session.page.on("request", (req) => {
-    if (tracked(req)) session.inflight.set(req, nowWall());
-  });
-  session.page.on("requestfinished", (req) => session.inflight.delete(req));
-  session.page.on("requestfailed", (req) => session.inflight.delete(req));
+  session.wirePage(session.page);
+  // Registered after the first page exists, so every "page" event from here on is a popup.
+  context.on("page", (p) => session.onNewPage(p).catch((err) => session.take?.warn(`popup: ${err.message.split("\n")[0]}`)));
   await session.page.mouse.move(pointerStart.x, pointerStart.y);
   session.pointer = { ...pointerStart };
   return session;
@@ -168,6 +169,136 @@ class Session {
 
   onCursorChange(c) {
     this.take?.cursorChanged(c, nowWall());
+  }
+
+  /** Listeners every page of the session needs (the first page and any followed popup). */
+  wirePage(page) {
+    page.on("domcontentloaded", () => {
+      if (page !== this.page) return;
+      const p = this.pointer;
+      page.evaluate(([x, y]) => window.__rec?.knowMouse(x, y), [p.x, p.y]).catch(() => {});
+    });
+    page.on("framenavigated", (frame) => {
+      if (page === this.page && frame === page.mainFrame()) this.take?.onFrameNavigated(frame.url());
+    });
+    // Requests in flight, session-wide, for waitQuiet. Long-lived streams (EventSource, media) and
+    // websockets never finish, so they do not count.
+    const tracked = (req) => !["eventsource", "media", "websocket"].includes(req.resourceType());
+    page.on("request", (req) => {
+      if (tracked(req)) this.inflight.set(req, nowWall());
+    });
+    page.on("requestfinished", (req) => this.inflight.delete(req));
+    page.on("requestfailed", (req) => this.inflight.delete(req));
+    page.on("close", () => {
+      for (const req of this.inflight.keys()) if (req.frame?.()?.page?.() === page) this.inflight.delete(req);
+    });
+    page.on("dialog", (d) => this.onDialog(d));
+    page.on("download", (d) => this.onDownload(d));
+  }
+
+  /** popups "same-tab": the init script turned a new-tab open into a same-page navigation. */
+  onPopupReport(page, { url, via } = {}) {
+    if (page !== this.page) return;
+    this.pendingPopup = { url, via, w: nowWall() };
+  }
+
+  /** The running take, unless it is already finishing (events logged then would be lost). */
+  get liveTake() {
+    return this.take && !this.take.finished ? this.take : null;
+  }
+
+  /** Log an automatic nav event on the running take (popups, followed tabs). */
+  logNav(base, fields) {
+    const take = this.liveTake;
+    if (!take) return;
+    const w = nowWall();
+    take.log({ type: "nav", w, wEnd: w, label: take.label("nav", base, true), ...fields, auto: true });
+  }
+
+  /** A page the session did not open itself: a popup or a new tab. Handled per the popups policy. */
+  async onNewPage(p) {
+    this.wirePage(p);
+    const opener = this.page;
+    if (this.popups === "follow") {
+      const url = await settledUrl(p);
+      await this.switchTo(p);
+      this.logNav(`tab ${pathOf(url)}`, { url, newTab: true });
+      p.once("close", () => {
+        if (this.page !== p || opener.isClosed()) return;
+        this.switchTo(opener)
+          .then(() => this.logNav(`tab closed ${pathOf(opener.url())}`, { url: opener.url(), newTab: true, returned: true }))
+          .catch(() => {});
+      });
+      return;
+    }
+    const url = await settledUrl(p);
+    await p.close().catch(() => {});
+    if (this.popups === "block" || url === "about:blank" || !url) {
+      this.logNav(`popup ${pathOf(url)}`, { url, popup: "blocked" });
+      return;
+    }
+    // same-tab, and the init script did not catch it (a popup opened another way): open its URL here.
+    this.pendingPopup = { url, via: "fallback", w: nowWall() };
+    await opener.goto(url).catch((err) => this.take?.warn(`popup ${url}: ${err.message.split("\n")[0]}`));
+  }
+
+  /**
+   * Make `p` the page every action and the screencast use (popups: "follow"). Mid-take, the
+   * screencast moves with it; the master keeps one clock.
+   */
+  async switchTo(p) {
+    if (p === this.page) return;
+    this.page = p;
+    await p.bringToFront().catch(() => {});
+    const cdp = await this.context.newCDPSession(p);
+    const old = this.cdp;
+    this.cdp = cdp;
+    if (this.take?.cast) await this.take.cast.switchTo(cdp);
+    old?.detach().catch(() => {});
+    await p.mouse.move(this.pointer.x, this.pointer.y).catch(() => {});
+    p.evaluate(([x, y]) => window.__rec?.knowMouse(x, y), [this.pointer.x, this.pointer.y]).catch(() => {});
+  }
+
+  /** alert / confirm / prompt / beforeunload: answer at once per the dialogs policy, log it. */
+  async onDialog(d) {
+    const kind = d.type();
+    const action = this.dialogs === "dismiss" ? "dismiss" : "accept";
+    const take = this.liveTake;
+    if (take) {
+      const base = take.currentLabel ?? `dialog ${kind}`;
+      take.log({ type: "dialog", w: nowWall(), label: take.label("dialog", base, true), kind, message: d.message().slice(0, 200), action });
+    }
+    if (action === "accept") await d.accept(kind === "prompt" ? d.defaultValue() : undefined).catch(() => {});
+    else await d.dismiss().catch(() => {});
+  }
+
+  /** A download: saved to <take>/downloads/<filename> and logged (outside a take it is discarded). */
+  onDownload(d) {
+    const take = this.liveTake;
+    if (!take) {
+      d.cancel().catch(() => {});
+      return;
+    }
+    const w = nowWall();
+    const suggested = d.suggestedFilename() || "download";
+    const e = take.log({ type: "download", w, label: take.label("download", take.currentLabel ?? `download ${suggested}`, true), filename: suggested, url: d.url() });
+    const job = (async () => {
+      const dir = path.join(take.dir, "downloads");
+      fs.mkdirSync(dir, { recursive: true });
+      const ext = path.extname(suggested);
+      let name = path.basename(suggested);
+      for (let n = 2; fs.existsSync(path.join(dir, name)); n++) name = `${path.basename(suggested, ext)}-${n}${ext}`;
+      const file = path.join(dir, name);
+      await d.saveAs(file);
+      const failure = await d.failure();
+      e.filename = name;
+      e.bytes = fs.existsSync(file) ? fs.statSync(file).size : 0;
+      if (failure) e.failure = failure;
+    })().catch((err) => {
+      e.error = String(err?.message ?? err).split("\n")[0];
+      take.warn(`download ${suggested}: ${e.error}`);
+    });
+    take.pending.push(job);
   }
 
   /** Start a take: screencast on, start flashes. Output goes to `dir` (default: <takesDir>/<name>). */
@@ -213,7 +344,6 @@ class Session {
 export class Take {
   constructor(session, name, dir, fps, quality) {
     this.session = session;
-    this.page = session.page;
     this.name = name;
     this.dir = dir;
     this.fps = fps;
@@ -225,6 +355,13 @@ export class Take {
     this.inNav = false;
     this.lastCursor = null;
     this.warnings = [];
+    this.pending = []; // downloads still being saved; finish() waits for them
+    this.currentLabel = null; // label of the action in progress (downloads and dialogs take it)
+  }
+
+  /** The page actions go to: the session's current page (it changes when a popup is followed). */
+  get page() {
+    return this.session.page;
   }
 
   // ------------------------------------------------------------------ logging
@@ -268,11 +405,12 @@ export class Take {
 
   onFrameNavigated(url) {
     if (this.inNav || this.finished) return;
-    let p = url;
-    try {
-      p = new URL(url).pathname;
-    } catch {}
-    this.log({ type: "nav", w: nowWall(), wEnd: nowWall(), label: this.label("nav", `url ${p}`, true), url, auto: true });
+    const w = nowWall();
+    // A new-tab open the same-tab policy turned into this navigation (reported just before it).
+    const pp = this.session.pendingPopup;
+    const popup = pp && w - pp.w < 10 && sameDoc(pp.url, url) ? pp : null;
+    if (popup) this.session.pendingPopup = null;
+    this.log({ type: "nav", w, wEnd: w, label: this.label("nav", `url ${pathOf(url)}`, true), url, auto: true, ...(popup ? { popup: "same-tab", via: popup.via } : {}) });
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -331,8 +469,10 @@ export class Take {
    * End flash, stop capture, encode master.mp4, verify sync and write events.json + take.json.
    * Returns the take summary (also in take.json).
    */
-  async finish({ encode = true, preset = "medium", crf = 12, tail = 0.5, keepRaw = true } = {}) {
+  async finish({ encode = true, preset = "medium", crf = 12, tail = 0.5, keepRaw = true, beforeEncode = null } = {}) {
     clearInterval(this.cursorPoll);
+    // Downloads still being written: wait (up to 60 s) so their events carry bytes.
+    if (this.pending.length) await Promise.race([Promise.allSettled(this.pending), sleep(60_000)]);
     await sleep(300);
     this.flashEnds = [];
     for (let k = 0; k < FLASHES; k++) {
@@ -350,7 +490,7 @@ export class Take {
     for (const [group, list] of [["start", this.flashStarts], ["end", this.flashEnds]])
       for (const [k, w] of list.entries()) {
         const f = await this.findFlashInRaw(w, FLASH_GAP_MS / 1000);
-        if (!f) throw new Error(`sync flash ${group} ${k + 1} not found in raw frames`);
+        if (!f) throw new Error(`sync flash ${group} ${k + 1} not found in raw frames (requested at ${(w - cast.T0).toFixed(3)} s; flashes requested at ${[...this.flashStarts, ...this.flashEnds].map((x) => (x - cast.T0).toFixed(3)).join(", ")})`);
         found.push({ group, k, w, ts: f.ts, slot: f.slot, latency: f.ts - w });
       }
     // Frame timestamps and action times are both system-clock seconds, so an action at wall time w
@@ -405,7 +545,8 @@ export class Take {
       const end = events.find((x) => x.type === "waitEnd" && x.label === e.label);
       waits.push([e.t, end ? end.t : Infinity]);
     }
-    const ts = this.cast.delivered.map((x) => x - T0 + L);
+    // Sorted: under heavy load the browser can deliver a frame out of timestamp order.
+    const ts = this.cast.delivered.map((x) => x - T0 + L).sort((a, b) => a - b);
     let maxOut = { ms: 0, at: null };
     let maxIn = { ms: 0, at: null };
     for (let i = 1; i < ts.length; i++) {
@@ -470,6 +611,8 @@ export class Take {
       warnings: this.warnings,
       dismissed: this.dismissed ?? [],
     };
+    // beforeEncode: the parallel runner holds the encode until no other take is capturing.
+    if (encode && beforeEncode) await beforeEncode();
     if (encode) {
       const enc = await encodeMaster({ dir: this.dir, fps, T0: cast.T0, lastSlot, crf, preset });
       summary.encode = enc;
@@ -674,6 +817,7 @@ export class Take {
   async click(target, { label, at, lead = MOTION.clickLead, press = MOTION.pressSeconds, button = "left", count = 1 } = {}) {
     const lbl = this.label("down", label);
     this.label("up", label);
+    this.currentLabel = label;
     const element = target && !isPoint(target) && !isBox(target);
     if (element && this.safeOn("click")) await this.scrollIntoViewSafe(target, { label: `${label} (safe)` });
     const { point, box, move } = await this.moveTo(target, { label, at, role: "approach" });
@@ -984,6 +1128,38 @@ export class Take {
   get pointer() {
     return { ...this.session.pointer };
   }
+}
+
+/** Path of a URL for labels (as before: no query); the input when it is not http(s). */
+function pathOf(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol.startsWith("http") ? u.pathname : url;
+  } catch {
+    return String(url);
+  }
+}
+
+/** Same document (hash ignored), for matching a reported popup with the navigation it caused. */
+function sameDoc(a, b) {
+  try {
+    const x = new URL(a);
+    const y = new URL(b);
+    return x.origin === y.origin && x.pathname === y.pathname && x.search === y.search;
+  } catch {
+    return a === b;
+  }
+}
+
+/** A popup's URL once it has one (it can start at about:blank), waiting up to `ms`. */
+async function settledUrl(p, ms = 3000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms && !p.isClosed()) {
+    const u = p.url();
+    if (u && u !== "about:blank") return u;
+    await sleep(50);
+  }
+  return p.isClosed() ? "about:blank" : p.url();
 }
 
 function convertTimes(e, toT) {

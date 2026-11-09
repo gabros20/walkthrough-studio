@@ -2,6 +2,10 @@
 
 *Mode: explanation. The shape of a job and the numbers that worked. Exact commands live in the skills and the folder READMEs; the reasons behind the big choices are in [`adr/`](adr/).*
 
+Each by-hand step below has a `walkthrough` command beside it (marked **CLI**, from [`CLI.md`](CLI.md)).
+The CLI prints the by-hand command it runs (the `›` line), records the step in `state.json` and adds the
+checks between steps; the by-hand commands stay the fallback.
+
 How a walkthrough film is made with this kit, start to finish, with the numbers that worked. The worked
 example is `examples/brightpost/PLAN.md` (the approved plan of the first film); this page is its
 generic part. Interfaces between stages are in `docs/CONTRACT.md` (takes), `docs/STORYBOARD.md` (edit),
@@ -48,6 +52,7 @@ The app runs from a disposable copy so the owner's dev setup is never touched.
   suppressed in the clone only.
 - Scripts: `up.sh`, `down.sh`, `checkpoint.sh <name>`, `restore.sh <name>`. They only ever kill pids they
   started. A checkpoint = stop the core, clone the DB folder and caches, save browser storage state.
+  **CLI**: `walkthrough studio up|down|checkpoint <name>|restore <name>|status`.
 - Demo account and assets: a fictional company, its logo (SVG → PNG at the size the app accepts), a one-time
   sign-in link in `link.txt` (never printed), checkpoint CP0 right after issuing it.
 - Before every recording session: sync the clone with the repo, rebuild, restart (lesson C2).
@@ -67,6 +72,8 @@ Measured on a synthetic page with a frame counter, a colour patch and load, then
 Method that passed: full Chromium new-headless with GPU, CDP `Page.startScreencast`, every frame acked at once
 and stamped with the browser timestamp, placed into constant-rate 60 fps slots; master H.264 CRF 12, bt709.
 If nothing holds 60 honestly, deliver the whole film at 30 fps; never present duplicated frames as 60.
+By hand: `node $KIT/recorder/capture-test.mjs new 2 idle 30`. **CLI**: `walkthrough capture-test` (the
+same defaults), or `walkthrough doctor --capture` for the short 8 s check.
 
 ## 3. Rehearse
 
@@ -90,11 +97,14 @@ second request carry the saved rules. Note how long each turn takes.
   caption anchors. Three sync flashes at each end; a heartbeat pixel.
 - `takes/INDEX.md` per pass: each take's labels and times, wait ranges, frame gaps over 100 ms with what is
   on screen, truth checks (does the screen show what the caption will claim), deviations.
+- By hand: `node $KIT/recorder/takes/run.mjs --config walkthrough.config.mjs [scenes]`. **CLI**:
+  `walkthrough take [scenes] [--auto]` (also records each take and checkpoint in `state.json`).
 
 ## 5. Edit (`film/`, `docs/STORYBOARD.md`, `docs/LOOK.md`)
 
 - The kit is read-only during use. Each film has a **project folder** outside the kit
-  (`node $KIT/film/scripts/init-project.mjs $P`) holding its inputs (`storyboard.json`, `brand.json`,
+  (`node $KIT/film/scripts/init-project.mjs $P`; **CLI**: `walkthrough init $P`, which adds the recorder
+  config, `.gitignore` and `state.json`) holding its inputs (`storyboard.json`, `brand.json`,
   `creatives.json`, `music.json`, `voiceover/`) and receiving every output (build files, `renders/`,
   `sound-build/`, `out/`). Kit commands run from `$P`, or take `--project $P` / `FILM_PROJECT`; without a
   project they fall back to the kit's own `film/` (dev mode). Full command list: skill `build-film`.
@@ -105,15 +115,19 @@ second request carry the saved rules. Note how long each turn takes.
   anchored to events, transitions.
 - One mapping for footage and every overlay: `film = filmIn + (source − srcIn) / rate`, with
   `rate = (srcOut − srcIn) / filmDur`, every bound snapped to a whole frame. Re-cutting never desyncs.
-- `$KIT/film/scripts/draft-storyboard.mjs` drafts the first storyboard (`--out $P/storyboard.json`) from `events.json` (clicks → framings and
+- `$KIT/film/scripts/draft-storyboard.mjs` drafts the first storyboard (`--out $P/storyboard.json`; **CLI**:
+  `walkthrough draft`) from `events.json` (clicks → framings and
   caption placeholders, long waits → time-lapses); the editor refines it. `build.mjs --audit` (or `scripts/audit.mjs`)
   reports frozen holds, pointer jumps at cuts, dead air after captions, caption lint and caption claims
   (`"claims": "mark:<label>"`: every quoted phrase must be in that mark's logged text); errors exit 1; it runs before every
-  review and before lock.
+  review and before lock. **CLI**: `walkthrough build --audit`, or `walkthrough audit` on the last build.
 - `node $KIT/film/build.mjs --takes $T --dry` (from `$P`) prints the durations table without rendering; `--dry-out <dir>` writes the
-  would-be `edl.json`, `cues.json`, `captions.srt` for downstream fit checks.
+  would-be `edl.json`, `cues.json`, `captions.srt` for downstream fit checks. **CLI**: `walkthrough build --dry`
+  (`--dry-out <dir>` passes through).
 - `--no-captions` builds the captionless twin for the voiceover version with identical timing; renders go to
   `$P/renders/final.mp4` and `final-vo.mp4`, each with its `cues.json`, `edl.json`, `captions.srt` copied beside it.
+  **CLI**: `walkthrough render --name final`, then `walkthrough render --no-captions --name final-vo` (each
+  rebuilds first when the build on disk is not what it asks for, and copies the sidecars).
 - HyperFrames 0.9.16 contract: one paused timeline per composition, `fromTo` only, no timers or randomness,
   muted video, bundled fonts.
 - Look (details in `docs/LOOK.md`): canvas 1920x1080, flat ink ground, app window 1536x864 at 36 px from
@@ -134,8 +148,12 @@ second request carry the saved rules. Note how long each turn takes.
 Draft render → Haiku describers read 1 frame every 2 s in parallel ranges → Opus critic verifies their flags
 and does its own pass on contact sheets and strips around cuts, camera moves and captions → lead rules on the
 critic's list → editor fixes → `build.mjs --audit` → next draft. Two or three rounds were enough.
+**CLI**: `walkthrough render --name draft`, then `walkthrough review --render draft` (the review bundle the
+describers and the critic read).
 
 ## 7. Picture lock, then sound (`sound/`)
+
+**CLI** for the lock: `walkthrough state lock` (records the storyboard's sha256; later builds warn on a change).
 
 - Music is made after picture lock, to the film length plus a 2 s tail (ElevenLabs Music via the connector;
   instrumental; prompt without artist names). If it comes back short, extend by bar-aligned loops.
@@ -148,6 +166,8 @@ critic's list → editor fixes → `build.mjs --audit` → next draft. Two or th
 - `music.json` lives in the project folder (template `$KIT/sound/music.example.json`); from `$P`:
   `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`
   (`--project $P` from elsewhere; `--film` is an alias). Build files go to `$P/sound-build/`.
+  **CLI**: `walkthrough sound music --prompt-file music.prompt.txt`, `walkthrough sound beat-grid`, then
+  `walkthrough sound build --video renders/final.mp4 --deliver out/<film>.mp4`.
 
 ## 8. Voiceover twin (`voiceover/`)
 
@@ -155,17 +175,21 @@ critic's list → editor fixes → `build.mjs --audit` → next draft. Two or th
   just after the action, end ≥ 0.5 s before the next line; speaking share about 55-65%; silence at reveals.
 - One TTS take of the whole script (ElevenLabs `eleven_v4`, a chosen voice); `hyperframes transcribe` word
   timings → cut lines with short fades → `placement.json`, `vo-track.wav` (48 kHz, film length),
-  `voiceover.srt`.
+  `voiceover.srt`. **CLI**: `walkthrough vo script lines.json --edl … --cues …`, then
+  `walkthrough vo place voiceover/vo-take1.mp3 voiceover/transcript.json --edl … --cues …`; or per line
+  (no transcription): `walkthrough vo tts --voice <id>`.
 - Picture is the captionless twin; music ducks about 10-12 dB under each line.
 - Files live in `$P/voiceover/`; the kit's tools run from `$P` with `--vo-dir voiceover` and
   `--edl/--cues renders/final-vo.*`, then
   `node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4`.
+  **CLI**: `walkthrough sound build --video renders/final-vo.mp4 --voiceover voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4`.
   ElevenLabs calls: `docs/ELEVENLABS.md`.
 
 ## 9. Delivery (`delivery/`, `docs/DELIVERY.md`)
 
 Renamed masters and web encodes, per-feature clips, cropped stills, creative showcase sheets, written copy,
-README in md/html/pdf, a zip, and a verification run.
+README in md/html/pdf, a zip, and a verification run. **CLI**: `walkthrough deliver --preset sales` (or `web`,
+`social`, `docs`), which runs `delivery/run_preset.py` and then `delivery/verify.py`.
 
 ## Model tiers (who does what)
 

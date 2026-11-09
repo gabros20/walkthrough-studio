@@ -16,6 +16,7 @@ A take is app footage with **no cursor in it**, plus `events.json`, a log of eve
   events.json         the action log (see 3-5)
   take.json           capture stats and sync measurements (for checking, not for editing)
   truth.json          what the scene's truth() read back from the app after the take (runner only; may be null)
+  downloads/          files the page downloaded during the take (see the download event); absent when none
   raw/frames.bin      raw screencast JPEGs, concatenated (re-mux source; deleted when finish({ keepRaw: false }) verified the master)
   raw/frames.ndjson   one line per stored frame: {"i","slot","ts","off","len"}
   raw/delivered.json  browser timestamps of every frame the browser delivered (gap and unique-fps reports need it)
@@ -93,7 +94,7 @@ Reference red `#F01020` decodes to 241,16,31 (BT.709 limited range, accurate con
 
 Every event the film may anchor to carries a `label`: a short human-readable name chosen in the scene script ("send", "option 2", "prompt text"). **Anchor by the pair (`type`, `label`)**, never by `id` or time: the pair is unique within a take (the recorder refuses duplicates) and stays the same across retakes of the same script. One action produces several events with the same label and different types; a click "send" writes `move` "send" (role `approach`), `down` "send" and `up` "send".
 
-Helper actions add a suffix: `"<label> (reveal)"` for a scroll that brings a chip into view before a click, `"<label> (position)"` for the move that places the pointer before a scroll. By convention, the move that rests the mouse somewhere neutral after an action is `"<action> park"` (role `park`). Automatic navigation events are labelled `"url <path>"`, with ` #2`, ` #3` for repeats. `cursor` and `sync` events need no anchor label (`sync` uses `start 1..3` / `end 1..3`).
+Helper actions add a suffix: `"<label> (reveal)"` for a scroll that brings a chip into view before a click, `"<label> (position)"` for the move that places the pointer before a scroll. By convention, the move that rests the mouse somewhere neutral after an action is `"<action> park"` (role `park`). Automatic navigation events are labelled `"url <path>"` (`"tab <path>"` for a followed tab, `"popup <path>"` for a blocked one), with ` #2`, ` #3` for repeats. `download` and `dialog` events take the label of the action that caused them, so the pair (`download`, "size guide") sits next to the click "size guide". `cursor` and `sync` events need no anchor label (`sync` uses `start 1..3` / `end 1..3`).
 
 ### `sync` — start and end flashes
 
@@ -189,6 +190,34 @@ Generic outcomes: whatever the adapter's `classify()` returns, plus `not-sent` (
 ```
 Scripted navigations run from `t` (request) to `tEnd` (page loaded). `auto: true` marks a main-frame navigation the page made itself (a link, a redirect, a client-side route change); it has `t = tEnd`.
 
+New tabs and windows (`target=_blank` links and forms, `window.open`) follow the config's `popups` policy, and the `nav` event says what happened (all are `auto: true`, `t = tEnd`):
+
+```json
+{ "type": "nav", "t": 6.27, "tEnd": 6.27, "label": "url /specs.html", "url": "http://127.0.0.1:8930/specs.html", "auto": true, "popup": "same-tab", "via": "link", "id": 30 }
+{ "type": "nav", "t": 6.39, "tEnd": 6.39, "label": "tab /specs.html", "url": "http://127.0.0.1:8930/specs.html", "newTab": true, "auto": true, "id": 29 }
+{ "type": "nav", "t": 6.54, "tEnd": 6.54, "label": "popup /specs.html", "url": "http://127.0.0.1:8930/specs.html", "popup": "blocked", "auto": true, "id": 28 }
+```
+
+| Flag | Policy | Meaning in the footage |
+|---|---|---|
+| `popup: "same-tab"`, `via: "link" \| "form" \| "window.open" \| "fallback"` | `same-tab` (default) | the page navigated in place instead of opening a tab; an ordinary page change. `fallback`: a popup opened anyway and was closed, and its URL opened in the same page |
+| `newTab: true` | `follow` | the screencast moved to the new tab at `t`: **a hard cut** (one master, one clock). Until the new page paints, the master holds the old page's last frame. When the followed tab closes, a second event with `newTab: true, returned: true` (label `tab closed <path>`) marks the cut back |
+| `popup: "blocked"` | `block` (also `same-tab` when the popup has no URL) | the new tab was closed at once; nothing changes on screen |
+
+### `download` — the page downloaded a file
+
+```json
+{ "type": "download", "t": 2.982, "label": "size guide", "filename": "size-guide.csv", "url": "http://127.0.0.1:8930/files/size-guide.csv", "bytes": 88, "id": 12 }
+```
+`t` is when the download started. The file is in `<take>/downloads/<filename>` (a repeated name gets `-2`, `-3`). `label` is the label of the action that caused it (the click or step label, so a caption anchored to the click can also claim the download), else `download <filename>`; a repeat gets ` #2`. `bytes` is the saved size; `failure` or `error` (strings) appear instead when the download failed. Nothing about a download is visible in the footage; the film shows it if the editor wants (a toast, a file chip).
+
+### `dialog` — alert, confirm, prompt or beforeunload
+
+```json
+{ "type": "dialog", "t": 4.522, "label": "book", "kind": "confirm", "message": "Book a test ride for Saturday at 10:00?", "action": "accept", "id": 19 }
+```
+Answered at once by the config's `dialogs` policy (`accept`, the default, or `dismiss`; a prompt is accepted with its default value), so a take never hangs on one. `kind` is `alert`, `confirm`, `prompt` or `beforeunload`; `message` is at most 200 characters. `label` is the label of the action that caused it, else `dialog <kind>`. Headless Chromium draws no dialog box, so the footage shows none: the page simply continues (for a confirm, as if the button had been pressed). The page is blocked while the dialog is open, so the `up` of the click that opened it can come a few ms after the dialog event.
+
 ### `mark` — a named element's box at a moment
 
 ```json
@@ -238,7 +267,7 @@ Fields the film build or a reviewer may read:
 | Field | Meaning |
 |---|---|
 | `mode`, `browser`, `fps`, `scale` | capture method and Chromium version |
-| `capture` | `T0`, frames stored, bytes, delivered fps, delivery gap median / p99 / max, receive-minus-timestamp drift |
+| `capture` | `T0`, frames stored, bytes, delivered fps, delivery gap median / p99 / max, receive-minus-timestamp drift; `pageSwitches` (screencast moved to a followed tab) and `outOfOrderFrames` (frames the browser delivered older than one already held; kept when their 1/60 s slot was still free, dropped otherwise) when non-zero |
 | `sync.flashes[]` | each flash: label, `t` in the master, `latencyMs`, `errorFrames` |
 | `sync.keep {from, to}` | the usable footage range |
 | `sync.startLatencyMs`, `endLatencyMs`, `latencyModel` | the latency model (section 3) |
@@ -300,7 +329,7 @@ Take API (all methods await until the action is complete; every `label` is requi
 
 | Call | Logs |
 |---|---|
-| `openSession({ mode, scale, width, height, device, calibrationDot, heartbeat, pointerStart, storageState, restGuard, blockUrls, dismiss, safeArea, context, launchArgs, takesDir })` | — |
+| `openSession({ mode, scale, width, height, device, calibrationDot, heartbeat, pointerStart, storageState, restGuard, blockUrls, dismiss, safeArea, popups, dialogs, context, launchArgs, takesDir })` | `nav` (popup flags), `download`, `dialog` while a take runs |
 | `session.offCamera(fn)` (between takes; puts the mouse back) | — |
 | `session.startTake(name, { dir, fps, quality, overwrite })` | `sync` start |
 | `take.moveTo(target, { label, at, role })` | `move` |
@@ -333,6 +362,8 @@ Take API (all methods await until the action is complete; every `label` is requi
 - Uploads through an intercepted file chooser, `guardKeys`, structural selectors.
 - Typing with `Input.insertText`: the app stayed in pointer mode on every turn.
 - `take.reveal` inside a dropdown list.
+
+**Proven on synthetic pages only** (`npm run site-test`, desktop and phone, 2026-11-09): new tabs under all three `popups` policies (including moving the screencast to a followed tab mid-take with the master sync passing), downloads, confirm dialogs, and two takes recorded in parallel.
 
 **Not exercised on a real app:**
 - Turn outcomes other than `success` (checked only against a mock).

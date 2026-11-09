@@ -7,7 +7,11 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font: 16px/1.45 -apple-system, Helvetica, Arial, sans-serif; color: #141414; background: #fafaf9; }
-  header { padding: 18px 24px; background: #fff; border-bottom: 1px solid #e7e5e4; font-weight: 700; }
+  header { padding: 18px 24px; background: #fff; border-bottom: 1px solid #e7e5e4; font-weight: 700; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; }
+  header nav { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-weight: 500; font-size: 15px; }
+  header nav a { color: #0E7C86; }
+  header nav button { height: 34px; padding: 0 14px; font-size: 15px; border-radius: 10px; }
+  #booking { color: #0E7C86; font-weight: 600; margin: 0 0 20px; min-height: 1.45em; }
   main { max-width: 880px; margin: 0 auto; padding: 32px 24px 320px; }
   h1 { font-size: 40px; line-height: 1.1; margin: 24px 0 12px; }
   .lead { color: #57534e; margin: 0 0 28px; }
@@ -24,10 +28,17 @@
 </style>
 </head>
 <body>
-<header>Bike finder</header>
+<header><span>Bike finder</span>
+  <nav aria-label="Ride tools">
+    <a href="/files/size-guide.csv" download>Size guide (CSV)</a>
+    <a href="/specs.html" target="_blank">Spec sheet</a>
+    <button type="button" id="book">Book a test ride</button>
+  </nav>
+</header>
 <main>
   <h1>Find a bike for this spring</h1>
   <p class="lead">Search the range, compare weight and gearing, and book a test ride.</p>
+  <p id="booking" role="status"></p>
   <form id="f"><input id="q" placeholder="Search bikes" aria-label="Search bikes"><button type="submit">Search</button></form>
   <ul id="results" aria-label="Results"></ul>
 </main>
@@ -35,6 +46,11 @@
 <script>
   // Analytics beacon: site-test blocks it with blockUrls and checks the server never saw it.
   fetch('/analytics/collect?page=site').catch(() => {});
+  // A confirm dialog: the recorder answers it (dialogs: "accept") and logs it.
+  document.getElementById('book').onclick = () => {
+    const ok = confirm('Book a test ride for Saturday at 10:00?');
+    document.getElementById('booking').textContent = ok ? 'Booked for Saturday, 10:00' : 'Not booked';
+  };
   document.getElementById('accept').onclick = () => document.getElementById('consent').remove();
   document.getElementById('f').addEventListener('submit', async (e) => {
     e.preventDefault();

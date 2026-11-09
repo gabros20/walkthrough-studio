@@ -3,6 +3,7 @@
 # usage: delivery/zip.sh PACKAGE_DIR [ZIP_PATH]
 # Uses /bin/rm and /usr/bin/zip by absolute path: interactive zsh aliases for rm/zip broke the real run.
 set -euo pipefail
+case "${1:-}" in -h|--help) echo "usage: delivery/zip.sh PACKAGE_DIR [ZIP_PATH]   (default ZIP: <parent>/<name>_<date>.zip)"; exit 0;; esac
 PKG="${1:?usage: zip.sh PACKAGE_DIR [ZIP_PATH]}"
 PKG="$(cd "$PKG" && pwd)"
 NAME="$(basename "$PKG")"

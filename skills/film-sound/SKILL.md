@@ -1,6 +1,6 @@
 ---
 name: film-sound
-description: Score a locked walkthrough film - generate the music bed once via ElevenLabs Music, analyse and extend it by bar-aligned loops when it comes back short, write beat-grid.json for bar-aligned cuts, add click/whoosh/riser effects from HyperFrames' bundled set, mix to -16 LUFS / <= -1 dBTP with voiceover ducking when present, mux onto the picture-only render and prove the delivered file has sound. Use after picture lock, after any re-timing, and for the voiceover version's mix.
+description: Score a locked walkthrough film - generate the music bed once via ElevenLabs Music (walkthrough sound music with an API key, or the connector), measure its tempo and beat phase into music.json (walkthrough sound beat-grid), extend it by bar-aligned loops when it comes back short, write beat-grid.json for bar-aligned cuts, add click/whoosh/riser effects from HyperFrames' bundled set, mix to -16 LUFS / <= -1 dBTP with voiceover ducking when present, mux onto the picture-only render (walkthrough sound build) and prove the delivered file has sound; every paid call lands in the cost ledger. Use after picture lock, after any re-timing, and for the voiceover version's mix.
 ---
 
 # Film sound
@@ -12,7 +12,15 @@ Read `docs/ELEVENLABS.md` (the exact connector calls, the API-key route, costs, 
 voice". Example: `examples/brightpost/music.json` and `beat-grid.json`.
 
 All paths are in the film's project folder `$P` (skill `build-film`); run from `$P` (or pass
-`--project $P`; `--film` is kept as an alias). `KIT` is the kit root.
+`--project $P`; `--film` is kept as an alias). `KIT` is the kit root. The CLI wraps every step and prints
+the command it runs:
+
+```bash
+walkthrough sound music --prompt-file music.prompt.txt [--seconds N]   # node $KIT/sound/generate-music.mjs
+walkthrough sound beat-grid music-take1.mp3                           # node $KIT/sound/beat-grid.mjs
+walkthrough sound build [--voiceover voiceover/vo-track.wav] --deliver out/<film>.mp4   # build-sound.mjs
+walkthrough cost show                                                 # the ledger, totals per kind
+```
 
 **Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
 `agents/`, ...) are relative to it. Use the first of these that holds `recorder/` and `film/`:
@@ -31,20 +39,37 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
 
 ## Steps
 
-- [ ] **Generate once (you, via the ElevenLabs connector; steps in `docs/ELEVENLABS.md`).** Music model,
-  instrumental, length = film + 2 s. One call; sub-agents cannot reach the connector. If the reply is "Free generations are busy", do not call again in this turn; retry on a later
-  turn. Download the result; note its real length (it may be shorter than asked).
+- [ ] **Generate once (you).** Write the direction to `$P/music.prompt.txt`. With `ELEVENLABS_API_KEY` set:
+  `walkthrough sound music --prompt-file music.prompt.txt` (or `node $KIT/sound/generate-music.mjs
+  --prompt-file music.prompt.txt --seconds <film + 2>`): `POST /v1/music`, model `music_v2_5`, `--seconds`
+  defaults to the last render's length + 2 s, saves `music-take1.mp3`, never overwrites a take (write
+  `--out music-take2.mp3` for another), prints the real length and appends a `music` cost row (seconds
+  asked) to `sound-build/cost.jsonl`, which the CLI folds into `state.json`. Without a key it prints the
+  connector steps and exits 2: then use the ElevenLabs connector (`docs/ELEVENLABS.md`; sub-agents cannot
+  reach it) and add the row yourself (`walkthrough cost add --kind music --units <seconds> --note "take 1"`).
+  One call either way. If the reply is "Free generations are busy", do not call again in this turn; retry on
+  a later turn. A take shorter than asked is extended by loops, not regenerated. `ELEVENLABS_MOCK=1` tests
+  the route without credits; run it with `--out` in a scratch folder (it writes a silent take and a cost row).
 - [ ] **Brief the sound designer** with the paths, the direction, and: no generation calls; extend by loops if
   short; effects sparse; numbers to hit; prove delivery.
-- [ ] **Bed and grid.** It analyses tempo, bars, sections and the ending, writes `$P/music.json` (template
-  `$KIT/sound/music.example.json`; `file` is relative to it, WAV or MP3, plus the measured grid) and `beat-grid.json`; anchor bars to film time 0 so the editor can nudge scene changes onto bars with
-  holds only.
-- [ ] **Draft mix** on a draft picture: `node $KIT/sound/build-sound.mjs --video renders/<draft>.mp4`.
-- [ ] **Delivery**: `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`.
+- [ ] **Bed and grid.** `walkthrough sound beat-grid music-take1.mp3 [--bpm 96] [--groove 10,110]`
+  (`node $KIT/sound/beat-grid.mjs`; Python with numpy, scipy, soundfile) measures tempo and beat phase and
+  writes `bpm`, `beat`, `bar`, `gridOffset` and the evidence into `$P/music.json` (created beside the take
+  when missing; template `$KIT/sound/music.example.json`). The beat is measured, the downbeat is not:
+  confirm which beat is "1" (`sound/analysis/struct.py`, the kick profile, listening) and move `gridOffset`
+  by whole beats if needed; never trust a tempo detector alone. The designer adds sections and the ending
+  and writes `beat-grid.json`; anchor bars to film time 0 so the editor can nudge scene changes onto bars
+  with holds only.
+- [ ] **Draft mix** on a draft picture: `walkthrough sound build --video renders/<draft>.mp4` (or
+  `node $KIT/sound/build-sound.mjs --video renders/<draft>.mp4`).
+- [ ] **Delivery**: `walkthrough sound build --deliver out/<film>.mp4` (`--video` defaults to the last
+  render in `state.json`; disk policy first, `caffeinate -i` on macOS; a `delivered:` line is recorded in
+  `state.deliveries`), or `node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.mp4`.
   The last line must be `delivered: <path>` (exit 0). `NOT DELIVERED (checks failed)` (exit 2) or
   `no video given` means nothing was delivered. Outputs of the build go to `$P/sound-build/`.
-- [ ] **Voiceover version**: `node $KIT/sound/build-sound.mjs --video renders/final-vo.mp4 --voiceover
-  voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4` (music ducked ~10-12 dB under each line).
+- [ ] **Voiceover version**: `walkthrough sound build --video renders/final-vo.mp4 --voiceover
+  voiceover/vo-track.wav --deliver out/<film>-voiceover.mp4` (music ducked ~10-12 dB under each line);
+  then `walkthrough vo listen-check out/<film>-voiceover.mp4` (skill `voiceover`).
 - [ ] **Verify independently**: `ffprobe` shows an audio stream as long as the video; loudness in range at the
   start, middle and end (`python3 -I $KIT/delivery/verify.py <config> --loudness` does this for a package);
   `npx hyperframes@0.9.16 audio <file> --json` for click positions.
@@ -58,8 +83,9 @@ dBTP; no silent stretch; report says "measured, not heard".
 
 ## Outputs
 
-`music.json`, `beat-grid.json`, `sound-build/{bed.wav,mix.wav,last-build.json}`, the delivered film(s) with
-their `.srt` beside them.
+`music.prompt.txt`, `music-take1.mp3`, `music.json`, `beat-grid.json`,
+`sound-build/{bed.wav,mix.wav,last-build.json,cost.jsonl}`, the delivered film(s) with their `.srt` beside
+them, the music cost row in `state.json`.
 
 ## Pitfalls
 

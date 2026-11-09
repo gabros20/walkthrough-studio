@@ -1,6 +1,6 @@
 ---
 name: record-takes
-description: Record cursor-free, action-logged takes of any web app or website for a walkthrough or tour film - studio mode (isolated clone of an owned app with checkpoints) or site mode (any URL with saved login, consent-banner dismissal and generic waitQuiet), viewport presets (desktop or phone), capture test, adapter and scene scripts, rehearsals, one browser session per pass, read-back, retakes, and takes/INDEX.md. Use for the recording phase, for retakes and pickup takes after review notes, and when the app changed and the film must be re-recorded.
+description: Record cursor-free, action-logged takes of any web app or website for a walkthrough or tour film - studio mode (isolated clone of an owned app with checkpoints) or site mode (any URL with saved login, consent-banner dismissal and generic waitQuiet), a tour map of the site first (walkthrough explore, drafted scenes), viewport presets (desktop or phone, for 9:16 films), new-tab, download and dialog policies, capture test, adapter and scene scripts, rehearsals, one browser session per pass or parallel takes in site mode (walkthrough take), read-back, retakes, and takes/INDEX.md. Use for the recording phase, for retakes and pickup takes after review notes, and when the app changed and the film must be re-recorded.
 ---
 
 # Record takes
@@ -10,8 +10,9 @@ The take operator (`agents/take-operator.md`, Opus) does this work; the studio b
 capture method, and gate on truth checks. (Or, without sub-agents, do those roles' checklists yourself: see
 `agents/take-operator.md` and `agents/studio-builder.md` in the kit.)
 
-Read: `docs/CONTRACT.md` (take format `walkthrough-take/1`), `docs/CAPTURE_TEST.md`, `studio/README.md`,
-`docs/LESSONS.md` (section "Capture and recording"). Example project files:
+Read: `docs/CONTRACT.md` (take format `walkthrough-take/1`, incl. the `download` and `dialog` events),
+`docs/CAPTURE_TEST.md`, `recorder/README.md` (config, tour map, take runner), `studio/README.md`,
+`docs/LESSONS.md` (section "Capture and recording"), `docs/CLI.md` (`explore`, `take`). Example project files:
 `examples/brightpost/{walkthrough.config.mjs,app.mjs,scenes.mjs,studio.config.sh}`.
 
 **Where the kit is.** `KIT` is the walkthrough-studio checkout; kit paths (`recorder/`, `film/`, `docs/`,
@@ -26,11 +27,18 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
 ## Inputs
 
 - The approved plan (story table, takes and checkpoints table, rehearsal list).
-- A project folder holding `walkthrough.config.mjs` (base URL, viewport 1440x810, scale 2, fps, takes dir,
-  adapter, scenes, studio config), `app.mjs` (the app adapter: sign-in, send a message, wait for an agent turn,
-  upload, app-specific waits) and `scenes.mjs` (one entry per take: steps, marks, checkpoint after).
-- `studio.config.sh` for the instance (source path, studio root, data dirs to checkpoint, services, ports,
-  build command, env).
+- A project folder (`walkthrough init <dir> --mode site|studio --url <baseUrl>` makes one) holding
+  `walkthrough.config.mjs` (base URL, viewport preset, fps, takes dir, adapter, scenes, `popups`, `dialogs`,
+  studio config), `scenes.json` (declarative steps) or `scenes.mjs` (one entry per take: steps, marks,
+  checkpoint after) and, for an app with agent turns or uploads, `app.mjs` (the adapter: sign-in, send a
+  message, wait for an agent turn, upload, app-specific waits).
+- Studio mode: `studio.config.sh` for the instance (source path, studio root, data dirs to checkpoint,
+  services, ports, build command, env).
+
+With the CLI every step below has a short form that prints the command it runs and records the result in
+`state.json`: `walkthrough explore`, `walkthrough capture-test`, `walkthrough studio up|checkpoint|restore`,
+`walkthrough take [scene…] [--auto] [--parallel N]` (each take's ok, accepted, sync, gaps and checkpoint go
+into `state.takes`). The direct `node recorder/…` commands are the fallback and take the same flags.
 
 ## Site mode (any URL, no studio)
 
@@ -45,7 +53,16 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
   `npm run site-test` in `recorder/` proves it end to end): copy both into the user's project and change
   `baseUrl`, `dismiss`, `blockUrls` and the steps. `takesDir` resolves next to the config, so the takes land in
   the project, not in the kit.
-- Look first without recording: `node recorder/tools/inspect.mjs --config <config> --path /page`.
+- **Map the site first** (read-only): `walkthrough explore [url] [--depth 2] [--max-pages 20]` (or
+  `node recorder/tools/explore.mjs <url> --config <config> --out <project>`). A same-site breadth-first crawl,
+  one page at a time, robots.txt honoured; it never clicks, types or submits, and skips download, mail,
+  sign-out and destructive links. It writes `tour-map.json` / `tour-map.md` (per page: landmarks, h1-h3, up
+  to 80 controls with role, name, text and box), `thumbs/` and `scenes.draft.json` (one scene per page:
+  `nav`, `wait quiet`, the h1 marked as `headline`, up to 5 clicks; destructive, consent and submit controls
+  listed under `_skipped`, never clicked). Edit the draft into `scenes.json`: cut, reorder, add typing and
+  scrolls, start each scene off camera. It follows links only: dialogs, tabs and client-side routes without
+  links are not mapped.
+- Look at one page without recording: `node recorder/tools/inspect.mjs --config <config> --path /page`.
 - Log in once with a **test account** outside any take and save the storage state; every take reuses it:
   `node recorder/tools/save-login.mjs --url <sign-in page> --until <URL part after sign-in> --out <project>/login.storage.json`
   (the owner types the password in the visible browser; never you). A public site with no login skips this.
@@ -55,6 +72,22 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
   element a caption or line will talk about (the mark records its visible text for the caption audit).
 - No checkpoints: keep scenes idempotent (tours, navigation, reversible settings), or reset state by hand
   between takes and note it in INDEX.md. Never submit real orders, payments, messages or public posts.
+- **Phone takes** (`viewport: "phone"`, 390x844 @3, 1170x2532 master, touch and mobile user agent): needed
+  for a 9:16 film; the film draws a neutral device bezel around them. Every take in one film shares one
+  viewport, so decide before the first take.
+- **New tabs, downloads, dialogs** (config or `--popups` / `--dialogs`): `popups: "same-tab"` (default:
+  `target=_blank` and `window.open` navigate the same page, logged as a `nav` with `popup: "same-tab"`),
+  `"follow"` (the screencast moves to the new tab: a hard cut on one clock, `nav` with `newTab: true`; the
+  old frame holds until the new page paints) or `"block"` (closed at once, `popup: "blocked"`). Downloads
+  are saved to `<take>/downloads/` and logged as `download` events with the causing step's label, so a
+  caption on that click can claim the file. `dialogs: "accept"` (default) or `"dismiss"` answers alert,
+  confirm, prompt and beforeunload at once, logged as `dialog` events; headless Chromium draws no dialog box,
+  so the footage shows none.
+- **Parallel takes** (site mode only): `walkthrough take --parallel N` (runner `--parallel N`) records
+  independent scenes N at a time, each in its own browser and take folder from a fresh page, `--auto`
+  implied. Refused with a `studio` in the config (one database, one clock). It starts no servers (all takes
+  use `baseUrl`), and two 2880x1620 screencasts load the machine: expect longer capture gaps, raise
+  `gate.maxGapMs` or record in sequence when takes fail on gaps. Scenes must not depend on each other.
 - Skip the studio steps below; everything else (capture test, rehearsal, read-back, truth checks, INDEX.md)
   applies unchanged.
 
@@ -68,10 +101,10 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
   untouched and the web is a production build (no dev indicator in the HTML).
 - [ ] **Sync before recording.** Diff the app repo against the clone's sources; if they differ, re-sync and
   rebuild (`studio/bin/tree.sh --build` per `studio/README.md`), restart, and only then record.
-- [ ] **Capture test** (once per machine or browser change), from the kit root:
-  `npm run setup` (recorder dependencies and Playwright Chromium), then
-  `node recorder/capture-test.mjs new 2 idle 30` (method `new|shell|headed`, scale, phase `idle|load|drift`,
-  seconds) and the `load` and `drift` phases. Accept the first method
+- [ ] **Capture test** (once per machine or browser change): `npm run setup` in the kit (recorder
+  dependencies and Playwright Chromium), then `walkthrough capture-test` (or
+  `node recorder/capture-test.mjs new 2 idle 30`: method `new|shell|headed`, scale, phase `idle|load|drift`,
+  seconds) and the `load` and `drift` phases; `walkthrough doctor --capture` runs an 8 s check. Accept the first method
   that passes the table in `docs/CAPTURE_TEST.md`; new-headless with GPU is the expected winner. Record the
   numbers. Also `node recorder/sample-take.mjs` and `node recorder/verify-dot.mjs takes/sample` for pointer
   sync if the editor needs a sample.
@@ -82,17 +115,18 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
   and `inspect.mjs` help map the UI.
 - [ ] **Rehearse** each agent turn on a throwaway restore. Record what the app does and how long it takes;
   change the storyboard or the prompt wording before the real pass, not after.
-- [ ] **Record the pass** in one browser session in story order:
-  `node recorder/takes/run.mjs --config <project>/walkthrough.config.mjs [scene ...] [--from N --to N] [--auto]`.
+- [ ] **Record the pass** in one browser session in story order: `walkthrough take [scene ...] [--from N
+  --to N] [--auto]` (or `node recorder/takes/run.mjs --config <project>/walkthrough.config.mjs …`).
   The runner pauses after each take and writes `status-N.json` and a contact sheet; read them, then write
   `<takesDir>/_runner/go-N.json` = `{"action": "next" | "redo" | "stop", "checkpoint"?, "restore"?}`.
   Flags (and env): `--base-url` (`WALKTHROUGH_BASE_URL`), `--takes` (`WALKTHROUGH_TAKES`), `--storage`
   (`WALKTHROUGH_STORAGE`), `--mode new|shell|headed` (`WALKTHROUGH_MODE`), `--studio-config` (`STUDIO_CONFIG`),
-  `--fresh`. Checkpoint after each take later takes depend on.
+  `--fresh`, `--popups`, `--dialogs`, `--parallel N`. Checkpoint after each take later takes depend on.
 - [ ] **Read back each take**: sync passed (logged times within one frame of the decoded flashes), unique fps
   inside animating stretches, gaps over 100 ms listed, and the truth checks: the result on screen matches the
   prompt on the visible format; images loaded (scroll below-the-fold previews into view); every counted item
-  seen; the clicked control and the thing that changes both inside the viewport.
+  seen; the clicked control and the thing that changes both inside the viewport; a followed tab (`newTab`)
+  painted before the scene goes on; each `download` has its file and bytes.
 - [ ] **Retake** from the take's checkpoint only for a wrong result on screen or a failed sync. A pickup take
   (no agent turn) can replace a short stretch; prefer folding the fix into the next full pass.
 - [ ] **INDEX.md**: `node recorder/takes/index-data.mjs --takes <dir>` plus the operator's notes:
@@ -101,13 +135,15 @@ Without sub-agents (most platforms other than Claude Code), do each named agent'
 
 ## Verification
 
-`take.json` of every take shows sync passed and frame size 2880x1620; INDEX.md truth checks are all "yes";
+`take.json` of every take shows sync passed and frame size 2880x1620 (1170x2532 for phone takes);
+`walkthrough state` lists every take ok and accepted; INDEX.md truth checks are all "yes";
 the studio stack is up on the last checkpoint; the owner's servers still run with the same pids.
 
 ## Outputs
 
-`<takes dir>/<take>/{master.mp4,events.json,take.json,verify/}`, `<takes dir>/INDEX.md`, checkpoints
-`CP0..CPn`, saved browser storage state.
+`<takes dir>/<take>/{master.mp4,events.json,take.json,verify/,downloads/}`, `<takes dir>/INDEX.md`,
+`tour-map.json` / `.md` and `scenes.json` when the site was mapped, checkpoints `CP0..CPn`, saved browser
+storage state, `state.takes` in `state.json`.
 
 ## Pitfalls
 
@@ -117,3 +153,5 @@ the studio stack is up on the last checkpoint; the owner's servers still run wit
 - Redesign result shown on the wrong format (C5); skeletons below the fold (C6); keyboard mode (C7).
 - The one-time link is consumed on first use; restoring CP0 makes it unused again (C13). Never print it.
 - Each agent turn costs money; keep to the budget and report turns used.
+- Parallel takes on a busy machine: capture gaps grow; record in sequence when it matters.
+- A followed tab is a hard cut; prefer `same-tab` unless the new tab is the point of the scene.

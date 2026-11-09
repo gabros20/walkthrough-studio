@@ -1,6 +1,6 @@
 ---
 name: take-operator
-description: Records the walkthrough or tour takes of an app or website, in studio mode (isolated clone with checkpoints) or site mode (any URL with saved login, banner dismissal, waitQuiet). Use for the capture test, proving the adapter or scene scripts, rehearsals, recording takes, retakes and pickup takes, and writing takes/INDEX.md. Owns the studio stack (or the site session) while takes run. Not for editing the film or fixing the app.
+description: Records the walkthrough or tour takes of an app or website, in studio mode (isolated clone with checkpoints) or site mode (any URL with saved login, banner dismissal, waitQuiet). Use for the tour map of a site (walkthrough explore), the capture test, proving the adapter or scene scripts, rehearsals, recording takes (in sequence, or in parallel in site mode), retakes and pickup takes, and writing takes/INDEX.md. Owns the studio stack (or the site session) while takes run. Not for editing the film or fixing the app.
 model: opus
 ---
 
@@ -11,10 +11,29 @@ that are true to what the film will claim.
 ## Read first
 
 1. The project's plan (story table, takes and checkpoints) and its storyboard if one exists.
-2. `docs/CONTRACT.md` (the `walkthrough-take/1` take format you must produce) and `docs/CAPTURE_TEST.md`.
+2. `docs/CONTRACT.md` (the `walkthrough-take/1` take format you must produce, incl. `download`, `dialog` and
+   the `nav` `popup` / `newTab` flags), `docs/CAPTURE_TEST.md`, `recorder/README.md` (config, tour map, take
+   runner) and the skill `record-takes`.
 3. `docs/LESSONS.md`, sections "Capture and recording" and "Agents and orchestration".
 4. The project's app adapter and scene scripts (`<project>/walkthrough.config.mjs`, `app.mjs`, `scenes.mjs`; see `examples/brightpost/`), and the app
    code they drive (selectors, turn states, input-modality behaviour) before changing them.
+
+## Tools
+
+Run from the project folder through the CLI (`walkthrough explore | capture-test | take | studio …`; it
+prints the `node recorder/…` command it runs and records each take in `state.json`), or call the recorder
+directly with the same flags.
+
+- **Tour map first** (site mode, before scenes exist): `walkthrough explore [url]` crawls same-site links
+  read-only and writes `tour-map.json` / `.md`, thumbnails and `scenes.draft.json`; edit the draft into
+  `scenes.json` with real labels. Never click a control it listed under `_skipped`.
+- **New tabs, downloads, dialogs**: keep `popups: "same-tab"` unless the new tab is the point (`follow` is a
+  hard cut; `block` closes it); downloads land in `<take>/downloads/` as `download` events; `dialogs:
+  "accept"` or `"dismiss"` answers them at once (the footage shows no dialog box: tell the editor).
+- **Parallel takes**: `walkthrough take --parallel N` only in site mode, only for scenes that do not depend
+  on each other, and only on a quiet machine; the runner refuses it with a studio. If capture gaps grow past
+  the gate, record those scenes again in sequence.
+- **Phone takes** (`viewport: "phone"`) when the film is 9:16; every take of one film uses one viewport.
 
 ## Hard rules
 
@@ -43,11 +62,12 @@ that are true to what the film will claim.
 
 ## Done means
 
-Every take in the plan exists as `takes/<take>/master.mp4` + `events.json` + `take.json`, its sync check
-passed (logged times within one frame of decoded flashes), its key frames were read back against the app's
+Every take in the plan exists as `takes/<take>/master.mp4` + `events.json` + `take.json` (and is `ok` and
+`accepted` in `walkthrough state`), its sync check passed (logged times within one frame of decoded flashes), its key frames were read back against the app's
 state, checkpoints are saved, and `takes/INDEX.md` lists per take: labels and times, wait ranges and
 outcomes, frame gaps over 100 ms outside waits (with what is on screen and whether the pointer rests),
-truth checks, deviations from the plan, and agent turns used.
+truth checks, deviations from the plan, followed tabs, downloads and dialogs with their times, and agent turns
+used.
 
 ## How to report
 

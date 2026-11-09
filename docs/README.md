@@ -15,8 +15,11 @@ and read the docs their step needs. Paths: `$KIT` is the kit, `$P` a film's proj
 | Doc | Task |
 |---|---|
 | [INSTALL.md](INSTALL.md) | Install the skills (and agents, where the platform has them) on Claude Code, skills.sh, Codex, Cursor, Antigravity or Hermes, and get the kit tooling. |
+| [CAPTIONS.md](CAPTIONS.md) | Write the captions: the tool briefs every placeholder (intent, marks, window, word budget), an agent fills the answers, the tool checks claims and writes them into the storyboard. |
 | [ELEVENLABS.md](ELEVENLABS.md) | Generate the music take and the voiceover take, through the connector or with an API key. |
-| [DELIVERY.md](DELIVERY.md) | Build, check and zip the delivery package (also the reference for its structure and encodes). |
+| [VOICE.md](VOICE.md) | The voiceover with the scripted tools: per-line generation and its cache, the pronunciation lexicon, language twins, the listening proxy. |
+| [REVIEW.md](REVIEW.md) | Make the review bundle for a render (sheets, cut strips, audit, holds, audio, costs, `REVIEW.md`) and use its static review page to note findings by time. |
+| [DELIVERY.md](DELIVERY.md) | Build the outputs with the presets (`sales`, `web`, `social`, `docs`), check and zip the delivery package (also the reference for its structure and encodes). |
 | [`skills/*/SKILL.md`](../skills/) | The agent workflows step by step: `walkthrough-film` (the whole job), `record-takes`, `build-film`, `review-film`, `film-sound`, `voiceover`, `deliver-package`. |
 | [`studio/README.md`](../studio/README.md) | Set up a studio instance, checkpoint and restore it. |
 | [`voiceover/README.md`](../voiceover/README.md) | Write, generate, place and re-fit a voiceover. |
@@ -27,13 +30,15 @@ and read the docs their step needs. Paths: `$KIT` is the kit, `$P` a film's proj
 
 | Doc | Defines |
 |---|---|
+| [CLI.md](CLI.md) | The `walkthrough` CLI: every command, what it runs and writes, the generated usage of each, the project and `state.json` schema, the disk policy, exit codes, writing a command. |
 | [CONTRACT.md](CONTRACT.md) | The take format (`walkthrough-take/1`): folder, `master.mp4`, clock, `events.json` event types, `take.json`, `takes/INDEX.md`, the take API. |
-| [STORYBOARD.md](STORYBOARD.md) | `storyboard.json`: the mapping, anchors and refs, scene keys, what the build writes, drafting and the audit. |
-| [LOOK.md](LOOK.md) | The design system: canvas, window, type, accent, lockup, pointer, camera, spotlight, captions, eases, transitions, cards, banned list, honesty rules. |
-| [`recorder/README.md`](../recorder/README.md) | Recorder config keys, viewport presets, adapter and scenes modules, site-mode steps and targets, the take runner, driving rules. |
+| [STORYBOARD.md](STORYBOARD.md) | `storyboard.json`: the mapping, anchors and refs, scene keys, pointer at cuts, script-first timing (`--fit-audio`), what the build writes, drafting and the audit. |
+| [MODELS.md](MODELS.md) | The model for each tier (large, medium, small) on Claude Code, Codex, Antigravity, Cursor and Hermes, how to set it globally and per sub-agent, with sources and the date read. |
+| [LOOK.md](LOOK.md) | The design system: canvas, window, type, accent, lockup, pointer, camera, spotlight, captions, eases, transitions, cards, aspect presets (16:9, 9:16, 1:1) and the phone bezel, banned list, honesty rules. |
+| [`recorder/README.md`](../recorder/README.md) | Recorder config keys, viewport presets, new tabs, downloads and dialogs, adapter and scenes modules, site-mode steps and targets, the tour map, the take runner and parallel takes, driving rules. |
 | [`film/README.md`](../film/README.md) | Project folders, film commands, brand file, creatives, components (`lib/`), scripts. |
 | [`sound/README.md`](../sound/README.md) | `build-sound.mjs` options and outputs, `music.json`, the bed fit, effects, voiceover mix, the delivery guard. |
-| [`delivery/README.md`](../delivery/README.md) | Delivery scripts, their flags and `package.config.json`. |
+| [`delivery/README.md`](../delivery/README.md) | Delivery scripts, their flags, the presets (`delivery/presets.json`) and `package.config.json`. |
 
 ## Explanation (understanding)
 
@@ -43,7 +48,8 @@ and read the docs their step needs. Paths: `$KIT` is the kit, `$P` a film's proj
 | [INSTALL-RESEARCH.md](INSTALL-RESEARCH.md) | What each of the six agent platforms loads from this repo, the verified commands and output, and the compatibility matrix behind `INSTALL.md`. |
 | [CAPTURE_TEST.md](CAPTURE_TEST.md) | How the capture method was chosen, the measurements, and how to re-run the test. |
 | [LESSONS.md](LESSONS.md) | What went wrong on the first film, the fix for each, and where the fix lives. Read before planning. |
-| [ROADMAP.md](ROADMAP.md) | What is planned and not built, by value per effort. |
+| [DESIGN-batch-2.md](DESIGN-batch-2.md) | The design of the 0.2.0 work: the project model and `state.json`, one CLI, doctor, the disk policy, tour map, tabs and parallel takes, pointer bridging, aspects, caption drafting, script-first timing, the review bundle, voice, sound and delivery presets, the golden test. |
+| [ROADMAP.md](ROADMAP.md) | What was planned, what is now folded in, and what is still open, by value per effort. |
 | [adr/](adr/) | Architecture decision records: the hard-to-reverse choices and the alternatives rejected (below). |
 
 ### Decisions

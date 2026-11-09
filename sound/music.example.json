@@ -1,0 +1,22 @@
+{
+  "note": "Measured facts about one music take. Times are seconds in the audio file. Fill it in with sound/analysis/*.py (see sound/README.md) and listen; never guess the grid. Keys marked optional may be left out.",
+  "file": "music-take1.mp3",
+  "bpm": 96,
+  "beatsPerBar": 4,
+  "gridOffset": 0,
+  "loopBars": 4,
+  "duration": 135.72,
+  "sections": [
+    { "name": "intro", "from": 0, "to": 10, "note": "no drums" },
+    { "name": "groove", "from": 10, "to": 110, "note": "the repeating part: whole loops of loopBars bars" },
+    { "name": "outro", "from": 110, "to": 125 },
+    { "name": "final", "from": 125, "to": 127.5, "note": "the held last chord" },
+    { "name": "tail", "from": 127.5, "to": 135.72, "note": "its release" }
+  ],
+  "grooveEntry": 10,
+  "finalChord": 125,
+  "spliceWindow": { "from": 12.5, "to": 107.5, "note": "downbeats where a loop splice may land: one bar into the groove to one bar before it ends" },
+  "shortOutro": { "a": 120, "b": 125, "note": "optional: a jump inside the outro (a -> b) that still sounds like an ending, used only when the full outro cannot land the final chord on the end card" },
+  "beat": 0.625,
+  "bar": 2.5
+}

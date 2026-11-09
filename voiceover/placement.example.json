@@ -1,0 +1,67 @@
+{
+  "film": "my-walkthrough",
+  "duration": 60.0,
+  "sampleRate": 48000,
+  "source": "narration-take1.mp3",
+  "fades": {
+    "in": 0.01,
+    "out": 0.04
+  },
+  "note": "Written by voiceover/place.py. start/end: film seconds of the placed clip (incl. fades); speechStart/speechEnd: the transcript's first and last word; sourceStart/sourceEnd: the clip's span in the narration take; windowStart/windowEnd: the line's window from script.json; slack = windowEnd - end. build-sound.mjs reads id, text, start, end (it ducks the music from start to end).",
+  "lines": [
+    {
+      "id": 1,
+      "key": "L01",
+      "scene": "title",
+      "text": "One request in. A finished result out.",
+      "start": 1.125,
+      "end": 5.58,
+      "speechStart": 1.15,
+      "speechEnd": 5.5,
+      "sourceStart": 0.025,
+      "sourceEnd": 4.48,
+      "windowStart": 1.0,
+      "windowEnd": 6.6,
+      "slack": 1.02,
+      "estDuration": 4.52,
+      "measuredDuration": 4.455,
+      "note": ""
+    },
+    {
+      "id": 2,
+      "key": "L02",
+      "scene": "s1",
+      "text": "They sign in with their own link.",
+      "start": 7.41,
+      "end": 9.92,
+      "speechStart": 7.45,
+      "speechEnd": 9.84,
+      "sourceStart": 4.82,
+      "sourceEnd": 7.33,
+      "windowStart": 7.3,
+      "windowEnd": 11.28,
+      "slack": 1.36,
+      "estDuration": 3.27,
+      "measuredDuration": 2.51,
+      "note": ""
+    },
+    {
+      "id": 3,
+      "key": "L03",
+      "scene": "s1",
+      "text": "Their logo, added once, goes on everything.",
+      "start": 11.89,
+      "end": 15.56,
+      "speechStart": 11.93,
+      "speechEnd": 15.48,
+      "sourceStart": 7.7,
+      "sourceEnd": 11.37,
+      "windowStart": 11.78,
+      "windowEnd": 16.05,
+      "slack": 0.49,
+      "estDuration": 3.68,
+      "measuredDuration": 3.67,
+      "note": ""
+    }
+  ]
+}

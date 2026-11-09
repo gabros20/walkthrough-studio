@@ -1,0 +1,259 @@
+{
+ "_comment": "The real Kleber Content AI package (6 Nov 2026), expressed as a delivery config. Paths use ${KLEBER_REPO} (a kleber-content-ai checkout holding videos/ and apps/web/public/brand/), expanded from the environment by delivery/lib.py; copy and edit for a new project.",
+ "product": "Kleber-Content-AI",
+ "out": "../../../out/Kleber-Content-AI_Demo-Package",
+ "brand": {
+  "name": "Kleber",
+  "accent": "#FD000D",
+  "ink": "#141414",
+  "paper": "#F4F2EE",
+  "logo": "${KLEBER_REPO}/apps/web/public/brand/kleber-logo-black.png",
+  "eyebrow": "Demo package",
+  "footer": "Kleber Content AI · demo package · November 2026. Summit Tyre Centre and the other dealers shown are fictional demo accounts."
+ },
+ "films": [
+  {
+   "variant": "Captions",
+   "master": "${KLEBER_REPO}/videos/kleber-content-ai-walkthrough-v2.mp4",
+   "srt": "${KLEBER_REPO}/videos/kleber-content-ai-walkthrough-v2.srt",
+   "edl": "${KLEBER_REPO}/videos/walkthrough-v2/film/renders/final.edl.json",
+   "poster_t": 6.0,
+   "speech": false
+  },
+  {
+   "variant": "Voiceover",
+   "master": "${KLEBER_REPO}/videos/kleber-content-ai-walkthrough-v2-voiceover.mp4",
+   "srt": "${KLEBER_REPO}/videos/kleber-content-ai-walkthrough-v2-voiceover.srt",
+   "edl": "${KLEBER_REPO}/videos/walkthrough-v2/film/renders/final-vo.edl.json",
+   "poster_t": 6.0,
+   "speech": true
+  }
+ ],
+ "clips": [
+  {
+   "name": "00_Title",
+   "scenes": [
+    "title"
+   ]
+  },
+  {
+   "name": "01_Set-up-once",
+   "scenes": [
+    "s1"
+   ]
+  },
+  {
+   "name": "02_One-sentence-three-options",
+   "scenes": [
+    "s2"
+   ]
+  },
+  {
+   "name": "03_Choose-and-edit-on-the-image",
+   "scenes": [
+    "s3a",
+    "s3b"
+   ]
+  },
+  {
+   "name": "04_New-layout-by-request",
+   "scenes": [
+    "s4"
+   ]
+  },
+  {
+   "name": "05_Six-platforms-eighteen-formats",
+   "scenes": [
+    "s5"
+   ]
+  },
+  {
+   "name": "06_Languages-and-translation",
+   "scenes": [
+    "s6a",
+    "s6b"
+   ]
+  },
+  {
+   "name": "07_Teach-it-a-rule",
+   "scenes": [
+    "s7"
+   ]
+  },
+  {
+   "name": "08_Brand-kit-and-memory",
+   "scenes": [
+    "s8"
+   ]
+  },
+  {
+   "name": "09_Second-campaign-follows-the-rules",
+   "scenes": [
+    "s9a",
+    "s9b"
+   ]
+  },
+  {
+   "name": "10_Export-the-kit",
+   "scenes": [
+    "s10"
+   ]
+  },
+  {
+   "name": "11_End-card",
+   "scenes": [
+    "end"
+   ]
+  }
+ ],
+ "stills": {
+  "from": "Voiceover",
+  "crop": {
+   "band": 180,
+   "window": [
+    192,
+    36,
+    1536,
+    864
+   ],
+   "margin": 24
+  },
+  "items": [
+   {
+    "name": "00_Title-card",
+    "t": 6.0,
+    "crop": "full"
+   },
+   {
+    "name": "01a_Set-up_Confirm-company",
+    "t": 8.5,
+    "crop": "band"
+   },
+   {
+    "name": "01b_Set-up_Logo-saved",
+    "t": 13.0,
+    "crop": "band"
+   },
+   {
+    "name": "02a_Ask_One-sentence-request",
+    "t": 26.6,
+    "crop": "band"
+   },
+   {
+    "name": "02b_Ask_Three-options-to-choose-from",
+    "t": 37.8,
+    "crop": "band"
+   },
+   {
+    "name": "03a_Edit_Headline-edit-on-the-image",
+    "t": 56.0,
+    "crop": "band"
+   },
+   {
+    "name": "03b_Edit_Edited-headline-on-the-image",
+    "t": 58.9,
+    "crop": "band"
+   },
+   {
+    "name": "04a_Refine_New-layout-by-request",
+    "t": 72.7,
+    "crop": "band"
+   },
+   {
+    "name": "04b_Refine_New-layout-close-up",
+    "t": 73.8,
+    "crop": "band"
+   },
+   {
+    "name": "05a_Formats_Facebook-feed-post",
+    "t": 85.5,
+    "crop": "band"
+   },
+   {
+    "name": "05b_Formats_TikTok-9x16",
+    "t": 87.3,
+    "crop": "band"
+   },
+   {
+    "name": "05c_Formats_LinkedIn-post",
+    "t": 88.5,
+    "crop": "band"
+   },
+   {
+    "name": "05d_Formats_Display-ad-medium-rectangle",
+    "t": 90.5,
+    "crop": "band"
+   },
+   {
+    "name": "05e_Formats_Newsletter-email-banner",
+    "t": 93.3,
+    "crop": "band"
+   },
+   {
+    "name": "06a_Languages_German-post",
+    "t": 111.5,
+    "crop": "band"
+   },
+   {
+    "name": "06b_Languages_German-newsletter",
+    "t": 113.5,
+    "crop": "band"
+   },
+   {
+    "name": "07a_Teach_Noting-that-for-next-time",
+    "t": 120.7,
+    "crop": "band"
+   },
+   {
+    "name": "07b_Teach_Rule-saved-as-a-note",
+    "t": 124.4,
+    "crop": "band"
+   },
+   {
+    "name": "08a_Brand-kit_Colour-applied-to-preview",
+    "t": 132.2,
+    "crop": "band"
+   },
+   {
+    "name": "08b_Brand-kit_Button-shape-pill",
+    "t": 133.3,
+    "crop": "band"
+   },
+   {
+    "name": "08c_Brand-kit_Logo-with-divider",
+    "t": 138.3,
+    "crop": "band"
+   },
+   {
+    "name": "08d_Brand-kit_Saved-and-assistant-notes",
+    "t": 145.5,
+    "crop": "band"
+   },
+   {
+    "name": "09a_Second-campaign_Make-every-kilometre-smile",
+    "t": 157.5,
+    "crop": "band"
+   },
+   {
+    "name": "09b_Second-campaign_Logo-first-and-headline",
+    "t": 162.0,
+    "crop": "band"
+   },
+   {
+    "name": "09c_Second-campaign_Sign-off-added-automatically",
+    "t": 165.8,
+    "crop": "band"
+   },
+   {
+    "name": "10_Export_Download-sheet",
+    "t": 172.8,
+    "crop": "band"
+   },
+   {
+    "name": "11_End-card",
+    "t": 179.5,
+    "crop": "full"
+   }
+  ]
+ }
+}

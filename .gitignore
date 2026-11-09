@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+
+# media: footage, renders, audio, packages never go into git
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.zip
+/takes/
+/out/
+film/renders/
+film/review/
+film/assets/footage/
+.hyperframes/
+
+# studio instances: databases, clones, run state, one-time links
+studio/**/data/
+studio/**/tree/
+studio/**/run/
+studio/**/checkpoints/
+**/link.txt
+
+# saved browser logins (storageState): more patterns under "secrets" below
+*.storage.json
+*storageState*.json
+.auth/
+
+# secrets (saved browser logins are credentials too)
+.env
+.env.*
+!.env.example
+**/storageState*.json
+**/storage-state*.json
+**/storage.json
+
+# OS / editor
+.DS_Store
+*.log
+__pycache__/
+
+# recorder tools output (inspect.mjs default)
+/inspect/

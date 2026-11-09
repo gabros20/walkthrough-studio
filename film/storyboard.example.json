@@ -1,0 +1,175 @@
+{
+  "note": "Example storyboard: the component demo over the recorder's sample take (takes/sample). Three stage scenes, the typing compressed as one labelled time-lapse range to prove the mapping. Anchors are { ref: 'type:label', offset, edge }; bare numbers are source seconds. Schema: docs/STORYBOARD.md.",
+  "takesDir": "../takes",
+  "clipFps": 30,
+  "title": {
+    "duration": 8
+  },
+  "end": {
+    "duration": 7
+  },
+  "target": {
+    "min": 27,
+    "max": 31
+  },
+  "scenes": [
+    {
+      "id": "a",
+      "take": "sample",
+      "target": 9.0,
+      "ranges": [
+        {
+          "from": {
+            "ref": "sync:start",
+            "offset": 0.2
+          },
+          "to": {
+            "ref": "type:prompt text"
+          }
+        },
+        {
+          "from": {
+            "ref": "type:prompt text"
+          },
+          "to": {
+            "ref": "type:prompt text",
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 1.2,
+            "label": "Time-lapse"
+          }
+        },
+        {
+          "from": {
+            "ref": "type:prompt text",
+            "edge": "end"
+          },
+          "to": {
+            "ref": "down:edge chip",
+            "offset": 1.0
+          }
+        }
+      ],
+      "pointer": {
+        "showAt": {
+          "ref": "move:prompt field"
+        }
+      },
+      "camera": [
+        {
+          "at": {
+            "ref": "down:prompt field",
+            "offset": -0.6
+          },
+          "box": "down:prompt field",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "type:prompt text",
+            "edge": "end",
+            "offset": 0.05
+          },
+          "wide": true
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:status line",
+          "start": {
+            "ref": "mark:status line"
+          },
+          "duration": 1.2
+        }
+      ],
+      "captions": [
+        {
+          "text": "Describe the post in your own words",
+          "at": {
+            "ref": "down:prompt field",
+            "offset": -0.2
+          },
+          "hold": 2.6,
+          "variant": "wipe"
+        },
+        {
+          "text": "Three versions to choose from",
+          "at": {
+            "ref": "down:option 2",
+            "offset": -0.2
+          },
+          "hold": 2.1,
+          "variant": "words"
+        }
+      ],
+      "exit": {
+        "type": "push",
+        "ref": "down:edge chip"
+      }
+    },
+    {
+      "id": "b",
+      "take": "sample",
+      "target": 2.5,
+      "ranges": [
+        {
+          "from": {
+            "ref": "up:edge chip",
+            "offset": 0.12
+          },
+          "to": {
+            "ref": "sync:end",
+            "offset": -0.13
+          }
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:card 14",
+          "start": {
+            "ref": "mark:card 14"
+          },
+          "end": {
+            "ref": "sync:end",
+            "offset": -0.13
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Every campaign stays in your history",
+          "at": {
+            "ref": "mark:card 14",
+            "offset": -0.3
+          },
+          "hold": 2.4,
+          "variant": "tick"
+        }
+      ],
+      "exit": {
+        "type": "whip"
+      }
+    },
+    {
+      "id": "c",
+      "take": "sample",
+      "target": 2.0,
+      "ranges": [
+        {
+          "from": {
+            "ref": "type:prompt text",
+            "offset": 1.68
+          },
+          "to": {
+            "ref": "type:prompt text",
+            "offset": 3.68
+          }
+        }
+      ],
+      "exit": {
+        "type": "hard"
+      }
+    }
+  ]
+}

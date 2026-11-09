@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tyre finder</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 -apple-system, Helvetica, Arial, sans-serif; color: #141414; background: #fafaf9; }
+  header { padding: 18px 24px; background: #fff; border-bottom: 1px solid #e7e5e4; font-weight: 700; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 24px 320px; }
+  h1 { font-size: 40px; line-height: 1.1; margin: 24px 0 12px; }
+  .lead { color: #57534e; margin: 0 0 28px; }
+  form { display: flex; gap: 10px; }
+  input { flex: 1; height: 48px; padding: 0 14px; font: inherit; border: 1px solid #d6d3d1; border-radius: 12px; }
+  button { height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: #FD000D; color: #fff; font: 600 16px/1 inherit; cursor: pointer; }
+  #results { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  #results li { background: #fff; border: 1px solid #e7e5e4; border-radius: 14px; padding: 18px 20px; cursor: pointer; animation: in .3s ease-out both; }
+  #results li.sel { border-color: #FD000D; background: #fff1f1; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+  #consent { position: fixed; left: 0; right: 0; bottom: 0; padding: 18px 24px; background: #1c1917; color: #fff; display: flex; gap: 16px; align-items: center; justify-content: space-between; z-index: 10; }
+  #consent button { background: #fff; color: #1c1917; }
+  @media (max-width: 600px) { h1 { font-size: 30px; } form { flex-direction: column; } input { flex: none; } }
+</style>
+</head>
+<body>
+<header>Tyre finder</header>
+<main>
+  <h1>Find a tyre for this winter</h1>
+  <p class="lead">Search the range, compare grip and noise, and book a fitting slot.</p>
+  <form id="f"><input id="q" placeholder="Search tyres" aria-label="Search tyres"><button type="submit">Search</button></form>
+  <ul id="results" aria-label="Results"></ul>
+</main>
+<div id="consent" role="dialog" aria-label="Cookies"><span>We use cookies to measure traffic.</span><button id="accept">Accept all</button></div>
+<script>
+  // Analytics beacon: site-test blocks it with blockUrls and checks the server never saw it.
+  fetch('/analytics/collect?page=site').catch(() => {});
+  document.getElementById('accept').onclick = () => document.getElementById('consent').remove();
+  document.getElementById('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = document.getElementById('q').value;
+    const items = await (await fetch('/api/search?q=' + encodeURIComponent(q))).json();
+    const ul = document.getElementById('results');
+    ul.innerHTML = '';
+    // Rows arrive one by one (DOM keeps changing for ~0.8 s after the response).
+    for (const [i, it] of items.entries()) {
+      await new Promise((r) => setTimeout(r, 100));
+      const li = document.createElement('li');
+      li.textContent = `Result ${i + 1}: ${it}`;
+      li.onclick = () => { ul.querySelectorAll('li').forEach((x) => x.classList.toggle('sel', x === li)); };
+      ul.appendChild(li);
+    }
+  });
+</script>
+</body>
+</html>

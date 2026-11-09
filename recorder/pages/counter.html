@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Capture test</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; font-family: -apple-system, Helvetica, Arial, sans-serif; overflow: hidden; overflow-anchor: none; }
+  #bits, #num, #red, #mover, #spinner, #load { position: fixed !important; }
+  #bits { position: absolute; left: 0; top: 0; display: flex; }
+  #bits i { width: 40px; height: 40px; display: block; background: #fff; }
+  #bits i.on { background: #000; }
+  #num { position: absolute; left: 1100px; top: 0; font: 700 34px/40px Menlo, monospace; color: #111; }
+  #red { position: absolute; left: 40px; top: 100px; width: 200px; height: 200px; background: #FD000D; }
+  #mover { position: absolute; left: 300px; top: 120px; width: 120px; height: 120px; border-radius: 24px; background: #141414; }
+  #spinner { position: absolute; left: 1250px; top: 120px; width: 120px; height: 120px; border: 10px solid #ddd; border-top-color: #FD000D; border-radius: 50%; animation: spin 1s linear infinite; box-sizing: border-box; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #load { position: absolute; left: 40px; top: 330px; right: 40px; bottom: 20px; display: none; gap: 16px; overflow: hidden; }
+  #load > * { min-height: 0; overflow: hidden; }
+  body.load #load { display: grid; grid-template-columns: 1fr 1fr 1.2fr; grid-template-rows: 100%; }
+  #cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; align-content: start; }
+  .card { height: 52px; border-radius: 10px; background: #f2f2f2; transition: transform 300ms cubic-bezier(.2,.8,.2,1), opacity 300ms, box-shadow 300ms, background-color 300ms; }
+  .card.on { transform: translateY(-6px) scale(1.04); box-shadow: 0 10px 24px rgba(0,0,0,.18); background: #ffe3e4; opacity: .85; }
+  #img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; background: #eee; }
+  #stream { overflow: hidden; font: 15px/22px -apple-system, Helvetica, Arial, sans-serif; color: #222; padding: 12px; border-radius: 14px; background: #fafafa; }
+  #stream p { margin: 0 0 10px; }
+</style>
+</head>
+<body>
+<div id="bits"></div>
+<div id="num">0</div>
+<div id="red"></div>
+<div id="mover"></div>
+<div id="spinner"></div>
+<div id="load"><div id="cards"></div><div><img id="img" alt=""></div><div id="stream"></div></div>
+<script>
+// Frame identity: every animation frame writes its number as 24 black/white blocks.
+// Block 0 is always black and block 1 always white (calibration), blocks 2..25 are the counter, MSB first.
+const BITS = 24;
+const bits = document.getElementById('bits');
+const cells = [];
+for (let i = 0; i < BITS + 2; i++) { const c = document.createElement('i'); bits.appendChild(c); cells.push(c); }
+cells[0].className = 'on';
+const num = document.getElementById('num');
+const mover = document.getElementById('mover');
+let n = 0;
+window.__frames = () => n;
+function frame(t) {
+  n++;
+  for (let b = 0; b < BITS; b++) cells[2 + b].className = (n >> (BITS - 1 - b)) & 1 ? 'on' : '';
+  num.textContent = n;
+  mover.style.transform = `translateX(${(t * 0.4) % 760}px)`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+if (location.hash === '#load') {
+  document.body.classList.add('load');
+  // CSS transitions.
+  const cards = document.getElementById('cards');
+  for (let i = 0; i < 60; i++) { const c = document.createElement('div'); c.className = 'card'; cards.appendChild(c); }
+  let k = 0;
+  setInterval(() => { k++; [...cards.children].forEach((c, i) => c.classList.toggle('on', (i + k) % 3 === 0)); }, 400);
+  // Image decodes: a pool of 1600x1200 JPEGs is made up front (off the clock); every 700 ms a
+  // fresh object URL of one of them is shown, which forces a new decode, as the app's creatives do.
+  const img = document.getElementById('img');
+  const pool = [];
+  async function make(hue) {
+    const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1200;
+    const g = cv.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 1600, 1200);
+    grad.addColorStop(0, `hsl(${hue},70%,55%)`); grad.addColorStop(1, `hsl(${(hue + 120) % 360},70%,35%)`);
+    g.fillStyle = grad; g.fillRect(0, 0, 1600, 1200);
+    for (let i = 0; i < 400; i++) { g.fillStyle = `hsla(${(hue + i * 7) % 360},80%,60%,.35)`; g.beginPath(); g.arc((i * 397) % 1600, (i * 211) % 1200, 20 + (i % 60), 0, 7); g.fill(); }
+    return new Promise((r) => cv.toBlob(r, 'image/jpeg', 0.9));
+  }
+  (async () => {
+    for (let h = 0; h < 6; h++) pool.push(await make(h * 60));
+    let k2 = 0;
+    setInterval(() => {
+      const url = URL.createObjectURL(pool[k2++ % pool.length]);
+      const old = img.src; img.src = url; if (old) setTimeout(() => URL.revokeObjectURL(old), 2000);
+    }, 700);
+  })();
+  // Streaming text, about 40 words per second.
+  const stream = document.getElementById('stream');
+  const words = 'Winter tyres keep their grip below seven degrees because the compound stays soft and the sipes bite into snow and slush so braking distances stay short when the first frost arrives this weekend'.split(' ');
+  let p = document.createElement('p'); stream.appendChild(p); let w = 0;
+  setInterval(() => {
+    p.textContent += (p.textContent ? ' ' : '') + words[w++ % words.length];
+    if (w % 45 === 0) { p = document.createElement('p'); stream.appendChild(p); }
+    while (stream.children.length > 14) stream.firstChild.remove();
+    stream.scrollTop = stream.scrollHeight;
+  }, 25);
+  // Main-thread work like a React commit: 25-45 ms blocks every 250 ms.
+  let j = 0;
+  setInterval(() => { const end = performance.now() + 25 + (j++ % 5) * 5; let x = 0; while (performance.now() < end) x += Math.sqrt(x + 1); window.__sink = x; }, 250);
+  // A worker spinning at about 60% duty.
+  const src = 'setInterval(()=>{const e=performance.now()+30;let x=0;while(performance.now()<e)x+=Math.sqrt(x+1)},50)';
+  new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sample studio</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #f5f5f4; font: 15px/1.4 -apple-system, Helvetica, Arial, sans-serif; color: #141414; overflow: hidden; }
+  header { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: #fff; border-bottom: 1px solid #e7e5e4; }
+  header b { font-size: 18px; }
+  header .tag { margin-left: auto; font-size: 13px; color: #78716c; }
+  main { display: grid; grid-template-columns: 1fr 460px; gap: 16px; padding: 16px; height: calc(100% - 56px); }
+  .pane { background: #fff; border-radius: 16px; border: 1px solid #e7e5e4; padding: 20px; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  h2 { margin: 0; font-size: 17px; }
+  .options { display: flex; gap: 12px; }
+  .opt { flex: 1; height: 140px; border-radius: 14px; border: 2px solid #e7e5e4; background: #fafaf9; font: 600 16px/1 inherit; cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s, background-color .2s; }
+  .opt:hover { background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
+  .opt.sel { border-color: #FD000D; background: #fff1f1; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+  .chip { flex: none; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid #d6d3d1; background: #fff; font: 500 14px/1 inherit; cursor: pointer; transition: background-color .15s; }
+  .chip:hover { background: #f5f5f4; }
+  .chip.on { background: #141414; color: #fff; border-color: #141414; }
+  .composer { margin-top: auto; display: flex; gap: 10px; align-items: flex-end; padding: 10px; border-radius: 16px; background: #f5f5f4; }
+  textarea { flex: 1; resize: none; height: 72px; border: 1px solid #d6d3d1; border-radius: 12px; padding: 12px 14px; font: 16px/1.4 inherit; outline: none; background: #fff; }
+  textarea:focus { border-color: #FD000D; box-shadow: 0 0 0 3px rgba(253,0,13,.15); }
+  .send { height: 44px; padding: 0 20px; border: 0; border-radius: 12px; background: #FD000D; color: #fff; font: 600 15px/1 inherit; cursor: pointer; transition: background-color .15s, transform .1s; }
+  .send:hover { background: #d9000b; }
+  .send:active { transform: scale(.97); }
+  #status { height: 22px; font-size: 14px; color: #15803d; opacity: 0; transition: opacity .3s; }
+  #status.show { opacity: 1; }
+  .list { overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+  .card { flex: none; height: 64px; border-radius: 12px; background: #fafaf9; border: 1px solid #e7e5e4; display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .card i { width: 36px; height: 36px; border-radius: 8px; background: #e7e5e4; display: block; }
+</style>
+</head>
+<body>
+<header><b>Sample studio</b><span class="tag">Recorder test page</span></header>
+<main>
+  <section class="pane" id="left">
+    <h2>Pick an option</h2>
+    <div class="options">
+      <button class="opt" id="opt1">Option 1</button>
+      <button class="opt" id="opt2">Option 2</button>
+      <button class="opt" id="opt3">Option 3</button>
+    </div>
+    <div class="chips edge-fade-x" id="chips"></div>
+    <div id="status">Saved</div>
+    <form class="composer" id="composer">
+      <textarea id="prompt" placeholder="Describe the post"></textarea>
+      <button class="send" id="send" type="submit">Send</button>
+    </form>
+  </section>
+  <section class="pane">
+    <h2>History</h2>
+    <div class="list" id="list"></div>
+  </section>
+</main>
+<script>
+  for (const b of document.querySelectorAll('.opt')) b.addEventListener('click', () => {
+    document.querySelectorAll('.opt').forEach((o) => o.classList.toggle('sel', o === b));
+  });
+  const chips = document.getElementById('chips');
+  ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'Display ads', 'Newsletter', 'Story 9:16', 'Feed 4:5', 'Square 1:1', 'Banner', 'Leaderboard', 'Skyscraper']
+    .forEach((t, i) => { const c = document.createElement('button'); c.className = 'chip'; c.id = `chip${i}`; c.textContent = t; c.onclick = () => c.classList.toggle('on'); chips.appendChild(c); });
+  // Hover-to-scroll on faded edges, like the app's chip rows (56 px zone, 140 ms intent).
+  (() => {
+    let v = 0, armed = 0, raf = 0, last = 0;
+    const tick = () => { raf = 0; if (!v) return; const now = performance.now(); const dt = Math.min(now - (last || now), 50); last = now; if (now - armed >= 140) chips.scrollLeft += v * dt / 1000; raf = requestAnimationFrame(tick); };
+    chips.addEventListener('pointermove', (e) => {
+      const r = chips.getBoundingClientRect(); const max = chips.scrollWidth - chips.clientWidth;
+      const dir = r.right - e.clientX < 56 && chips.scrollLeft < max - 1 ? 1 : e.clientX - r.left < 56 && chips.scrollLeft > 1 ? -1 : 0;
+      if (!dir) { v = 0; last = 0; return; }
+      if (!v || Math.sign(v) !== dir) { armed = performance.now(); last = 0; }
+      v = dir * 200; if (!raf) raf = requestAnimationFrame(tick);
+    });
+    chips.addEventListener('pointerleave', () => { v = 0; last = 0; });
+    chips.addEventListener('wheel', () => { v = 0; }, { passive: true });
+  })();
+  const list = document.getElementById('list');
+  for (let i = 1; i <= 30; i++) { const c = document.createElement('div'); c.className = 'card'; c.id = `card${i}`; c.innerHTML = `<i></i><span>Campaign ${i}: winter tyre switch</span>`; list.appendChild(c); }
+  document.getElementById('composer').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const s = document.getElementById('status'); s.classList.add('show');
+    document.getElementById('prompt').value = '';
+  });
+</script>
+</body>
+</html>

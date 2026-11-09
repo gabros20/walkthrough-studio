@@ -1,0 +1,967 @@
+{
+ "note": "Film-time grid of the music bed made by sound/build-sound.mjs for this picture. Bars are 2.5 s (96 BPM, 4/4); the grid is unbroken across splices. To put a scene change on a bar, move it by moveBy (positive = later). Regenerated on every sound build.",
+ "filmDuration": 182,
+ "bpm": 96,
+ "beat": 0.625,
+ "bar": 2.5,
+ "musicStartsAt": 0,
+ "sourceOffset": 2.5,
+ "grooveEntersAt": 7.5,
+ "finalChordAt": 177.5,
+ "releaseAt": 180,
+ "splices": [
+  {
+   "film": 97.5,
+   "from": 100,
+   "to": 40
+  },
+  {
+   "film": 177.5,
+   "from": 120,
+   "to": 125
+  }
+ ],
+ "bars": [
+  {
+   "bar": 1,
+   "t": 0,
+   "source": 2.5,
+   "section": "intro"
+  },
+  {
+   "bar": 2,
+   "t": 2.5,
+   "source": 5,
+   "section": "intro"
+  },
+  {
+   "bar": 3,
+   "t": 5,
+   "source": 7.5,
+   "section": "intro"
+  },
+  {
+   "bar": 4,
+   "t": 7.5,
+   "source": 10,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 5,
+   "t": 10,
+   "source": 12.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 6,
+   "t": 12.5,
+   "source": 15,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 7,
+   "t": 15,
+   "source": 17.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 8,
+   "t": 17.5,
+   "source": 20,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 9,
+   "t": 20,
+   "source": 22.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 10,
+   "t": 22.5,
+   "source": 25,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 11,
+   "t": 25,
+   "source": 27.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 12,
+   "t": 27.5,
+   "source": 30,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 13,
+   "t": 30,
+   "source": 32.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 14,
+   "t": 32.5,
+   "source": 35,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 15,
+   "t": 35,
+   "source": 37.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 16,
+   "t": 37.5,
+   "source": 40,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 17,
+   "t": 40,
+   "source": 42.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 18,
+   "t": 42.5,
+   "source": 45,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 19,
+   "t": 45,
+   "source": 47.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 20,
+   "t": 47.5,
+   "source": 50,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 21,
+   "t": 50,
+   "source": 52.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 22,
+   "t": 52.5,
+   "source": 55,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 23,
+   "t": 55,
+   "source": 57.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 24,
+   "t": 57.5,
+   "source": 60,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 25,
+   "t": 60,
+   "source": 62.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 26,
+   "t": 62.5,
+   "source": 65,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 27,
+   "t": 65,
+   "source": 67.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 28,
+   "t": 67.5,
+   "source": 70,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 29,
+   "t": 70,
+   "source": 72.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 30,
+   "t": 72.5,
+   "source": 75,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 31,
+   "t": 75,
+   "source": 77.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 32,
+   "t": 77.5,
+   "source": 80,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 33,
+   "t": 80,
+   "source": 82.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 34,
+   "t": 82.5,
+   "source": 85,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 35,
+   "t": 85,
+   "source": 87.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 36,
+   "t": 87.5,
+   "source": 90,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 37,
+   "t": 90,
+   "source": 92.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 38,
+   "t": 92.5,
+   "source": 95,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 39,
+   "t": 95,
+   "source": 97.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 40,
+   "t": 97.5,
+   "source": 40,
+   "section": "groove",
+   "loopBar": 1,
+   "afterSplice": true
+  },
+  {
+   "bar": 41,
+   "t": 100,
+   "source": 42.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 42,
+   "t": 102.5,
+   "source": 45,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 43,
+   "t": 105,
+   "source": 47.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 44,
+   "t": 107.5,
+   "source": 50,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 45,
+   "t": 110,
+   "source": 52.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 46,
+   "t": 112.5,
+   "source": 55,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 47,
+   "t": 115,
+   "source": 57.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 48,
+   "t": 117.5,
+   "source": 60,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 49,
+   "t": 120,
+   "source": 62.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 50,
+   "t": 122.5,
+   "source": 65,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 51,
+   "t": 125,
+   "source": 67.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 52,
+   "t": 127.5,
+   "source": 70,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 53,
+   "t": 130,
+   "source": 72.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 54,
+   "t": 132.5,
+   "source": 75,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 55,
+   "t": 135,
+   "source": 77.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 56,
+   "t": 137.5,
+   "source": 80,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 57,
+   "t": 140,
+   "source": 82.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 58,
+   "t": 142.5,
+   "source": 85,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 59,
+   "t": 145,
+   "source": 87.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 60,
+   "t": 147.5,
+   "source": 90,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 61,
+   "t": 150,
+   "source": 92.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 62,
+   "t": 152.5,
+   "source": 95,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 63,
+   "t": 155,
+   "source": 97.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 64,
+   "t": 157.5,
+   "source": 100,
+   "section": "groove",
+   "loopBar": 1
+  },
+  {
+   "bar": 65,
+   "t": 160,
+   "source": 102.5,
+   "section": "groove",
+   "loopBar": 2
+  },
+  {
+   "bar": 66,
+   "t": 162.5,
+   "source": 105,
+   "section": "groove",
+   "loopBar": 3
+  },
+  {
+   "bar": 67,
+   "t": 165,
+   "source": 107.5,
+   "section": "groove",
+   "loopBar": 4
+  },
+  {
+   "bar": 68,
+   "t": 167.5,
+   "source": 110,
+   "section": "outro",
+   "loopBar": 1
+  },
+  {
+   "bar": 69,
+   "t": 170,
+   "source": 112.5,
+   "section": "outro",
+   "loopBar": 2
+  },
+  {
+   "bar": 70,
+   "t": 172.5,
+   "source": 115,
+   "section": "outro",
+   "loopBar": 3
+  },
+  {
+   "bar": 71,
+   "t": 175,
+   "source": 117.5,
+   "section": "outro",
+   "loopBar": 4
+  },
+  {
+   "bar": 72,
+   "t": 177.5,
+   "source": 125,
+   "section": "final",
+   "afterSplice": true
+  },
+  {
+   "bar": 73,
+   "t": 180,
+   "source": 127.5,
+   "section": "tail"
+  },
+  {
+   "bar": 74,
+   "t": 182.5,
+   "source": 130,
+   "section": "tail"
+  }
+ ],
+ "beats": [
+  0,
+  0.625,
+  1.25,
+  1.875,
+  2.5,
+  3.125,
+  3.75,
+  4.375,
+  5,
+  5.625,
+  6.25,
+  6.875,
+  7.5,
+  8.125,
+  8.75,
+  9.375,
+  10,
+  10.625,
+  11.25,
+  11.875,
+  12.5,
+  13.125,
+  13.75,
+  14.375,
+  15,
+  15.625,
+  16.25,
+  16.875,
+  17.5,
+  18.125,
+  18.75,
+  19.375,
+  20,
+  20.625,
+  21.25,
+  21.875,
+  22.5,
+  23.125,
+  23.75,
+  24.375,
+  25,
+  25.625,
+  26.25,
+  26.875,
+  27.5,
+  28.125,
+  28.75,
+  29.375,
+  30,
+  30.625,
+  31.25,
+  31.875,
+  32.5,
+  33.125,
+  33.75,
+  34.375,
+  35,
+  35.625,
+  36.25,
+  36.875,
+  37.5,
+  38.125,
+  38.75,
+  39.375,
+  40,
+  40.625,
+  41.25,
+  41.875,
+  42.5,
+  43.125,
+  43.75,
+  44.375,
+  45,
+  45.625,
+  46.25,
+  46.875,
+  47.5,
+  48.125,
+  48.75,
+  49.375,
+  50,
+  50.625,
+  51.25,
+  51.875,
+  52.5,
+  53.125,
+  53.75,
+  54.375,
+  55,
+  55.625,
+  56.25,
+  56.875,
+  57.5,
+  58.125,
+  58.75,
+  59.375,
+  60,
+  60.625,
+  61.25,
+  61.875,
+  62.5,
+  63.125,
+  63.75,
+  64.375,
+  65,
+  65.625,
+  66.25,
+  66.875,
+  67.5,
+  68.125,
+  68.75,
+  69.375,
+  70,
+  70.625,
+  71.25,
+  71.875,
+  72.5,
+  73.125,
+  73.75,
+  74.375,
+  75,
+  75.625,
+  76.25,
+  76.875,
+  77.5,
+  78.125,
+  78.75,
+  79.375,
+  80,
+  80.625,
+  81.25,
+  81.875,
+  82.5,
+  83.125,
+  83.75,
+  84.375,
+  85,
+  85.625,
+  86.25,
+  86.875,
+  87.5,
+  88.125,
+  88.75,
+  89.375,
+  90,
+  90.625,
+  91.25,
+  91.875,
+  92.5,
+  93.125,
+  93.75,
+  94.375,
+  95,
+  95.625,
+  96.25,
+  96.875,
+  97.5,
+  98.125,
+  98.75,
+  99.375,
+  100,
+  100.625,
+  101.25,
+  101.875,
+  102.5,
+  103.125,
+  103.75,
+  104.375,
+  105,
+  105.625,
+  106.25,
+  106.875,
+  107.5,
+  108.125,
+  108.75,
+  109.375,
+  110,
+  110.625,
+  111.25,
+  111.875,
+  112.5,
+  113.125,
+  113.75,
+  114.375,
+  115,
+  115.625,
+  116.25,
+  116.875,
+  117.5,
+  118.125,
+  118.75,
+  119.375,
+  120,
+  120.625,
+  121.25,
+  121.875,
+  122.5,
+  123.125,
+  123.75,
+  124.375,
+  125,
+  125.625,
+  126.25,
+  126.875,
+  127.5,
+  128.125,
+  128.75,
+  129.375,
+  130,
+  130.625,
+  131.25,
+  131.875,
+  132.5,
+  133.125,
+  133.75,
+  134.375,
+  135,
+  135.625,
+  136.25,
+  136.875,
+  137.5,
+  138.125,
+  138.75,
+  139.375,
+  140,
+  140.625,
+  141.25,
+  141.875,
+  142.5,
+  143.125,
+  143.75,
+  144.375,
+  145,
+  145.625,
+  146.25,
+  146.875,
+  147.5,
+  148.125,
+  148.75,
+  149.375,
+  150,
+  150.625,
+  151.25,
+  151.875,
+  152.5,
+  153.125,
+  153.75,
+  154.375,
+  155,
+  155.625,
+  156.25,
+  156.875,
+  157.5,
+  158.125,
+  158.75,
+  159.375,
+  160,
+  160.625,
+  161.25,
+  161.875,
+  162.5,
+  163.125,
+  163.75,
+  164.375,
+  165,
+  165.625,
+  166.25,
+  166.875,
+  167.5,
+  168.125,
+  168.75,
+  169.375,
+  170,
+  170.625,
+  171.25,
+  171.875,
+  172.5,
+  173.125,
+  173.75,
+  174.375,
+  175,
+  175.625,
+  176.25,
+  176.875,
+  177.5,
+  178.125,
+  178.75,
+  179.375,
+  180,
+  180.625,
+  181.25,
+  181.875
+ ],
+ "transitions": [
+  {
+   "cue": 1.45,
+   "kind": "wipe",
+   "where": "title",
+   "cutAt": 1.9,
+   "nearestBar": 2,
+   "barAt": 2.5,
+   "moveBy": 0.6
+  },
+  {
+   "cue": 16.15,
+   "kind": "push",
+   "cutAt": 16.15,
+   "nearestBar": 7,
+   "barAt": 15,
+   "moveBy": -1.15
+  },
+  {
+   "cue": 40.333,
+   "kind": "cut",
+   "to": "s3a",
+   "cutAt": 40.333,
+   "nearestBar": 17,
+   "barAt": 40,
+   "moveBy": -0.333
+  },
+  {
+   "cue": 51.797,
+   "kind": "whip",
+   "cutAt": 51.917,
+   "nearestBar": 22,
+   "barAt": 52.5,
+   "moveBy": 0.583
+  },
+  {
+   "cue": 59.483,
+   "kind": "cut",
+   "to": "s4",
+   "cutAt": 59.483,
+   "nearestBar": 25,
+   "barAt": 60,
+   "moveBy": 0.517
+  },
+  {
+   "cue": 75.497,
+   "kind": "whip",
+   "cutAt": 75.617,
+   "nearestBar": 31,
+   "barAt": 75,
+   "moveBy": -0.617
+  },
+  {
+   "cue": 93.75,
+   "kind": "cut",
+   "to": "s6a",
+   "cutAt": 93.75,
+   "nearestBar": 38,
+   "barAt": 92.5,
+   "moveBy": -1.25
+  },
+  {
+   "cue": 101.833,
+   "kind": "cut",
+   "to": "s6b",
+   "cutAt": 101.833,
+   "nearestBar": 42,
+   "barAt": 102.5,
+   "moveBy": 0.667
+  },
+  {
+   "cue": 114.017,
+   "kind": "cut",
+   "to": "s7",
+   "cutAt": 114.017,
+   "nearestBar": 47,
+   "barAt": 115,
+   "moveBy": 0.983
+  },
+  {
+   "cue": 125.317,
+   "kind": "cut",
+   "to": "s8",
+   "cutAt": 125.317,
+   "nearestBar": 51,
+   "barAt": 125,
+   "moveBy": -0.317
+  },
+  {
+   "cue": 149.567,
+   "kind": "push",
+   "cutAt": 149.567,
+   "nearestBar": 61,
+   "barAt": 150,
+   "moveBy": 0.433
+  },
+  {
+   "cue": 158.35,
+   "kind": "cut",
+   "to": "s9b",
+   "cutAt": 158.35,
+   "nearestBar": 64,
+   "barAt": 157.5,
+   "moveBy": -0.85
+  },
+  {
+   "cue": 168.117,
+   "kind": "cut",
+   "to": "s10",
+   "cutAt": 168.117,
+   "nearestBar": 68,
+   "barAt": 167.5,
+   "moveBy": -0.617
+  },
+  {
+   "cue": 175,
+   "kind": "cut",
+   "to": "end",
+   "cutAt": 175,
+   "nearestBar": 71,
+   "barAt": 175,
+   "moveBy": 0
+  },
+  {
+   "cue": 177.05,
+   "kind": "wipe",
+   "where": "end",
+   "cutAt": 177.5,
+   "nearestBar": 72,
+   "barAt": 177.5,
+   "moveBy": 0
+  }
+ ]
+}

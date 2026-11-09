@@ -1,0 +1,31 @@
+{
+  "name": "walkthrough-recorder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Records cursor-free app takes with an action log (events.json) for the walkthrough film build.",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./motion.mjs": "./motion.mjs",
+    "./take.mjs": "./take.mjs",
+    "./takes/lib.mjs": "./takes/lib.mjs"
+  },
+  "scripts": {
+    "install-browser": "playwright-core install chromium",
+    "capture-test": "node capture-test.mjs",
+    "sample-take": "node sample-take.mjs",
+    "site-test": "node site-test.mjs",
+    "take": "node takes/run.mjs",
+    "verify-dot": "node verify-dot.mjs",
+    "remux": "node remux.mjs",
+    "retime": "node retime.mjs",
+    "index": "node takes/index-data.mjs",
+    "inspect": "node tools/inspect.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.62.1"
+  }
+}

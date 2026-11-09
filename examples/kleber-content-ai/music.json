@@ -1,0 +1,63 @@
+{
+  "file": "music-take1.mp3",
+  "note": "Measured facts about take 1 of the example film's music (ElevenLabs music via the connector, 2026-11-06), from sound/analysis/*.py. Times are seconds in the source file. The audio is not in this repo: put the take beside this file (or pass --music-file).",
+  "bpm": 96,
+  "beat": 0.625,
+  "beatsPerBar": 4,
+  "bar": 2.5,
+  "gridOffset": 0,
+  "loopBars": 4,
+  "duration": 135.72,
+  "sections": [
+    {
+      "name": "intro",
+      "from": 0,
+      "to": 10,
+      "note": "4 bars, pads/e-piano only, no sub (sub band -55 dB vs -17 dB in the groove)"
+    },
+    {
+      "name": "groove",
+      "from": 10,
+      "to": 110,
+      "note": "40 bars = ten 4-bar loops Am | C/G | Dm | F, level flat within 1.5 dB"
+    },
+    {
+      "name": "outro",
+      "from": 110,
+      "to": 125,
+      "note": "6 bars, hats out (6-12 kHz band -5 dB, 0.5-4 kHz -3 dB), harmony continues"
+    },
+    {
+      "name": "final",
+      "from": 125,
+      "to": 127.5,
+      "note": "one held chord, Bb in the bass, F-A-C above; no beat"
+    },
+    {
+      "name": "tail",
+      "from": 127.5,
+      "to": 135.72,
+      "note": "release: -23 dB at 127.5, about -6 dB/s, -87 dB at the file end; no truncation"
+    }
+  ],
+  "grooveEntry": 10,
+  "finalChord": 125,
+  "spliceWindow": {
+    "from": 12.5,
+    "to": 107.5,
+    "note": "downbeats where a bar-aligned loop splice may land: one bar after the groove entry to one bar before the outro"
+  },
+  "evidence": {
+    "tempo": "onset autocorrelation over 10-110 s peaks at 0.6240 s (r 0.64), 2.5013 s (r 0.87), 30.000 s; folded-onset search 0.6235-0.6265 s best at 0.62500 s",
+    "phase": "onset flux peaks 2.5 ms after k*0.625 s in 1.5-5 kHz and 5-14 kHz",
+    "downbeat": "beat-synchronous chroma change is largest on beats 0 mod 4 (0.093 vs 0.032-0.039)",
+    "loop": "beat-chroma similarity at lag 4 bars 0.986, 8 bars 0.978, 1 bar 0.919, 2 bars 0.896",
+    "hyperframesBeats": "npx hyperframes audio --only bpm reports 128 BPM (signal provider); that is wrong for this file",
+    "loudness": "-13.1 LUFS integrated, true peak -0.2 dBTP"
+  },
+  "shortOutro": {
+    "a": 120,
+    "b": 125,
+    "note": "fallback ending: bar 47 (F) straight into the final chord, dropping bars 48-49 (Am, C/G). Measured: spectral step into the chord 16.3 dB vs 15.9 natural, level step +1.1 dB vs -0.4 natural, pitch-class similarity bar-before/chord 0.37 vs 0.26 natural"
+  }
+}

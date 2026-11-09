@@ -1,0 +1,118 @@
+{
+  "note": "Creatives from the retake (the studio's assets/creatives-final, regenerated). 0-7 title wall (English), 8-10 title column (crop bands without words), 11-15 end cascade (mixed formats, German option 2 included), 16-18 end column (crops). Run node scripts/sync-assets.mjs after editing. sourceDir is relative to this file: point it at the studio checkout's assets/creatives-final (the images are the client's and are not in this repo).",
+  "sourceDir": "../../../kleber-content-ai-studio/assets/creatives-final",
+  "items": [
+    {
+      "id": "w1-sq",
+      "source": "winter-krisalp-hp3/option-1/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "w3-pt",
+      "source": "winter-krisalp-hp3/option-3/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "a2-sq",
+      "source": "all-season-quadraxer-3/option-2/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "a3-pt",
+      "source": "all-season-quadraxer-3/option-3/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "w3-sq",
+      "source": "winter-krisalp-hp3/option-3/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "w1-pt",
+      "source": "winter-krisalp-hp3/option-1/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "a3-sq",
+      "source": "all-season-quadraxer-3/option-3/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "a2-pt",
+      "source": "all-season-quadraxer-3/option-2/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "w1-st",
+      "source": "winter-krisalp-hp3/option-1/instagram/ig_feed_portrait.jpg",
+      "crop": [
+        0.3,
+        0.1,
+        1.0,
+        0.6
+      ]
+    },
+    {
+      "id": "w3-st",
+      "source": "winter-krisalp-hp3/option-3/instagram/ig_feed_square.jpg",
+      "crop": [
+        0.25,
+        0.12,
+        1.0,
+        0.6
+      ]
+    },
+    {
+      "id": "a1-st",
+      "source": "all-season-quadraxer-3/option-1/instagram/ig_story.jpg",
+      "crop": [
+        0.4,
+        0.0,
+        1.0,
+        0.32
+      ]
+    },
+    {
+      "id": "w2de-st",
+      "source": "winter-krisalp-hp3/option-2/instagram/ig_story.jpg"
+    },
+    {
+      "id": "a2-pt2",
+      "source": "all-season-quadraxer-3/option-2/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "w1-sq2",
+      "source": "winter-krisalp-hp3/option-1/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "a3-pt2",
+      "source": "all-season-quadraxer-3/option-3/instagram/ig_feed_portrait.jpg"
+    },
+    {
+      "id": "a2-sq2",
+      "source": "all-season-quadraxer-3/option-2/instagram/ig_feed_square.jpg"
+    },
+    {
+      "id": "w1-pt2",
+      "source": "winter-krisalp-hp3/option-1/instagram/ig_story.jpg",
+      "crop": [
+        0.0,
+        0.21,
+        0.7,
+        0.46
+      ]
+    },
+    {
+      "id": "a2-sq3",
+      "source": "all-season-quadraxer-3/option-2/instagram/ig_feed_square.jpg",
+      "crop": [
+        0.2,
+        0.15,
+        0.9,
+        0.62
+      ]
+    },
+    {
+      "id": "w2de-pt",
+      "source": "winter-krisalp-hp3/option-2/instagram/ig_feed_portrait.jpg",
+      "crop": [
+        0.35,
+        0.28,
+        1.0,
+        0.88
+      ]
+    }
+  ]
+}

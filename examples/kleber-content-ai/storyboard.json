@@ -1,0 +1,1808 @@
+{
+  "note": "Storyline A over the retake on commit 686fc52 (takes/INDEX.md). Anchors are into each take's events.json. Copied for walkthrough-studio: takesDir made relative (pass --takes <studio>/takes), brand and fps added; everything else is the storyboard the final cut was built from.",
+  "brand": "brand.json",
+  "fps": 60,
+  "takesDir": "../../takes",
+  "clipFps": 60,
+  "target": {
+    "min": 180,
+    "max": 195
+  },
+  "title": {
+    "duration": 7.0
+  },
+  "end": {
+    "duration": 7,
+    "wipeStart": 2.05
+  },
+  "groups": {
+    "1": {
+      "name": "set up",
+      "target": 13
+    },
+    "2": {
+      "name": "ask",
+      "target": 25
+    },
+    "3": {
+      "name": "choose",
+      "target": 17
+    },
+    "4": {
+      "name": "refine",
+      "target": 17
+    },
+    "5": {
+      "name": "expand",
+      "target": 20
+    },
+    "6": {
+      "name": "translate",
+      "target": 20
+    },
+    "7": {
+      "name": "teach",
+      "target": 12
+    },
+    "8": {
+      "name": "profile",
+      "target": 22
+    },
+    "9": {
+      "name": "proof",
+      "target": 16
+    },
+    "10": {
+      "name": "export",
+      "target": 11
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1",
+      "group": "1",
+      "take": "take-1-signin",
+      "target": 11,
+      "ranges": [
+        {
+          "from": {
+            "ref": "keep:from",
+            "offset": 0.6
+          },
+          "to": {
+            "ref": "down:first post",
+            "offset": 0.05
+          }
+        },
+        {
+          "from": {
+            "ref": "down:first post",
+            "offset": 0.05
+          },
+          "to": {
+            "ref": "down:first post",
+            "offset": 0.0834
+          },
+          "stretch": {
+            "duration": 0.95
+          }
+        }
+      ],
+      "pointer": {
+        "enterFrom": {
+          "x": 1080,
+          "y": 1010
+        }
+      },
+      "camera": [
+        {
+          "at": {
+            "ref": "keep:from",
+            "offset": 0.6
+          },
+          "box": "mark:company and name",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "waitEnd:logo step",
+            "offset": 0.1
+          },
+          "box": "mark:drop zone",
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "waitEnd:choose logo upload",
+            "offset": 0.1
+          },
+          "box": "mark:uploaded state",
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "move:first post",
+            "offset": -0.5
+          },
+          "box": "mark:first post button",
+          "kind": "control"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Confirm your company once",
+          "at": {
+            "ref": "keep:from",
+            "offset": 0.7
+          },
+          "hold": 2.2,
+          "variant": "wipe"
+        },
+        {
+          "text": "Add your logo once. It goes on your posts.",
+          "at": {
+            "ref": "waitEnd:choose logo upload",
+            "offset": 0.3
+          },
+          "hold": 3.2,
+          "variant": "words"
+        }
+      ],
+      "exit": {
+        "type": "push",
+        "ref": "down:first post"
+      },
+      "excise": [
+        {
+          "from": 5.983,
+          "to": 6.847,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 9.733,
+          "to": 10.18,
+          "note": "dead hold (holds.py): keep 1.3 s"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "group": "2",
+      "take": "take-2-campaign",
+      "target": 24.5,
+      "ranges": [
+        {
+          "from": {
+            "ref": "keep:from",
+            "offset": 0
+          },
+          "to": {
+            "ref": "type:campaign text",
+            "offset": 1.8
+          }
+        },
+        {
+          "from": {
+            "ref": "type:campaign text",
+            "offset": 1.8
+          },
+          "to": {
+            "ref": "type:campaign text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 2.0
+          }
+        },
+        {
+          "from": {
+            "ref": "type:campaign text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "to": {
+            "ref": "down:campaign send",
+            "offset": 0.9
+          }
+        },
+        {
+          "from": {
+            "ref": "down:campaign send",
+            "offset": 0.9
+          },
+          "to": {
+            "ref": "mark:campaign loader 1",
+            "offset": -0.25
+          },
+          "timelapse": {
+            "duration": 1.2
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:campaign loader 1",
+            "offset": -0.25
+          },
+          "to": {
+            "ref": "mark:campaign status 10",
+            "offset": 1.6
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:campaign status 10",
+            "offset": 1.6
+          },
+          "to": {
+            "ref": "waitEnd:campaign reply",
+            "offset": -0.1
+          },
+          "timelapse": {
+            "duration": 2.9
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:campaign reply",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "keep:to",
+            "offset": 0
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "keep:from",
+            "offset": 0.7
+          },
+          "box": [
+            "mark:hero composer",
+            "mark:platform menu"
+          ],
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "down:campaign field",
+            "offset": -0.1
+          },
+          "box": "down:campaign field",
+          "kind": "control",
+          "scale": 1.6
+        },
+        {
+          "at": {
+            "ref": "down:campaign send",
+            "offset": -0.55
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "mark:campaign status 10",
+            "offset": -0.7
+          },
+          "box": [
+            "mark:campaign status 10",
+            "mark:campaign loader 1"
+          ],
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "mark:campaign status 10",
+            "offset": 1.6
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "waitEnd:campaign reply",
+            "offset": 2.0
+          },
+          "box": "mark:reveal worked for",
+          "kind": "control",
+          "scale": 1.85
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:campaign status 10",
+          "start": {
+            "ref": "mark:campaign status 10",
+            "offset": 0.05
+          },
+          "end": {
+            "ref": "mark:campaign status 10",
+            "offset": 1.55
+          }
+        },
+        {
+          "box": "mark:reveal worked for",
+          "start": {
+            "ref": "waitEnd:campaign reply",
+            "offset": 2.5
+          },
+          "end": {
+            "ref": "waitEnd:campaign reply",
+            "offset": 3.8
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Describe the post in your own words",
+          "at": {
+            "ref": "down:campaign field",
+            "offset": -0.2
+          },
+          "hold": 2.6,
+          "variant": "wipe"
+        },
+        {
+          "text": "Three on-brand options from Kleber's brand hub",
+          "at": {
+            "ref": "mark:campaign loader 1",
+            "offset": -0.15
+          },
+          "hold": 2.6,
+          "variant": "tick"
+        },
+        {
+          "text": "Every image is checked before you see it",
+          "at": {
+            "ref": "mark:campaign status 10",
+            "offset": 0.95
+          },
+          "hold": 2.9,
+          "variant": "words"
+        }
+      ],
+      "excise": [
+        {
+          "from": 4.45,
+          "to": 4.647,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s3a",
+      "group": "3",
+      "take": "take-3-choose",
+      "target": 15,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:option 2",
+            "offset": -0.2
+          },
+          "to": {
+            "ref": "mark:format 9:16 image",
+            "offset": 0.25
+          }
+        }
+      ],
+      "holdFrames": [
+        3.3,
+        3.3167,
+        3.3333,
+        6.05,
+        8.6667,
+        11.2667
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "move:option 2",
+            "offset": -0.2
+          },
+          "box": {
+            "x": 497,
+            "y": 60,
+            "w": 934,
+            "h": 740
+          },
+          "kind": "pane",
+          "scale": 1.2,
+          "focus": {
+            "x": 960,
+            "y": 560
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Three versions to choose from",
+          "at": {
+            "ref": "down:option 2",
+            "offset": -0.3
+          },
+          "hold": 2.4,
+          "variant": "tick"
+        },
+        {
+          "text": "Sized for feed and story",
+          "at": {
+            "ref": "down:format 4:5",
+            "offset": -0.2
+          },
+          "hold": 2.4,
+          "variant": "words"
+        }
+      ],
+      "exit": {
+        "type": "whip"
+      },
+      "excise": [
+        {
+          "from": 4.7,
+          "to": 5.13,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 7.45,
+          "to": 7.83,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 10.05,
+          "to": 10.447,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 12.633,
+          "to": 13.047,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 15.367,
+          "to": 16.15,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s3b",
+      "group": "3",
+      "take": "take-3-choose",
+      "target": 10,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:hover image",
+            "offset": -0.3
+          },
+          "to": {
+            "ref": "waitStart:image update",
+            "offset": 0.2
+          }
+        },
+        {
+          "from": {
+            "ref": "waitStart:image update",
+            "offset": 0.2
+          },
+          "to": {
+            "ref": "waitEnd:image update",
+            "offset": -0.1
+          },
+          "timelapse": {
+            "duration": 1.0
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:image update",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "mark:edited image",
+            "offset": 1.1
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "move:hover image",
+            "offset": -0.3
+          },
+          "box": "mark:headline on image",
+          "kind": "control"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Click any text to edit it, even on the image",
+          "at": {
+            "ref": "down:edit headline",
+            "offset": -0.2
+          },
+          "hold": 3.5,
+          "variant": "wipe"
+        }
+      ],
+      "excise": [
+        {
+          "from": 39.133,
+          "to": 41.547,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "group": "4",
+      "take": "take-4-redesign",
+      "target": 17,
+      "pointer": {
+        "enterFrom": "left"
+      },
+      "ranges": [
+        {
+          "from": {
+            "ref": "down:modify option 1",
+            "offset": -1.0
+          },
+          "to": {
+            "ref": "type:redesign text",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "type:redesign text",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "type:redesign text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 1.4
+          }
+        },
+        {
+          "from": {
+            "ref": "type:redesign text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "to": {
+            "ref": "mark:redesign loader 1",
+            "offset": 1.8
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:redesign loader 1",
+            "offset": 1.8
+          },
+          "to": {
+            "ref": "waitEnd:redesign reply",
+            "offset": -0.1
+          },
+          "timelapse": {
+            "duration": 2.2
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:redesign reply",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "move:hover chip 1",
+            "offset": 0.2,
+            "edge": "end"
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "down:modify option 1",
+            "offset": -1.0
+          },
+          "box": [
+            "mark:option card 1",
+            "mark:modify button"
+          ],
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "down:modify option 1",
+            "offset": 0.35
+          },
+          "box": "down:redesign field",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "down:redesign send",
+            "offset": 0.3
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "waitEnd:redesign reply",
+            "offset": 0.4
+          },
+          "box": "mark:redesign preview pane",
+          "kind": "pane"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Ask for a change in plain words",
+          "at": {
+            "ref": "down:redesign field",
+            "offset": -0.2
+          },
+          "hold": 2.6,
+          "variant": "words"
+        },
+        {
+          "text": "A new layout, same brand rules",
+          "at": {
+            "ref": "waitEnd:redesign reply",
+            "offset": 0.6
+          },
+          "hold": 2.6,
+          "variant": "tick"
+        }
+      ],
+      "exit": {
+        "type": "whip"
+      }
+    },
+    {
+      "id": "s5",
+      "group": "5",
+      "take": "take-5-platforms-german",
+      "target": 20,
+      "ranges": [
+        {
+          "from": {
+            "ref": "keep:from",
+            "offset": 1.0
+          },
+          "to": {
+            "ref": "waitEnd:LinkedIn ready",
+            "offset": 0.4
+          }
+        },
+        {
+          "from": {
+            "ref": "down:add Newsletter",
+            "offset": -0.05
+          },
+          "to": {
+            "ref": "mark:tour Instagram image 1",
+            "offset": 0.575
+          }
+        },
+        {
+          "montage": [
+            "mark:tour Instagram image 2",
+            "mark:tour Instagram image 3",
+            "mark:tour Facebook image 1",
+            "mark:tour Facebook image 2",
+            "mark:tour Facebook image 3",
+            "mark:tour Facebook image 4",
+            "mark:tour TikTok image 1",
+            "mark:tour LinkedIn image 1",
+            "mark:tour LinkedIn image 2",
+            "mark:tour Display ads image 1",
+            "mark:tour Display ads image 2",
+            "mark:tour Display ads image 3",
+            "mark:tour Display ads image 4",
+            "mark:tour Display ads image 5",
+            "mark:tour Display ads image 6",
+            "mark:tour Newsletter image 1",
+            "mark:tour Newsletter image 2"
+          ]
+        }
+      ],
+      "excise": [
+        {
+          "from": {
+            "ref": "waitStart:LinkedIn ready",
+            "offset": 0.03
+          },
+          "to": {
+            "ref": "waitEnd:LinkedIn ready",
+            "offset": -0.05
+          },
+          "note": "image render placeholder"
+        },
+        {
+          "from": {
+            "ref": "waitStart:Newsletter ready",
+            "offset": 0.03
+          },
+          "to": {
+            "ref": "waitEnd:Newsletter ready",
+            "offset": -0.05
+          },
+          "note": "image render placeholder"
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "keep:from",
+            "offset": 1.05
+          },
+          "box": [
+            "mark:platform tabs",
+            "mark:add platform menu"
+          ],
+          "kind": "pane",
+          "focus": {
+            "x": 960,
+            "y": 520
+          }
+        },
+        {
+          "at": {
+            "ref": "mark:platform tabs",
+            "offset": -0.3
+          },
+          "box": {
+            "x": 497,
+            "y": 100,
+            "w": 934,
+            "h": 700
+          },
+          "kind": "pane",
+          "scale": 1.3,
+          "focus": {
+            "x": 960,
+            "y": 470
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Add a platform. No waiting on AI.",
+          "at": {
+            "ref": "down:add LinkedIn",
+            "offset": -0.3
+          },
+          "hold": 2.6,
+          "variant": "wipe"
+        },
+        {
+          "text": "6 platforms. 18 formats. One option.",
+          "at": {
+            "ref": "down:tour Instagram",
+            "offset": -0.2
+          },
+          "hold": 3.0,
+          "variant": "words"
+        }
+      ],
+      "exit": {
+        "type": "hard"
+      }
+    },
+    {
+      "id": "s6a",
+      "group": "6",
+      "take": "take-5-platforms-german",
+      "target": 7.5,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:language menu de",
+            "offset": -0.2
+          },
+          "to": {
+            "ref": "waitEnd:ui in de",
+            "offset": 1.0
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:ui in de",
+            "offset": 1.0
+          },
+          "to": {
+            "ref": "down:language English",
+            "offset": -0.3
+          },
+          "timelapse": {
+            "duration": 2.6
+          }
+        },
+        {
+          "from": {
+            "ref": "down:language English",
+            "offset": -0.3
+          },
+          "to": {
+            "ref": "waitEnd:ui in en",
+            "offset": 1.0
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "move:language menu de",
+            "offset": -0.2
+          },
+          "box": "mark:language list",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "waitStart:ui in de"
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "waitEnd:ui in de",
+            "offset": 0.4
+          },
+          "box": [
+            "mark:de language button",
+            "mark:platform tabs"
+          ],
+          "kind": "pane"
+        }
+      ],
+      "captions": [
+        {
+          "text": "The app speaks 8 languages",
+          "at": {
+            "ref": "down:language menu de",
+            "offset": 0.5
+          },
+          "hold": 2.4,
+          "variant": "tick"
+        }
+      ],
+      "exit": {
+        "type": "hard"
+      }
+    },
+    {
+      "id": "s6b",
+      "group": "6",
+      "take": "take-5-platforms-german",
+      "target": 13,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:german field",
+            "offset": -0.2
+          },
+          "to": {
+            "ref": "type:german text",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "type:german text",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "type:german text",
+            "edge": "end",
+            "offset": 0.35
+          },
+          "timelapse": {
+            "duration": 1.0
+          }
+        },
+        {
+          "from": {
+            "ref": "type:german text",
+            "edge": "end",
+            "offset": 0.35
+          },
+          "to": {
+            "ref": "mark:german loader 1",
+            "offset": -0.25
+          },
+          "timelapse": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:german loader 1",
+            "offset": -0.25
+          },
+          "to": {
+            "ref": "mark:german loader 1",
+            "offset": 1.15
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:german loader 1",
+            "offset": 1.15
+          },
+          "to": {
+            "ref": "mark:worked for",
+            "offset": 0.5
+          },
+          "timelapse": {
+            "duration": 2.53333
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:worked for",
+            "offset": 0.5
+          },
+          "to": {
+            "ref": "mark:german Newsletter image",
+            "offset": 0.5
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "move:german field",
+            "offset": -0.2
+          },
+          "box": "down:german field",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "type:german text",
+            "edge": "end",
+            "offset": 0.4
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "mark:worked for",
+            "offset": 0.5
+          },
+          "box": "mark:german preview pane",
+          "kind": "pane"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Ask for the post in another language",
+          "at": {
+            "ref": "down:german field",
+            "offset": -0.2
+          },
+          "hold": 2.6,
+          "variant": "wipe"
+        },
+        {
+          "text": "German on the image and in the post",
+          "at": {
+            "ref": "down:german Instagram",
+            "offset": 0.3
+          },
+          "hold": 2.9,
+          "variant": "words"
+        }
+      ],
+      "excise": [
+        {
+          "from": 153.2,
+          "to": 153.463,
+          "note": "dead hold (holds.py): keep 1.3 s"
+        },
+        {
+          "from": 155.933,
+          "to": 157.213,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "group": "7",
+      "take": "take-6-rule",
+      "target": 12,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:rule field",
+            "offset": -0.2
+          },
+          "to": {
+            "ref": "type:rule text",
+            "offset": 1.2
+          }
+        },
+        {
+          "from": {
+            "ref": "type:rule text",
+            "offset": 1.2
+          },
+          "to": {
+            "ref": "type:rule text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 1.8
+          }
+        },
+        {
+          "from": {
+            "ref": "type:rule text",
+            "offset": 0,
+            "edge": "end"
+          },
+          "to": {
+            "ref": "mark:rule status 2",
+            "offset": 0
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:rule status 2",
+            "offset": 0
+          },
+          "to": {
+            "ref": "mark:rule status 3",
+            "offset": -0.03
+          },
+          "stretch": {
+            "duration": 2.0
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:rule status 3",
+            "offset": -0.03
+          },
+          "to": {
+            "ref": "mark:rule status 3",
+            "offset": 0.5
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:rule status 3",
+            "offset": 0.5
+          },
+          "to": {
+            "ref": "waitEnd:rule reply",
+            "offset": 0
+          },
+          "timelapse": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:rule reply",
+            "offset": 0
+          },
+          "to": {
+            "ref": "mark:worked for",
+            "offset": 1.0
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "move:rule field",
+            "offset": -0.2
+          },
+          "box": "down:rule field",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "mark:rule status 2",
+            "offset": -0.7
+          },
+          "box": "mark:rule status 2",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "waitEnd:rule reply",
+            "offset": 0.1
+          },
+          "box": {
+            "x": 25,
+            "y": 245,
+            "w": 450,
+            "h": 280
+          },
+          "kind": "pane",
+          "scale": 1.6
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:rule status 2",
+          "start": {
+            "ref": "mark:rule status 2"
+          },
+          "end": {
+            "ref": "mark:rule status 3",
+            "offset": -0.04
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Tell it a rule once",
+          "at": {
+            "ref": "mark:rule status 2",
+            "offset": 0.05
+          },
+          "hold": 2.2,
+          "variant": "tick"
+        }
+      ],
+      "pointer": {
+        "exit": {
+          "type": "slide",
+          "edge": "bottom"
+        }
+      },
+      "excise": [
+        {
+          "from": {
+            "ref": "down:rule send",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "mark:rule status 2",
+            "offset": -0.45
+          },
+          "note": "pacing: Thinking… held 1 s less"
+        },
+        {
+          "from": 22.3,
+          "to": 23.43,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "group": "8",
+      "take": "take-7-settings",
+      "target": 23,
+      "note": "Retake 18:49. Each brand-kit click: the camera frames the clicked row and the whole preview card (colour: wide, the card's bottom 70 px is below the capture) and lands 0.2 s before the pointer leaves.",
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:settings",
+            "offset": -0.3
+          },
+          "to": {
+            "ref": "waitEnd:settings page",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:settings page",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "move:colour kleber red",
+            "offset": -0.8
+          },
+          "timelapse": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "move:colour kleber red",
+            "offset": -0.8
+          },
+          "to": {
+            "ref": "waitEnd:colour kleber red preview",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:colour kleber red preview",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "move:button pill",
+            "offset": -0.8
+          },
+          "timelapse": {
+            "duration": 0.5
+          }
+        },
+        {
+          "from": {
+            "ref": "move:button pill",
+            "offset": -0.8
+          },
+          "to": {
+            "ref": "waitEnd:with a divider preview",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:with a divider preview",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "move:save brand kit",
+            "offset": -0.3
+          },
+          "timelapse": {
+            "duration": 0.6
+          }
+        },
+        {
+          "from": {
+            "ref": "move:save brand kit",
+            "offset": -0.3
+          },
+          "to": {
+            "ref": "waitEnd:brand kit saved",
+            "offset": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "waitEnd:brand kit saved",
+            "offset": 0.8
+          },
+          "to": {
+            "ref": "scroll:to memory notes",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "scroll:to memory notes",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "to": {
+            "ref": "move:rest near notes",
+            "offset": 2.0,
+            "edge": "end"
+          }
+        },
+        {
+          "from": {
+            "ref": "move:to back link (position)",
+            "offset": -0.05
+          },
+          "to": {
+            "ref": "move:back to app",
+            "offset": -0.1
+          }
+        },
+        {
+          "from": {
+            "ref": "move:back to app",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "down:back to app",
+            "offset": 0.05
+          }
+        },
+        {
+          "from": {
+            "ref": "down:back to app",
+            "offset": 0.05
+          },
+          "to": {
+            "ref": "down:back to app",
+            "offset": 0.0834
+          },
+          "stretch": {
+            "duration": 0.95
+          }
+        }
+      ],
+      "excise": [
+        {
+          "from": {
+            "ref": "down:settings",
+            "offset": 0.15
+          },
+          "to": {
+            "ref": "move:settings park",
+            "offset": -0.03
+          },
+          "note": "page load (blank)"
+        },
+        {
+          "from": {
+            "ref": "waitEnd:our logo first preview",
+            "offset": 0.6
+          },
+          "to": {
+            "ref": "move:with a divider",
+            "offset": -0.05
+          },
+          "note": "dead hold: keep 0.6 s after the preview changes"
+        }
+      ],
+      "pointer": {
+        "enterFrom": "top"
+      },
+      "camera": [
+        {
+          "at": {
+            "ref": "move:settings",
+            "offset": -0.3
+          },
+          "box": "mark:account menu",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "waitStart:settings page",
+            "offset": 0
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "move:button pill",
+            "offset": -0.8
+          },
+          "box": {
+            "x": 392,
+            "y": 42,
+            "w": 656,
+            "h": 726
+          },
+          "kind": "pane",
+          "scale": 1.12,
+          "dur": 0.6
+        },
+        {
+          "at": {
+            "ref": "move:our logo first",
+            "offset": -0.8
+          },
+          "box": {
+            "x": 392,
+            "y": 182,
+            "w": 656,
+            "h": 586
+          },
+          "kind": "pane",
+          "scale": 1.39,
+          "dur": 0.6
+        },
+        {
+          "at": {
+            "ref": "move:save brand kit",
+            "offset": -0.3
+          },
+          "wide": true
+        },
+        {
+          "at": {
+            "ref": "scroll:to memory notes",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "box": {
+            "x": 416,
+            "y": 285,
+            "w": 608,
+            "h": 235
+          },
+          "kind": "pane",
+          "dur": 1.5,
+          "note": "memory heading + list after the 432 px scroll (marks are measured before it)"
+        },
+        {
+          "at": {
+            "ref": "move:back to app",
+            "offset": -0.4
+          },
+          "box": "mark:back to app button",
+          "kind": "control"
+        }
+      ],
+      "spotlights": [
+        {
+          "box": {
+            "x": 416,
+            "y": 371,
+            "w": 608,
+            "h": 149
+          },
+          "start": {
+            "ref": "scroll:to memory notes",
+            "offset": 0.3,
+            "edge": "end"
+          },
+          "end": {
+            "ref": "move:rest near notes",
+            "offset": 1.9,
+            "edge": "end"
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Set your defaults once",
+          "at": {
+            "ref": "down:colour kleber red",
+            "offset": -0.3
+          },
+          "hold": 2.2,
+          "variant": "wipe"
+        },
+        {
+          "text": "It keeps a note of what you told it",
+          "at": {
+            "ref": "scroll:to memory notes",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "hold": 3.2,
+          "variant": "words"
+        },
+        {
+          "text": "Saved notes are added to every new request",
+          "at": {
+            "ref": "move:back to app",
+            "offset": 0.0
+          },
+          "hold": 2.9,
+          "variant": "tick",
+          "overCut": true
+        }
+      ],
+      "exit": {
+        "type": "push",
+        "ref": "down:back to app"
+      }
+    },
+    {
+      "id": "s9a",
+      "group": "9",
+      "take": "take-8-second-campaign",
+      "target": 9,
+      "ranges": [
+        {
+          "from": {
+            "ref": "down:second campaign field",
+            "offset": -0.6
+          },
+          "to": {
+            "ref": "down:second campaign send",
+            "offset": 0.3
+          }
+        },
+        {
+          "from": {
+            "ref": "down:second campaign send",
+            "offset": 0.3
+          },
+          "to": {
+            "ref": "mark:second loader 1",
+            "offset": -0.25
+          },
+          "timelapse": {
+            "duration": 0.6
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:second loader 1",
+            "offset": -0.25
+          },
+          "to": {
+            "ref": "mark:second loader 1",
+            "offset": 0.35
+          }
+        },
+        {
+          "from": {
+            "ref": "mark:second loader 1",
+            "offset": 0.35
+          },
+          "to": {
+            "ref": "scroll:chat to reply",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "timelapse": {
+            "duration": 1.2
+          }
+        },
+        {
+          "from": {
+            "ref": "scroll:chat to reply",
+            "offset": 0.2,
+            "edge": "end"
+          },
+          "to": {
+            "ref": "move:proof option 1",
+            "offset": -0.05
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "down:second campaign field",
+            "offset": -0.6
+          },
+          "box": "down:second campaign field",
+          "kind": "control"
+        },
+        {
+          "at": {
+            "ref": "down:second campaign send",
+            "offset": -0.55
+          },
+          "wide": true
+        }
+      ],
+      "captions": [
+        {
+          "text": "The next campaign follows your notes and your brand kit",
+          "at": {
+            "ref": "down:second campaign field",
+            "offset": 0.7
+          },
+          "hold": 3.5,
+          "variant": "wipe"
+        }
+      ],
+      "excise": [
+        {
+          "from": 130.0,
+          "to": 131.313,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s9b",
+      "group": "9",
+      "take": "take-9-export",
+      "target": 12,
+      "ranges": [
+        {
+          "from": {
+            "ref": "move:proof option 2",
+            "offset": -0.05
+          },
+          "to": {
+            "ref": "move:back to image (position)",
+            "offset": -0.05
+          }
+        },
+        {
+          "from": {
+            "ref": "move:export",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "down:export",
+            "offset": 0.15
+          }
+        }
+      ],
+      "holdFrames": [
+        3.3833,
+        3.4
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "down:proof option 2",
+            "offset": 0.25
+          },
+          "box": "mark:proof logo lockup",
+          "kind": "control",
+          "scale": 1.85
+        },
+        {
+          "at": {
+            "ref": "down:proof option 2",
+            "offset": 2.2
+          },
+          "box": "mark:proof image",
+          "kind": "pane"
+        },
+        {
+          "at": {
+            "ref": "scroll:to post text",
+            "offset": 0.05,
+            "edge": "end"
+          },
+          "box": "mark:proof sign-off",
+          "kind": "control",
+          "scale": 1.6
+        },
+        {
+          "at": {
+            "ref": "move:export",
+            "offset": -0.1
+          },
+          "box": "down:export",
+          "kind": "control",
+          "scale": 1.85,
+          "dur": 0.001
+        }
+      ],
+      "spotlights": [
+        {
+          "box": "mark:proof logo lockup",
+          "start": {
+            "ref": "down:proof option 2",
+            "offset": 0.8
+          },
+          "end": {
+            "ref": "down:proof option 2",
+            "offset": 2.3
+          }
+        },
+        {
+          "box": "mark:proof sign-off",
+          "start": {
+            "ref": "mark:proof sign-off",
+            "offset": 0
+          },
+          "end": {
+            "ref": "move:back to image (position)",
+            "offset": -0.15
+          }
+        }
+      ],
+      "captions": [
+        {
+          "text": "Your logo first. Your colour. Your button shape.",
+          "at": {
+            "ref": "down:proof option 2",
+            "offset": 0.6
+          },
+          "hold": 3.4,
+          "variant": "wipe"
+        },
+        {
+          "text": "Your sign-off, added by itself",
+          "at": {
+            "ref": "mark:proof sign-off",
+            "offset": -0.1
+          },
+          "hold": 2.3,
+          "variant": "words"
+        }
+      ],
+      "exit": {
+        "type": "hard"
+      },
+      "excise": [
+        {
+          "from": 6.717,
+          "to": 7.197,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        },
+        {
+          "from": 9.7,
+          "to": 10.097,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "group": "10",
+      "take": "take-9-export",
+      "target": 10.5,
+      "ranges": [
+        {
+          "from": {
+            "ref": "down:export",
+            "offset": 0.15
+          },
+          "to": {
+            "ref": "move:export tab 2",
+            "offset": -0.1
+          }
+        },
+        {
+          "from": {
+            "ref": "move:export tab 2",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "move:download zip",
+            "offset": -0.1
+          },
+          "timelapse": {
+            "duration": 0.8
+          }
+        },
+        {
+          "from": {
+            "ref": "move:download zip",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "move:download zip park",
+            "offset": 0.2,
+            "edge": "end"
+          }
+        },
+        {
+          "from": {
+            "ref": "move:copy text",
+            "offset": -0.1
+          },
+          "to": {
+            "ref": "down:copy text",
+            "offset": 1.5467
+          }
+        }
+      ],
+      "camera": [
+        {
+          "at": {
+            "ref": "down:export",
+            "offset": 0.3
+          },
+          "box": "mark:export sheet",
+          "kind": "pane"
+        }
+      ],
+      "captions": [
+        {
+          "text": "Download the kit. Paste the text. Post.",
+          "at": {
+            "ref": "down:download zip",
+            "offset": -0.3
+          },
+          "hold": 2.8,
+          "variant": "tick",
+          "end": {
+            "ref": "down:copy text",
+            "offset": 1.25
+          }
+        }
+      ],
+      "excise": [
+        {
+          "from": 17.517,
+          "to": 18.08,
+          "note": "dead hold (holds.py): keep 0.8 s"
+        }
+      ]
+    }
+  ]
+}

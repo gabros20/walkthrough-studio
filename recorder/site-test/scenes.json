@@ -1,0 +1,81 @@
+{
+  "scenes": [
+    {
+      "name": "take-1-search",
+      "start": "/site.html",
+      "steps": [
+        {
+          "hold": 0.6
+        },
+        {
+          "mark": {
+            "role": "heading",
+            "name": "Find a tyre for this winter"
+          },
+          "label": "headline"
+        },
+        {
+          "type": "winter",
+          "into": {
+            "placeholder": "Search tyres"
+          },
+          "label": "query"
+        },
+        {
+          "click": {
+            "role": "button",
+            "name": "Search"
+          },
+          "label": "search"
+        },
+        {
+          "wait": {
+            "quiet": {
+              "ms": 600,
+              "timeout": 15000
+            }
+          },
+          "label": "results"
+        },
+        {
+          "mark": {
+            "role": "list",
+            "name": "Results"
+          },
+          "label": "results list"
+        },
+        {
+          "click": {
+            "text": "Result 6:"
+          },
+          "label": "result 6"
+        },
+        {
+          "mark": {
+            "text": "Result 6:"
+          },
+          "label": "result 6 card"
+        },
+        {
+          "park": true,
+          "label": "result 6 park"
+        },
+        {
+          "scroll": {
+            "dy": -600
+          },
+          "label": "back to top"
+        },
+        {
+          "click": {
+            "text": "Result 8:"
+          },
+          "label": "result 8"
+        },
+        {
+          "hold": 0.8
+        }
+      ]
+    }
+  ]
+}

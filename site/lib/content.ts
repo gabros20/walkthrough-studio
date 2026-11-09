@@ -332,6 +332,100 @@ claude --plugin-dir ./walkthrough-studio`,
 export const INSTALL_DOC = blob("docs/INSTALL.md");
 
 /**
+ * "Ask your agent": how each install route's agent starts the lead skill, keyed by INSTALL_ROUTES id.
+ * `invoke` is what you type; in `say` and `models`, `backticks` render as code chips.
+ * Sources, all read 2026-11-09:
+ *   Claude Code  code.claude.com/docs/en/skills ("plugin skills are namespaced as /plugin-name:skill-name";
+ *                "Claude uses skills when relevant, or you can invoke one directly with /skill-name")
+ *   Codex        learn.chatgpt.com/docs/build-skills ("run /skills or type $ to mention a skill"; implicit
+ *                when the task matches the description); the in-session name of a plugin-installed skill
+ *                is UNVERIFIED (docs/INSTALL-RESEARCH.md section 3), so the line says to pick it from /skills
+ *   Cursor       cursor.com/docs/skills ("explicitly type /skill-name in chat"; "automatically applied when
+ *                the agent determines they are relevant")
+ *   Antigravity  antigravity.google/docs/skills ("Type /<skill-name> in the message box"; "it decides based
+ *                on context"); docs/INSTALL-RESEARCH.md section 5
+ *   Hermes       hermes-agent.nousresearch.com/docs/user-guide/features/skills ("Every installed skill is
+ *                automatically available as a slash command"); plain-words triggering is not documented
+ *   Models       docs/MODELS.md "The rule" (lead) and "The matrix" (tiers)
+ */
+export type AskRoute = { id: string; agent: string; invoke: string[]; say: string; models: string };
+
+export const ASK_ROUTES: AskRoute[] = [
+  {
+    id: "claude-code",
+    agent: "Claude Code",
+    invoke: ["/walkthrough-studio:walkthrough-film"],
+    say: "The plugin's skills are namespaced. Or just ask in plain words: Claude loads the skill when the request matches its description.",
+    models: "Lead on Claude Fable 5.1 (`/model fable`). The 9 agents bring their own tiers in `agents/*.md`: `opus`, `sonnet`, `haiku`.",
+  },
+  {
+    id: "skills-sh",
+    agent: "your agent",
+    invoke: ["/walkthrough-film", "$walkthrough-film"],
+    say: "`/walkthrough-film` in Claude Code, Cursor, Antigravity and Hermes; `$walkthrough-film` in Codex. Any other agent: check your agent's `/skills` list.",
+    models: "Lead on your agent's most capable model. skills.sh brings no sub-agents, so the lead runs each role itself from `agents/<name>.md` in the kit.",
+  },
+  {
+    id: "codex",
+    agent: "Codex",
+    invoke: ["$walkthrough-film", "/skills"],
+    say: "Type `$` and pick `walkthrough-film`, or open `/skills` (a plugin may list it under its plugin name: check your agent's `/skills` list). Or ask in plain words: Codex picks a skill whose description matches the task.",
+    models: "Lead on `gpt-6-astra`. No Markdown agents on Codex: run each role on its tier's model (large: `gpt-6.1-sol` · high), or write a TOML agent per role.",
+  },
+  {
+    id: "cursor",
+    agent: "Cursor",
+    invoke: ["/walkthrough-film"],
+    say: "Type `/` in Agent chat and search for it. Or ask in plain words: Cursor applies a skill when it judges it relevant.",
+    models: "Lead on Claude Fable 5.1. Copied agents run their own `model:`; if Cursor rejects the `opus` / `haiku` aliases, set `model: inherit`.",
+  },
+  {
+    id: "antigravity",
+    agent: "Antigravity",
+    invoke: ["/walkthrough-film"],
+    say: "In the app's message box or the CLI. Or ask in plain words: the agent decides from the skill's description.",
+    models: "Lead on Gemini 4 Argon, thinking High. No agents installed: the lead runs each role, or write subagents with `model: pro` / `flash`.",
+  },
+  {
+    id: "hermes",
+    agent: "Hermes",
+    invoke: ["/walkthrough-film"],
+    say: "Every installed skill is a slash command. Asking in plain words is not documented: use the command.",
+    models: "Lead on your main model (`hermes model`). No agents: define `large`, `medium` and `small` options under `delegation.backend: model_map`.",
+  },
+];
+
+/** The example request, and its voiceover variant (skills/walkthrough-film/SKILL.md "First decisions"). */
+export const ASK_REQUEST =
+  "Make a two-minute captioned walkthrough of https://app.example.com. Site mode, my test account is saved as auth.json. Desktop viewport. Hold off on the voiceover for now.";
+export const ASK_REQUEST_VO =
+  "Make a two-minute walkthrough of https://app.example.com with an ElevenLabs voiceover instead of captions. Site mode, my test account is saved as auth.json. Desktop viewport.";
+
+/**
+ * What the lead does after the request (skills/walkthrough-film/SKILL.md "Workflow" 0-14): `you` marks
+ * the steps that wait for the owner. In `text`, `backticks` render as code chips.
+ */
+export const ASK_STEPS: { text: string; you?: string }[] = [
+  {
+    text: "Confirms the mode, viewport and captions or voiceover, then runs `walkthrough doctor`.",
+    you: "fix what it reports (a missing ffmpeg, the kit clone)",
+  },
+  {
+    text: "Maps the site with `walkthrough explore` and writes the plan: story, film times, caption drafts, cost.",
+    you: "approve the plan",
+  },
+  { text: "Records the takes, drafts the cut, writes the captions and audits the build until it is clean, then renders." },
+  {
+    text: "Hands you `review/<name>/index.html`: every finding seeks the video and takes a note. Your notes go back into the cut.",
+    you: "review, then picture lock",
+  },
+  {
+    text: "Music (and the voiceover) after lock, mixed and verified; the film lands in `out/`. Audio is reported “measured, not heard”.",
+    you: "listen before it ships",
+  },
+];
+
+/**
  * One film from the CLI (docs/CLI.md "Running it" and the usage of each command). Lines starting
  * with "#" are muted labels. The setup lines are the README's clone + `npm run setup` and CLI.md's
  * WALKTHROUGH_STUDIO_HOME + alias.

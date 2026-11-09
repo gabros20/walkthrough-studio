@@ -51,6 +51,11 @@ function choose(id: string) {
   window.dispatchEvent(new Event(EVENT));
 }
 
+/** The platform chosen in any switcher on the page, for content that follows the tabs. */
+export function useInstallPlatform(): string {
+  return useSyncExternalStore(subscribe, read, () => DEFAULT);
+}
+
 /** A note with `backticks` around paths and commands, rendered as code chips that wrap only at spaces. */
 function Note({ text }: { text: string }) {
   return (

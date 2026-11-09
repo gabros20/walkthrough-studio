@@ -94,10 +94,33 @@ agent's role in the main session; nothing is skipped.
 
 ## Quick start
 
-Ask for the film in Claude Code and the `walkthrough-film` skill runs the whole job. To run the steps
-yourself, use the CLI. `walkthrough` has no npm dependencies, needs Node 22+ and is not installed globally:
-run it as `node $KIT/bin/walkthrough.mjs`, `npm run cli --` inside the kit, `npx --prefix $KIT walkthrough`, or
-through an alias as below. One film from a website:
+1. **Install** for your agent: the one-liner for your platform is in [Install](#install) above.
+2. **Ask your agent.** In a new session, start the lead skill, `walkthrough-film`:
+
+   | Agent | How to invoke |
+   |---|---|
+   | Claude Code (plugin) | `/walkthrough-studio:walkthrough-film`, or ask in plain words |
+   | Codex | `$walkthrough-film` or `/skills`, or ask in plain words |
+   | Cursor | `/walkthrough-film`, or ask in plain words |
+   | Antigravity | `/walkthrough-film`, or ask in plain words |
+   | Hermes | `/walkthrough-film` |
+   | Other agents (skills.sh) | check your agent's `/skills` list |
+
+   Then say what you want, for example:
+
+   ```text
+   Make a two-minute captioned walkthrough of https://app.example.com. Site mode, my test account is saved as auth.json. Desktop viewport. Hold off on the voiceover for now.
+   ```
+
+   The skill confirms the mode and captions or voiceover, runs `walkthrough doctor`, maps the site and asks
+   you to approve the plan; then it records, cuts, audits and renders, hands you `review/<name>/index.html`
+   for notes, and after picture lock adds the sound and delivers the film to `out/`. Audio is reported
+   "measured, not heard": you listen. Which model the lead and each sub-agent run on, per platform:
+   [`docs/MODELS.md`](docs/MODELS.md).
+3. **What the agent runs.** Every step is one `walkthrough` command, so you can run the same film yourself
+   ([`docs/CLI.md`](docs/CLI.md)). `walkthrough` has no npm dependencies, needs Node 22+ and is not installed
+   globally: run it as `node $KIT/bin/walkthrough.mjs`, `npm run cli --` inside the kit,
+   `npx --prefix $KIT walkthrough`, or through an alias as below. One film from a website:
 
 ```bash
 # once: the kit, the recorder's Chromium, the CLI on your path

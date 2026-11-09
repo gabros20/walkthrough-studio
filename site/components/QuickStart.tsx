@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ChevronDown } from "lucide-react";
+import { AskAgent } from "./AskAgent";
 import { CopyBlock } from "./CopyBlock";
 import { InstallTabs } from "./InstallTabs";
 import { Code, Heading, Shell } from "./Shell";
@@ -42,101 +43,121 @@ export function QuickStart() {
     <section aria-labelledby="quick-start" className="pb-24 pt-16 md:pb-36 md:pt-24">
       <Shell>
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-5">
-            <Heading
-              id="quick-start"
-              title="Quick start"
-              lede={
-                <>
-                  Install it for your agent, then ask for the film: the <Code>walkthrough-film</Code> skill plans, waits for
-                  your approval, and runs the takes, cut, review, sound, voiceover and delivery. Or run every step yourself
-                  with one CLI.
-                </>
-              }
-            />
-            <h3 className="heading mt-12 text-heading">You need</h3>
-            <ul className="mt-4 divide-y divide-cyc-deep border-y border-cyc-deep">
-              {PREREQS.map((p) => (
-                <li key={p} className="py-2.5 text-[0.95rem] text-muted">
-                  {p}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-[0.95rem] text-muted">
-              <Code>walkthrough doctor</Code> checks the tools above, free disk, whether the ElevenLabs key is set (never its
-              value) and the project&apos;s config, and exits 1 on any failure.
-            </p>
-          </div>
+          <Heading
+            id="quick-start"
+            className="lg:col-span-5"
+            title="Quick start"
+            lede={
+              <>
+                Install it for your agent, then ask for the film in your own words. The <Code>walkthrough-film</Code> skill
+                plans, waits for your approval, and runs the takes, cut, review, sound, voiceover and delivery.
+              </>
+            }
+          />
 
           <div className="lg:col-span-7 lg:pt-3">
-            <div id="install">
-              <h3 className="sr-only">Install</h3>
-              <InstallTabs />
+            <div id="install" className="scroll-mt-6">
+              <h3 className="heading text-heading">Install</h3>
+              <InstallTabs className="mt-4" />
             </div>
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-10 md:mt-20 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-5">
-            <h3 id="cli" className="heading scroll-mt-6 text-heading">
-              One film from the CLI
-            </h3>
-            <p className="mt-4 text-muted">
-              <Code>walkthrough</Code> is one command over every stage: no npm dependencies, Node 22+. Each command prints
-              the command it runs (<Code>›</Code>), so the CLI is a shortcut and never the only way. The Claude Code plugin
-              carries the whole repo; to run the CLI from a project folder, clone the kit once.
-            </p>
-            <p className="mt-4 text-muted">
-              Without the alias: <Code>node $KIT/bin/walkthrough.mjs &lt;command&gt;</Code> from anywhere, or{" "}
-              <Code>npm run cli -- &lt;command&gt;</Code> inside the kit. <Code>walkthrough help --all</Code> prints every
-              command&apos;s usage; the reference is{" "}
-              <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("docs/CLI.md")}>
-                docs/CLI.md
-              </a>
-              .
-            </p>
-          </div>
-          <div className="lg:col-span-7">
-            <CopyBlock title="a site tour, from init to delivery" code={CLI_COMMANDS} prompt wrap groups />
-          </div>
+        <div className="mt-16 md:mt-20">
+          <AskAgent />
         </div>
 
-        <details className="group mt-16 border-y border-cyc-deep md:mt-20">
+        <div className="mt-16 grid grid-cols-1 gap-6 md:mt-20 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-5">
+            <h3 className="heading text-heading">You need</h3>
+            <p className="mt-4 text-[0.95rem] text-muted">
+              The skill runs <Code>walkthrough doctor</Code> first: it checks the tools listed here, free disk, whether the
+              ElevenLabs key is set (never its value) and the project&apos;s config, and exits 1 on any failure.
+            </p>
+          </div>
+          <ul className="grid grid-cols-1 border-t border-cyc-deep sm:grid-cols-2 sm:gap-x-10 lg:col-span-7 lg:pt-1">
+            {PREREQS.map((p) => (
+              <li key={p} className="border-b border-cyc-deep py-2.5 text-[0.95rem] text-muted">
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <details id="cli" className="group/cli mt-16 scroll-mt-6 border-y border-cyc-deep md:mt-20">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 [&::-webkit-details-marker]:hidden">
-            <span className="heading text-heading">Or drive the kit by hand</span>
+            <span className="heading text-heading">What the agent runs</span>
             <span className="flex items-center gap-2 font-mono text-label text-muted">
-              <span className="hidden sm:inline">the tools without the CLI</span>
+              <span className="hidden sm:inline">the walkthrough CLI, step by step</span>
               <ChevronDown
                 size={18}
                 strokeWidth={2.25}
                 aria-hidden
-                className="transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+                className="transition-transform duration-200 group-open/cli:rotate-180 motion-reduce:transition-none"
               />
             </span>
           </summary>
-          <div className="pb-10 pt-1">
-            <p className="max-w-[52rem] text-muted">
-              With <Code>KIT</Code> = this repo, <Code>P</Code> = the film’s project folder and <Code>T</Code> = the takes
-              folder. The kit stays read-only; every output lands in <Code>$P</Code>. The voiceover twin is the same build
-              with <Code>--no-captions</Code>, rendered to <Code>renders/final-vo.mp4</Code>.
-            </p>
-            <CopyBlock className="mt-6" title="build a film from takes (README.md)" code={BUILD_COMMANDS} prompt />
-            <p className="mt-6 text-muted">
-              Full reference:{" "}
-              <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("README.md")}>
-                README.md
-              </a>{" "}
-              and{" "}
-              <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("recorder/README.md")}>
-                recorder/README.md
-              </a>
-              . What went wrong on the first film, and the fix for each:{" "}
-              <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("docs/LESSONS.md")}>
-                docs/LESSONS.md
-              </a>
-              .
-            </p>
+
+          <div className="grid grid-cols-1 gap-10 pb-10 pt-1 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-5">
+              <p className="text-muted">
+                Every step the skill takes is one <Code>walkthrough</Code> command: no npm dependencies, Node 22+. Each
+                command prints the command it runs (<Code>›</Code>), so the CLI is a shortcut and never the only way, and
+                you can run the same film yourself. The Claude Code plugin carries the whole repo; to run the CLI from a
+                project folder, clone the kit once.
+              </p>
+              <p className="mt-4 text-muted">
+                Without the alias: <Code>node $KIT/bin/walkthrough.mjs &lt;command&gt;</Code> from anywhere, or{" "}
+                <Code>npm run cli -- &lt;command&gt;</Code> inside the kit. <Code>walkthrough help --all</Code> prints every
+                command&apos;s usage; the reference is{" "}
+                <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("docs/CLI.md")}>
+                  docs/CLI.md
+                </a>
+                .
+              </p>
+            </div>
+            <div className="lg:col-span-7">
+              <CopyBlock title="a site tour, from init to delivery" code={CLI_COMMANDS} prompt wrap groups />
+            </div>
           </div>
+
+          <details className="group/hand mb-10 border-y border-cyc-deep">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-4 [&::-webkit-details-marker]:hidden">
+              <span className="heading text-[1.125rem]">Or drive the kit by hand</span>
+              <span className="flex items-center gap-2 font-mono text-label text-muted">
+                <span className="hidden sm:inline">the tools without the CLI</span>
+                <ChevronDown
+                  size={18}
+                  strokeWidth={2.25}
+                  aria-hidden
+                  className="transition-transform duration-200 group-open/hand:rotate-180 motion-reduce:transition-none"
+                />
+              </span>
+            </summary>
+            <div className="pb-10 pt-1">
+              <p className="max-w-[52rem] text-muted">
+                With <Code>KIT</Code> = this repo, <Code>P</Code> = the film’s project folder and <Code>T</Code> = the takes
+                folder. The kit stays read-only; every output lands in <Code>$P</Code>. The voiceover twin is the same build
+                with <Code>--no-captions</Code>, rendered to <Code>renders/final-vo.mp4</Code>.
+              </p>
+              <CopyBlock className="mt-6" title="build a film from takes (README.md)" code={BUILD_COMMANDS} prompt />
+              <p className="mt-6 text-muted">
+                Full reference:{" "}
+                <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("README.md")}>
+                  README.md
+                </a>{" "}
+                and{" "}
+                <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("recorder/README.md")}>
+                  recorder/README.md
+                </a>
+                . What went wrong on the first film, and the fix for each:{" "}
+                <a className="underline decoration-2 underline-offset-4 hover:decoration-key" href={blob("docs/LESSONS.md")}>
+                  docs/LESSONS.md
+                </a>
+                .
+              </p>
+            </div>
+          </details>
         </details>
       </Shell>
     </section>

@@ -365,3 +365,11 @@ in), a 3 px rounded outline traces clockwise from the top-left (0.55 s), both fa
   `assets/brand/`, `assets/creatives/`, `renders/`, `review/`, `sound-build/`, `assets/audio/`,
   `.hyperframes/` — edit the storyboard, the brand or the generators, not these. When developing in
   the kit's own `film/`, the same files land here and the same ignore list applies.
+- Temporary, and removed for you: `walkthrough render` keeps the HyperFrames frame cache in
+  `.hyperframes/frames-cache/` (not HyperFrames' default in the system temp folder) and removes it after a
+  successful render (`--keep-cache` keeps it for the next render of the same footage). The rest of
+  `.hyperframes/` is HyperFrames' own project state and stays. `walkthrough clean` removes what else a film
+  leaves behind once it is no longer needed: draft renders a later render replaced, sound drafts older than
+  their picture, `sound-build/.cache` and `analysis/`, and the `sheets/` and `cuts/` of review bundles older
+  than the latest (docs/CLI.md, `clean`). Kept: the latest render of each name with its sidecars,
+  `*.picture-only.mp4`, the sound build's mixes and reports, `out/`.

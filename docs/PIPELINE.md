@@ -52,7 +52,9 @@ The app runs from a disposable copy so the owner's dev setup is never touched.
   suppressed in the clone only.
 - Scripts: `up.sh`, `down.sh`, `checkpoint.sh <name>`, `restore.sh <name>`. They only ever kill pids they
   started. A checkpoint = stop the core, clone the DB folder and caches, save browser storage state.
-  **CLI**: `walkthrough studio up|down|checkpoint <name>|restore <name>|status`.
+  **CLI**: `walkthrough studio up|down|checkpoint <name> [--keep N]|restore <name>|prune|status`.
+  Checkpoints are APFS clones: Finder shows each at full size (ten of them looked like 9 GB on the first
+  job), but they share blocks, so they cost far less on disk. `walkthrough clean --dry` shows both sizes.
 - Demo account and assets: a fictional company, its logo (SVG → PNG at the size the app accepts), a one-time
   sign-in link in `link.txt` (never printed), checkpoint CP0 right after issuing it.
 - Before every recording session: sync the clone with the repo, rebuild, restart (lesson C2).
@@ -98,7 +100,8 @@ second request carry the saved rules. Note how long each turn takes.
 - `takes/INDEX.md` per pass: each take's labels and times, wait ranges, frame gaps over 100 ms with what is
   on screen, truth checks (does the screen show what the caption will claim), deviations.
 - By hand: `node $KIT/recorder/takes/run.mjs --config walkthrough.config.mjs [scenes]`. **CLI**:
-  `walkthrough take [scenes] [--auto]` (also records each take and checkpoint in `state.json`).
+  `walkthrough take [scenes] [--auto]` (also records each take and checkpoint in `state.json`, and removes
+  the raw screencast frames of every ok take: the master is the footage).
 
 ## 5. Edit (`film/`, `docs/STORYBOARD.md`, `docs/LOOK.md`)
 
@@ -189,7 +192,34 @@ describers and the critic read).
 
 Renamed masters and web encodes, per-feature clips, cropped stills, creative showcase sheets, written copy,
 README in md/html/pdf, a zip, and a verification run. **CLI**: `walkthrough deliver --preset sales` (or `web`,
-`social`, `docs`), which runs `delivery/run_preset.py` and then `delivery/verify.py`.
+`social`, `docs`), which runs `delivery/run_preset.py` and then `delivery/verify.py`. At the end it prints
+what `walkthrough clean` would free now and once the client accepts the film.
+
+## 10. Cleaning up
+
+Temporary folders never outlive the step that made them, and nothing the film no longer needs stays on the
+owner's disk after delivery. What cleans itself up:
+
+| Step | Removes | Keeps it with |
+|---|---|---|
+| `walkthrough take` | `raw/frames.bin` and `raw/frames.ndjson` of every ok take (`raw/delivered.json` stays for `takes/INDEX.md`) | `finish.keepRaw: true` in `walkthrough.config.mjs` |
+| `walkthrough render` | the HyperFrames frame cache (`.hyperframes/frames-cache/`, or `extract-cache/` on the buffer), the buffer's `tmp/` and the render copy once it is home | `--keep-cache` (the cache only) |
+| `walkthrough studio checkpoint <name> --keep N` | checkpoints older than the newest N, never the current one | leave out `--keep` |
+
+What needs a decision, with `walkthrough clean`:
+
+1. After picture lock: `walkthrough clean --dry`, read the table, then `walkthrough clean --yes`. It removes
+   rejected takes, raw frames of accepted takes, checkpoints but the newest (and the current one), frame
+   caches, the buffer's spill leftovers, sound-build intermediates, mock TTS audio, replaced draft renders
+   and the sheets of older review bundles.
+2. After the client accepts the delivery: `walkthrough clean --all --yes` (the exact line is printed by
+   `walkthrough deliver`). Also every checkpoint, the whole `raw/` of every take, the buffer folders and the
+   capture tests.
+
+The table lists every item with its logical size (what Finder and `du` show) and its size on disk (APFS
+clones counted once), keep or remove, and why. It never touches anything outside the project, the studio
+root and `<buffer>/<project name>/`. `walkthrough doctor` shows the reclaimable total and warns above 5 GB.
+Report the table to the owner before the final `--all`.
 
 ## Model tiers (who does what)
 

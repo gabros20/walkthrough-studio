@@ -19,6 +19,8 @@
 //   reviews: [ { render, out, at, audit: { errors, warnings } | null, holds, labels } ],   (review)
 //   spills: [ { at, step, from, to, projectFree, bufferFree } ],
 //   costs: [ { at, kind, units, amount, note } ],
+//   cleanups: [ { at, by, all, keepCheckpoints, keepTakes, removed, failed, refused, logical,
+//                 freedBytes, measuredBytes, items } ],                          (clean, studio prune)
 //   doctor: { at, fails, warns } | null
 // }
 //
@@ -54,6 +56,7 @@ const SECTIONS = {
   reviews: () => [],
   spills: () => [],
   costs: () => [],
+  cleanups: () => [],
   doctor: () => null,
 };
 

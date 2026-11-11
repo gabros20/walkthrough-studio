@@ -1,6 +1,6 @@
 {
   "name": "walkthrough-studio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Agent-driven toolkit for Screen-Studio-style walkthrough and tour videos of any web app or website, with captions or an ElevenLabs voiceover: studio mode (isolated clone of an owned app) or site mode (any URL), Playwright recorder with an action log, HyperFrames edit with a drawn pointer, camera and event-anchored captions, generated music, model-tiered review agents, and a delivery package.",
   "author": {
     "name": "Tamás Gábor"

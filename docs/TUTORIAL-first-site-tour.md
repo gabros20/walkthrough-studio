@@ -281,6 +281,27 @@ node $KIT/sound/build-sound.mjs --video renders/final.picture-only.mp4 --deliver
 Listen to the result on headphones and on laptop speakers before you send it: the numbers say the sound is
 there and in range, not that it sounds right.
 
+## 11. Clean up
+
+A tour leaves work files behind: raw screencast frames, the HyperFrames frame cache, draft renders, review
+contact sheets. `walkthrough take` and `walkthrough render` already remove their own (raw frames of ok takes,
+the frame cache after a successful render). For the rest, see what is left and how much it really costs:
+
+```bash
+walkthrough clean --dry
+```
+
+The table lists each item with its logical size (what Finder shows) and its size on disk, whether it goes or
+stays, and why. Your takes' masters, the latest render of each name, `out/` and anything that cost money
+(`voiceover/cache/`) stay. Once you are happy with the film:
+
+```bash
+walkthrough clean --yes          # what the table said
+walkthrough clean --all --yes    # after the film is accepted: the raw/ folders and capture tests too
+```
+
+Nothing outside the project folder (and its buffer folder, if you set one) is ever touched.
+
 ## Where to go next
 
 - A voiceover version of the same picture: skill `voiceover`, [`voiceover/README.md`](../voiceover/README.md).

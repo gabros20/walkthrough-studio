@@ -58,21 +58,22 @@ stop with exit code 2 and a hint when there is no project.
 |---|---|---|
 | `init <dir> [--mode site\|studio] [--url <baseUrl>] [--name <n>] [--force]` | `node film/scripts/init-project.mjs <dir>` | the project scaffold (below), `state.json` |
 | `doctor [--capture] [--out <file>] [--json]` | probes (`ffmpeg -encoders/-filters`, `python3 -I -c`, `npx hyperframes@0.9.16 --version`, …); `--capture`: `node recorder/capture-test.mjs new 2 idle 8` | `doctor.json`, `state.doctor` |
-| `studio up\|down\|checkpoint <name>\|restore <name>\|status\|tree [--build]\|paths` | `STUDIO_CONFIG=<project studio config> bash studio/bin/<x>.sh …` | `state.checkpoints` (checkpoint), `state.currentCheckpoint` (restore) |
+| `studio up\|down\|checkpoint <name> [--keep N]\|restore <name>\|prune [--keep N] [--dry]\|status\|tree [--build]\|paths` | `STUDIO_CONFIG=<project studio config> bash studio/bin/<x>.sh …` (`prune`, `--keep`: `--protect` the checkpoints `state.json` names) | `state.checkpoints` (checkpoint; `removedAt` when pruned), `state.currentCheckpoint` (restore), `state.cleanups` (prune) |
 | `explore [url] [--depth 2] [--max-pages 20] [--storage f] [--viewport desktop\|phone] [--out d]` | `node recorder/tools/explore.mjs <url> --config <project config> --out <project> …` | `tour-map.json`, `tour-map.md`, `thumbs/`, `scenes.draft.json`; `state.tourMap` |
 | `capture-test [mode scale phase seconds]` | `node recorder/capture-test.mjs …` (default `new 2 idle 30`) | `<takes>/_capture-test/…/result.json` (the tool's own) |
-| `take [scene…] [--auto] [--fresh] [--from N] [--to N] [--parallel N] [runner flags]` | `node recorder/takes/run.mjs --config <project>/walkthrough.config.mjs …` | takes (the runner's), `state.takes`, `state.checkpoints` |
+| `take [scene…] [--auto] [--fresh] [--from N] [--to N] [--parallel N] [runner flags]` | `node recorder/takes/run.mjs --config <project>/walkthrough.config.mjs …`, then removes the raw frames of ok takes | takes (the runner's), `state.takes`, `state.checkpoints` |
 | `draft [take…] [--out <file>]` | `node film/scripts/draft-storyboard.mjs <take dirs…> --out <file>` | `storyboard.json`, or `storyboard.draft.json` when one exists |
 | `build [storyboard] [--dry] [--audit] [--no-captions] [--placeholders] [--aspect a] [--fit-audio f] [--brand f] [--takes d] [build flags]` | (`node film/scripts/sync-assets.mjs` when needed) `node film/build.mjs <storyboard> --project <p> --takes <t> …` | the build's files, `state.builds`, `state.lastAudit` |
 | `captions brief [storyboard] [--all] [--voice]`, `captions apply [answers] [storyboard] [--force]` | `node film/scripts/draft-captions.mjs brief\|apply … --takes <t> --project <p>` | `captions.brief.md` / `.json`, a blank `captions.answers.json`; apply: the storyboard (+ `.bak`); `state.captions` |
 | `audit [storyboard] [--takes d] [audit flags]` | `node film/scripts/audit.mjs <storyboard> --project <p> --takes <t> …` | `state.lastAudit` |
-| `render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free GB] [--aspect a] [--fit-audio f] [--brand f] [--takes d] [render flags]` | disk policy, the build if needed (with the same build flags), `[caffeinate -i] npx --yes hyperframes@0.9.16 render -o renders/<name>.mp4 --fps <fps>` | `renders/<name>.mp4` + `.cues.json` `.edl.json` `.captions.srt`, `state.renders`, a `render` cost row |
+| `render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free GB] [--keep-cache] [--aspect a] [--fit-audio f] [--brand f] [--takes d] [render flags]` | disk policy, the build if needed (with the same build flags), `HYPERFRAMES_EXTRACT_CACHE_DIR=.hyperframes/frames-cache [caffeinate -i] npx --yes hyperframes@0.9.16 render -o renders/<name>.mp4 --fps <fps>`, then removes the frame cache | `renders/<name>.mp4` + `.cues.json` `.edl.json` `.captions.srt`, `state.renders`, a `render` cost row |
 | `review [--render final \| renders/x.mp4] [--out d] [bundle flags]` | `node film/scripts/review-bundle.mjs renders/<name>.mp4 --project <p> --out review/<name> --takes <t> --state state.json` | `review/<name>/` (`REVIEW.md`, `index.html`, `audit.json`/`.md`, `holds.md`, `audio.md`, `costs.md`, sheets, cut strips, `bundle.json`); `state.reviews` |
 | `state [--json]`, `state lock`, `state unlock` | none (works on `state.json` directly) | `state.pictureLock` (lock/unlock) |
 | `cost add --kind <tts\|music\|agent\|render\|other> --units <n> [--amount <n>] [--note <text>]`, `cost show [--json]` | none | `state.costs` |
 | `vo tts\|assemble\|lexicon\|translate\|listen-check\|fitcheck\|place\|script …` | `node voiceover/tts.mjs`, `lexicon.mjs`, `translate-brief.mjs`, `listen-check.mjs`; `python3 -I voiceover/fitcheck.py`, `place.py`, `make_script.py` | the tools' files in `voiceover/`; `state.voiceover`; TTS cost rows from `voiceover/cost.jsonl` folded into `state.costs` (`ELEVENLABS_MOCK` rows are not) |
 | `sound music\|build\|beat-grid …` | `node sound/generate-music.mjs`, `build-sound.mjs --project <p>` (disk policy with 1 GB, `caffeinate -i`), `beat-grid.mjs` | `sound-build/`, `music.json`; `state.sound`, `state.deliveries` (on a `delivered:` line), music cost rows |
-| `deliver --preset sales\|web\|social\|docs …` | `python3 -I delivery/run_preset.py <preset> --project <p> …`, then `delivery/verify.py` | the package under `out/` with `MANIFEST.txt`; `state.deliveries` |
+| `deliver --preset sales\|web\|social\|docs …` | `python3 -I delivery/run_preset.py <preset> --project <p> …`, then `delivery/verify.py`; prints what `clean` would free | the package under `out/` with `MANIFEST.txt`; `state.deliveries` |
+| `clean [--dry] [--all] [--keep-checkpoints N] [--keep-takes accepted\|all] [--yes]` | none (in-process; `python3 -I cli/lib/disk-usage.py` measures, each removal prints `› /bin/rm -rf …`) | removes what the table says; `state.cleanups`, `removedAt` / `rawRemoved` in `state.checkpoints` / `state.takes` |
 
 The full usage of every command is under [Usage of every command](#usage-of-every-command); it is
 generated from the command files, so it is the authority when this table and it disagree.
@@ -119,6 +120,8 @@ It prints a table (`ok` / `info` / `warn` / `fail`) and exits 1 if any row is `f
 | project config, scenes, storage state, studio config and scripts | missing or does not load | |
 | base URL | | site mode: does not answer (`info` in studio mode, because `studio up` starts it) |
 | capture test (`--capture`) | any pass flag false (unique frames, longest gap, sync, frame size) | |
+| reclaimable (in a project) | | what `walkthrough clean` would free on disk is over 5 GB (`info` below that, with the `--all` total) |
+| frame cache (system temp) | | HyperFrames' default cache in the system temp folder is over 5 GB (`info` below; never removed for you) |
 
 The JSON report goes to `<project>/doctor.json`. With no project it goes to `./doctor.json`, except when
 the current directory is the kit, which the CLI never writes to (pass `--out` there). With `--capture`,
@@ -140,6 +143,13 @@ start:
   `checkpoint` after a passing take. It is also appended to `state.checkpoints` with `by: "take"`.
 - `duration`, `masterSync`, `gaps: { outsideWaitsMs, insideWaitsMs }`, `warnings` (a count),
   `uniqueFps`, `error` (the first line, when the take failed), and `dir`.
+
+Then it cleans up after itself: for every `ok` take of the run that no go file turned down (`redo`), it
+removes `raw/frames.bin` and `raw/frames.ndjson` (`master.mp4` is the footage; `raw/delivered.json` stays,
+`takes/INDEX.md` reads it) and sets `rawRemoved: "frames"`. With `finish.keepRaw: true` in
+`walkthrough.config.mjs` they stay (to re-encode a master with `recorder/remux.mjs`). The recorder already
+deletes `frames.bin` when the master's sync check passes and `keepRaw` is false (the default), so this
+mostly catches the index and takes recorded with `keepRaw` on.
 
 The exit code is the runner's.
 
@@ -183,10 +193,62 @@ there are still no creatives, it stops with a hint. `--placeholders` writes flat
    each input that differs.
 3. `npx --yes hyperframes@0.9.16 render -o renders/<name>.mp4 --fps <fps>` in the project, under
    `caffeinate -i` on macOS. Unknown flags are passed to it (`--quality`, `--workers`, …).
+   The HyperFrames frame cache goes to `<project>/.hyperframes/frames-cache` (on a spill:
+   `<buffer>/<project>/render/extract-cache`) through `HYPERFRAMES_EXTRACT_CACHE_DIR`, instead of
+   HyperFrames' default in the system temp folder, where it would outlive the project. Set the variable
+   yourself or pass `--frames-cache-dir` and the CLI leaves the cache alone.
 4. Copies `cues.json`, `edl.json` and `captions.srt` to `renders/<name>.cues.json`, `.edl.json` and
    `.captions.srt` (the sound build reads them). It reads the duration and fps with ffprobe and warns
-   when the duration is more than a frame away from `cues.json`. It appends to `state.renders` and adds
-   a cost row of kind `render` (wall-clock minutes).
+   when the duration is more than a frame away from `cues.json`. It appends to `state.renders` (with
+   `frameCache: { dir, kept }`) and adds a cost row of kind `render` (wall-clock minutes).
+5. **Cleans up.** After a successful render it removes the frame cache (`--keep-cache` keeps it, which
+   makes the next render of the same footage faster) and, on a spill, the buffer's `tmp/` and the render
+   copy once it is copied home. After a failed render the cache stays for the retry; `clean` removes it.
+
+### `clean`
+
+`walkthrough clean --dry` prints one row per reclaimable item: item, kind, logical size, size on disk,
+`remove` / `keep` / `refuse`, and the reason. `walkthrough clean` asks before removing (`--yes` does not ask;
+agents use it); `--dry` removes nothing.
+
+| Removed by default | Kept |
+|---|---|
+| `raw/frames.bin` and `raw/frames.ndjson` of accepted takes (accepted in `state.takes`, or used by the storyboard) | each take's `master.mp4`, `events.json`, `take.json`, `verify/` and `raw/delivered.json` |
+| rejected take folders: `ok: false` or `accepted: false` in `state.takes`, and not in the storyboard (`--keep-takes all` keeps them) | takes not in `state.json` and takes not decided yet (raw frames too) |
+| studio checkpoints but the newest N (`--keep-checkpoints`, default 1) | the newest N, `state.currentCheckpoint`, `state.pictureLock.checkpoint`, the last restored (`<studio run>/current-checkpoint`) |
+| `.hyperframes/frames-cache/`; `tmp/` and `extract-cache/` in the spill folders | the rest of `.hyperframes/` (HyperFrames' own project files) |
+| render and zip copies on the buffer whose twin in `renders/` or `out/` has the same size; `sound-build/.cache` and `analysis/` there and in the project | the unzipped package on the buffer (the zip is in `out/`) |
+| `voiceover/cache-mock/` | `voiceover/cache/` (real TTS cost money) |
+| draft renders (`draft*`) a later non-draft render replaced, with their sidecars; `<name>-sound.mp4` / `-voiceover.mp4` older than their picture | the latest render of every other name and its sidecars, `*.picture-only.mp4`, `out/` |
+| `sheets/` and `cuts/` of review bundles older than the latest | the latest bundle whole; `REVIEW.md` and the findings of older ones |
+| raw frames of capture tests (`<takes>/_capture-test/*/raw/`) | their `result.json` |
+
+`--all` is for after the client accepts the film. It also removes every checkpoint, the whole `raw/` of
+every take, the buffer folders (`<buffer>/<project>/<step>/`, and the project folder there when it is
+empty), `sound-build/bed.wav` and `<takes>/_capture-test/`. `walkthrough deliver` prints the exact line.
+
+**Sizes.** "logical" is the sum of file sizes, what Finder and `du` show. On APFS a clone (`cp -c`, every
+studio checkpoint) shares its blocks with the file it was cloned from, but Finder and `du -sk` still count
+it in full: ten checkpoints of a 0.9 GB database look like 9 GB. "on disk" is what the row really costs:
+`cli/lib/disk-usage.py` reads each file's APFS private size (bytes no other file shares) and clone group
+(`getattrlist`), and counts blocks shared within the list once, on the first row that holds them, kept rows
+first. So the "on disk" total of the rows to remove is what removing them frees, and blocks shared with a
+file outside the list (a checkpoint and the live studio data it was cloned from) count as 0. Three
+checkpoints cloned from a 50 MB database that has changed since show "logical 150 MB, on disk 50 MB". Without
+APFS (or python3), "on disk" is the allocated size. After removing, the CLI also reports how much `df` says
+free space went up.
+
+**Safety.** Only the project folder, the studio root (`STUDIO_ROOT` from `studio/bin/paths.sh`) and the
+buffer folder `<buffer>/<project name>/` are ever touched. Every path is resolved (its folder's real path,
+the last component not followed) before it is listed and again before it is removed; a path that lands
+elsewhere, such as a symlink out of the project or a hand-edited `state.spills` entry, is listed as
+`refuse` and never removed. The kit is never written to. HyperFrames' default frame cache in the system
+temp folder (renders made before the CLI kept it in the project) is shared by every project, so `clean`
+and `doctor` only report its size.
+
+Each run is appended to `state.cleanups`; removed checkpoints get `removedAt` in `state.checkpoints`,
+removed takes `removedAt` and cleaned ones `rawRemoved` in `state.takes`. `walkthrough doctor` shows the
+same inventory as a "reclaimable" row and warns above 5 GB on disk.
 
 ## Usage of every command
 
@@ -270,6 +332,42 @@ Exit 1 when any pass flag (unique fps, longest gap, sync, frame size) is false. 
 docs/CAPTURE_TEST.md. Record on a quiet machine: no renders or encodes while it runs.
 ```
 
+### `walkthrough clean`
+
+list and remove what the project no longer needs: checkpoints, raw frames, caches, drafts
+
+```text
+walkthrough clean [--dry] [--all] [--keep-checkpoints N] [--keep-takes accepted|all] [--yes]
+
+Lists every reclaimable item of the project, its studio root (checkpoints) and its buffer folder
+(<buffer>/<project name>/, where the disk policy spilled), with its logical size (Finder, du) and
+its size on disk (APFS clones counted once: python3 -I <kit>/cli/lib/disk-usage.py), and what
+happens to it (remove / keep / refuse) and why. Then asks before removing (--yes: no question).
+Default policy:
+  remove  raw frames (raw/frames.bin, frames.ndjson) of accepted takes; the whole raw/ with --all
+  remove  rejected takes (ok false or not accepted, and not in the storyboard), unless --keep-takes all
+  remove  studio checkpoints but the newest N (--keep-checkpoints, default 1) and the current one
+          (state.currentCheckpoint, state.pictureLock.checkpoint, the last restored); --all: every one
+  remove  frame caches (.hyperframes/frames-cache, <buffer>/<project>/<step>/tmp and extract-cache)
+  remove  render and zip copies left on the buffer, sound-build/.cache and analysis/, voiceover/cache-mock/,
+          draft renders a later render replaced, sound drafts older than their picture,
+          sheets/ and cuts/ of review bundles older than the latest; raw frames of capture tests
+  keep    accepted take masters and events, the latest render per name and its sidecars, out/,
+          voiceover/cache/ (real TTS costs money), sound-build mixes and reports, the storyboard,
+          inputs and state.json; --all also removes the buffer folders, sound-build/bed.wav and
+          capture tests (run it after the client accepts the film)
+  --dry                 print the table only
+  --all                 after the client accepts the film: every checkpoint, raw/ of every take, the
+                        buffer folders, capture tests, sound-build/bed.wav
+  --keep-checkpoints N  newest checkpoints to keep (default 1; the current one is always kept)
+  --keep-takes all      keep rejected takes too (default accepted: rejected take folders go)
+  --yes                 remove without asking (agents)
+Never touches anything outside the project, the studio root and the buffer folder: a path that
+resolves elsewhere (a symlink, a state.spills entry) is listed as "refuse". Each run is appended to
+state.cleanups { at, all, removed, logical, freedBytes, measuredBytes (df before/after), items }.
+Exit code: 0, or 1 when the answer was no or a removal failed.
+```
+
 ### `walkthrough cost`
 
 cost ledger: add a row (tts, music, agent, render, other) or show it
@@ -311,6 +409,9 @@ prints every python/ffmpeg command it runs ("›"), writes MANIFEST.txt and runs
 Disk policy: when the project volume is short and a buffer has room, the output is written on the buffer and
 the zip is copied back to <project>/out/ (--zip is implied). Each run is appended to state.deliveries:
 { at, preset, render, out, zip, files, bytes, spilled, exit }.
+At the end it lists what `walkthrough clean --dry` would free now and once the client accepts the film
+(--all: checkpoints, raw frames, caches, buffer folders), with the exact line to run then. Nothing is
+removed by deliver itself.
 Presets and their numbers: delivery/presets.json; outputs: docs/DELIVERY.md.
 ```
 
@@ -326,7 +427,9 @@ Checks this machine and the project, prints a table (ok / info / warn / fail) an
   python3 with numpy and PIL; npx hyperframes@0.9.16 --version; Playwright Chromium for recorder/;
   the HyperFrames skills (hyperframes, media-use, hyperframes-cli) in ~/.claude; free disk on the project volume and the
   buffer (warn < 10 GB, fail < 5 GB unless the buffer has room); ELEVENLABS_API_KEY set or not (the
-  value is never printed); caffeinate on macOS; the project config, scenes, studio config and base URL.
+  value is never printed); caffeinate on macOS; the project config, scenes, studio config and base URL;
+  reclaimable: what `walkthrough clean` would free on disk now and with --all (warn above 5 GB now);
+  HyperFrames' default frame cache in the system temp folder (warn above 5 GB; never removed for you).
 --capture  also runs the 8 s capture test (recorder/capture-test.mjs new 2 idle 8) and reports the
            delivered fps, unique frames per second, the longest gap and the sync drift
 --out      where to write the JSON report (default <project>/doctor.json, else ./doctor.json; never in the kit)
@@ -397,7 +500,7 @@ Scaffolds a project folder outside the kit:
 render the film (HyperFrames) with the disk policy; copies the sidecars, records the render
 
 ```text
-walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free <GB>]
+walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free <GB>] [--keep-cache]
                   [--aspect 16:9|9:16|1:1] [--fit-audio <placement.json> [--fit-gap <s>] [--fit-max <s>]]
                   [--brand <file>] [--takes <dir>] [render flags]
 
@@ -417,10 +520,15 @@ walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [--pla
    with (or keep them in the storyboard), else it rebuilds to match what the inputs say now.
    With --no-build it renders what is there and warns about each input that differs.
 3. npx --yes hyperframes@0.9.16 render -o renders/<name>.mp4 --fps <fps>   (in the project; other flags pass through)
+   with the HyperFrames frame cache in the project: HYPERFRAMES_EXTRACT_CACHE_DIR=.hyperframes/frames-cache
+   (on a spill: <buffer>/<project>/render/extract-cache), unless you set it or pass --frames-cache-dir.
 4. Copies cues.json, edl.json, captions.srt to renders/<name>.cues.json / .edl.json / .captions.srt
    (the sound build and the voiceover tools read those), reads duration and fps with ffprobe, and
-   appends { name, file, at, fps, duration, captions, storyboardHash, seconds, spill } to state.renders
-   plus a cost row (kind render, units = wall-clock minutes).
+   appends { name, file, at, fps, duration, captions, storyboardHash, seconds, spill, frameCache }
+   to state.renders plus a cost row (kind render, units = wall-clock minutes).
+5. Cleans up after a successful render: removes the frame cache (--keep-cache keeps it for the next
+   render) and, on a spill, the buffer's TMPDIR and the render copy once it is copied home. After a
+   failed render the cache stays, so the next try is faster (`walkthrough clean` removes it).
 Exit code: the render's (or the build's, when the build fails).
 ```
 
@@ -476,8 +584,8 @@ walkthrough state [--json]
 walkthrough state lock | unlock
 
 Prints the project state (schema walkthrough-state/1; docs/CLI.md has the full shape): takes, checkpoints,
-picture lock, tour map, captions, builds, renders, reviews, sound, voiceover, deliveries, disk spills
-and the cost ledger.
+picture lock, tour map, captions, builds, renders, reviews, sound, voiceover, deliveries, disk spills,
+cleanups and the cost ledger.
   --json   the raw state.json
   lock     picture lock: records the storyboard's sha256 (later builds warn when it changes)
   unlock   clears the picture lock
@@ -485,19 +593,26 @@ and the cost ledger.
 
 ### `walkthrough studio`
 
-studio instance: up, down, checkpoint <name>, restore <name>, status, tree, paths
+studio instance: up, down, checkpoint <name> [--keep N], restore <name>, prune, status, tree, paths
 
 ```text
-walkthrough studio <up|down|checkpoint <name>|restore <name>|status|tree [--build]|paths>
+walkthrough studio <up|down|checkpoint <name> [--keep N]|restore <name>|prune [--keep N] [--dry]|status|tree [--build]|paths>
 
 Runs the kit's studio scripts with the project's studio config:
   STUDIO_CONFIG=<project studio config> bash <kit>/studio/bin/<script>.sh [args]
   up / down             start / stop the studio services (safe to repeat)
   checkpoint <name>     clone every data dir into checkpoints/<name>   (recorded in state.checkpoints)
+    --keep N            then prune older checkpoints to the newest N (this one included)
   restore <name>        replace the data with the checkpoint, bring the stack up (state.currentCheckpoint)
-  status                pids, ports, health, checkpoints on disk
+  prune [--keep N]      remove checkpoints but the newest N (default 1), the current one (last restored,
+        [--dry]         state.currentCheckpoint) and one named in state.pictureLock; --dry lists only.
+                        Prints free space on the studio volume before and after; state.cleanups
+  status                pids, ports, health, checkpoints on disk (newest first)
   tree [--build]        fresh copy of the source repo (+ production build)
   paths                 resolved paths as KEY=value lines
+Checkpoints are APFS clones: Finder shows each at full size, but they share blocks, so
+`walkthrough clean --dry` shows what they really cost on disk. They are disposable once the film
+is accepted (`walkthrough clean --all` removes them all).
 The studio config is walkthrough.config.mjs studio.config (made by `walkthrough init --mode studio`).
 Site-mode projects have none; the studio is for an app you own and run locally (studio/README.md).
 ```
@@ -521,7 +636,11 @@ When the runner exits, every take it wrote in this run is recorded in state.take
     warnings, uniqueFps, dir }
 ok = the runner's verdict (no error, master sync passed, longest gap outside waits <= gate.maxGapMs).
 accepted = ok under --auto/--parallel; with go files, true when the last go file for that take was
-"next" or "stop", null when the run ended without one. Exit code: the runner's.
+"next" or "stop", null when the run ended without one.
+Clean up: for every ok take of this run that was not turned down (a "redo"), the raw screencast frames
+(raw/frames.bin, raw/frames.ndjson) are removed: master.mp4 is the footage, and raw/delivered.json
+stays for takes/INDEX.md. Not when walkthrough.config.mjs sets finish.keepRaw: true (to re-encode a
+master with recorder/remux.mjs). Recorded as rawRemoved in state.takes. Exit code: the runner's.
 ```
 
 ### `walkthrough vo`
@@ -587,13 +706,16 @@ a new command can add its own section.
   "sound": [], "voiceover": [], "deliveries": [],
   "spills": [ { "at": "…", "step": "render", "from": "<project>", "to": "<buffer>/<project>/render", "projectFree": 0, "bufferFree": 0 } ],
   "costs": [ { "at": "…", "kind": "tts", "units": 1377, "amount": null, "note": "27 lines" } ],
+  "cleanups": [ { "at": "…", "by": "clean | studio prune | studio checkpoint", "all": false, "keepCheckpoints": 1,
+                  "keepTakes": "accepted", "removed": 13, "failed": 0, "refused": 0, "logical": 204278790,
+                  "freedBytes": 151883776, "measuredBytes": 151834624, "items": [ "<studio>/checkpoints/CP1", "…" ] } ],
   "doctor": { "at": "…", "fails": 0, "warns": 2 }
 }
 ```
 
 `tourMap` is written by `explore`, `captions` by `captions brief` / `apply`, `reviews` by `review`;
 `sound`, `voiceover` and `deliveries` are filled by the `sound`, `vo` and `deliver` commands (see their
-`--help`). Command files change state through `ctx.project.state` and `ctx.project.save()`. The helpers
+`--help`), `cleanups` by `clean` and `studio prune` / `checkpoint --keep`. Command files change state through `ctx.project.state` and `ctx.project.save()`. The helpers
 are in `cli/lib/state.mjs`.
 
 ## Disk policy
@@ -608,9 +730,10 @@ are in `cli/lib/state.mjs`.
 
 A buffer counts as mounted when the folder or its parent exists. An unmounted `/Volumes/X/…` does not
 count. Each spill is printed and recorded in `state.spills`. On macOS, long steps run under
-`caffeinate -i` (turn it off with `WALKTHROUGH_NO_CAFFEINATE=1`). The design named a
-`--frames-cache-dir` flag. HyperFrames 0.9.16 has no such flag, so the cache is moved with
-`HYPERFRAMES_EXTRACT_CACHE_DIR` and `TMPDIR` instead.
+`caffeinate -i` (turn it off with `WALKTHROUGH_NO_CAFFEINATE=1`). The cache is moved with
+`HYPERFRAMES_EXTRACT_CACHE_DIR` (what HyperFrames' own `--frames-cache-dir` flag sets) and `TMPDIR`. A
+local render keeps its cache in `<project>/.hyperframes/frames-cache`; either way `render` removes it after
+a successful render ([`clean`](#clean) has the rest).
 
 ## Exit codes
 
@@ -649,6 +772,7 @@ loader prints one warning line and skips it. Shared helpers:
 - `cli/lib/project.mjs`: `KIT_ROOT`, `kitPath`, `requireProject`, `resolvedConfig`, `takesDirOf`, `CliError`.
 - `cli/lib/state.mjs`: `addCost`, `sha256File`, `rel`, `now`.
 - `cli/lib/disk.mjs`: `diskPolicy`, `withCaffeinate`, `spillEnv`, `freeBytes`.
+- `cli/lib/clean.mjs`: `inventory`, `printInventory`, `removeRows`, `recordCleanup`, `studioPaths`, `checkTarget`.
 - `cli/lib/exec.mjs`: `exec`, `announce`, `capture`, `which`.
 - `cli/lib/table.mjs`: `table`, `printTable`, `fmtBytes`, `fmtSeconds`.
 - `cli/lib/film.mjs`: `runBuild`, `storyboardOf`, `parseAuditLine`.

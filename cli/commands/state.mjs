@@ -2,14 +2,14 @@
 import { parseArgs } from "../lib/args.mjs";
 import { requireProject } from "../lib/project.mjs";
 import { now, sha256File, STATE_SCHEMA } from "../lib/state.mjs";
-import { fmtDate, fmtSeconds, printTable } from "../lib/table.mjs";
+import { fmtBytes, fmtDate, fmtSeconds, printTable } from "../lib/table.mjs";
 
 const usage = `walkthrough state [--json]
 walkthrough state lock | unlock
 
 Prints the project state (schema ${STATE_SCHEMA}; docs/CLI.md has the full shape): takes, checkpoints,
-picture lock, tour map, captions, builds, renders, reviews, sound, voiceover, deliveries, disk spills
-and the cost ledger.
+picture lock, tour map, captions, builds, renders, reviews, sound, voiceover, deliveries, disk spills,
+cleanups and the cost ledger.
   --json   the raw state.json
   lock     picture lock: records the storyboard's sha256 (later builds warn when it changes)
   unlock   clears the picture lock`;
@@ -76,6 +76,10 @@ export default {
     if (s.spills.length) {
       h("disk spills");
       printTable(s.spills.map((x) => ({ at: fmtDate(x.at), step: x.step, to: x.to })));
+    }
+    if (s.cleanups?.length) {
+      h("cleanups (last 5)");
+      printTable(s.cleanups.slice(-5).map((x) => ({ at: fmtDate(x.at), by: x.by, all: x.all ?? null, removed: x.removed, freed: fmtBytes(x.freedBytes ?? x.measuredBytes ?? null) })));
     }
     h("costs");
     const byKind = {};

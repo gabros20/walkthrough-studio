@@ -39,6 +39,10 @@ It is used against *other* projects' apps. The rules below protect those project
 - Paid generations (music, speech, real agent turns) are budgeted; never repeat a call after "busy" in the
   same turn; never generate extra takes "to compare" without the owner's go-ahead.
 - In shell commands use `/bin/rm` and `/usr/bin/zip` (zsh aliases broke them). Run Python with `python3 -I`.
+- Clean up after yourself: temp folders never outlive the step. Frame caches, raw frames, spilled work files
+  and checkpoints nobody will restore are removed when their step ends (`walkthrough take` and `render` do
+  their own; `walkthrough clean --dry` lists the rest with logical and on-disk sizes, `clean --all --yes` once
+  the film is accepted). Never remove anything outside the project, its studio root or its buffer folder.
 - Do not publish, upload or share anything (packages, films, artifacts) without the owner's go-ahead.
 
 ## Before claiming done

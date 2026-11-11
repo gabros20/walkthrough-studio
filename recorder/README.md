@@ -32,6 +32,28 @@ Takes go to the config's `takesDir`, else `$WALKTHROUGH_TAKES`, else `takes/` at
 
 Raw frames are slotted by the browser's own timestamps (`slot = round((ts - T0) * 60)`); only the last frame per slot is kept, so memory stays flat and disk grows by at most 60 frames per second. Static stretches hold the last frame in the master.
 
+### A take folder, and what may be removed
+
+```
+takes/<name>/
+  master.mp4            the footage (kept)
+  events.json           the action log on the master clock (kept; the film reads it)
+  take.json             sync, gaps, warnings, the verdict (kept)
+  verify/sheet.jpg      the contact sheet the runner writes (kept; small)
+  downloads/            files the take downloaded (kept)
+  raw/frames.bin        every captured JPEG frame at full size: usually the largest file of the take
+  raw/frames.ndjson     the index into frames.bin
+  raw/delivered.json    when each frame arrived (small; takes/INDEX.md and takes/report.mjs read it)
+```
+
+`raw/frames.bin` and `raw/frames.ndjson` are only needed to re-encode the master (`remux.mjs`, e.g. at
+30 fps). `finish.keepRaw` decides when they go: with `false` (the config default) `take.finish()` deletes
+`frames.bin` as soon as the master's sync check passes, and `walkthrough take` removes both files of every ok
+take of the run; with `true` both stay until `walkthrough clean` removes them from accepted takes. Called
+directly (sample and capture-test scripts), `take.finish()` keeps them unless you pass `keepRaw: false`.
+Rejected takes go whole at `walkthrough clean` (not at once, so a reviewer can still look at them), and
+`walkthrough clean --all` removes the whole `raw/` of every take after the film is accepted.
+
 ## Files
 
 | File | What it does |
@@ -92,7 +114,7 @@ export default {
     context: {},                           // extra Playwright context options (permissions, locale, ...)
     launchArgs: [],                        // extra Chromium flags
   },
-  finish: { keepRaw: false, crf: 12, preset: "medium" }, // take.finish() options for every take
+  finish: { keepRaw: false, crf: 12, preset: "medium" }, // take.finish() options for every take; keepRaw: below
   gate: { maxGapMs: 100 },                 // a take is ok only if its longest capture gap outside waits is <= this
   reload: { path: "/", settleMs: 2500 },   // default off-camera reload after a restore or a resume
   studio: {                                // optional: checkpoint/restore with ../studio

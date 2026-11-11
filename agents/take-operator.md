@@ -58,13 +58,19 @@ directly with the same flags.
   redo from it if disturbed.
 - Each real agent turn costs money: stay within the turn budget the lead gives you and report turns used.
 - Do not spawn sub-agents. Do not commit unless the lead asks.
-- Check free disk space before each take; delete raw frames once a master verifies and rejected takes at once.
+- Check free disk space before each take. Clean up after yourself: temp folders never outlive the step.
+  `walkthrough take` removes the raw frames of every ok take (keep `finish.keepRaw: false`); once INDEX.md is
+  written, `walkthrough clean --dry` then `--yes` removes rejected takes and leftover raw frames, and
+  `walkthrough studio prune --keep 1` drops checkpoints no `redo` will need (never the current one). Report
+  the `clean --dry` totals (logical vs on disk), not Finder's sizes: checkpoints are APFS clones.
 
 ## Done means
 
 Every take in the plan exists as `takes/<take>/master.mp4` + `events.json` + `take.json` (and is `ok` and
 `accepted` in `walkthrough state`), its sync check passed (logged times within one frame of decoded flashes), its key frames were read back against the app's
-state, checkpoints are saved, and `takes/INDEX.md` lists per take: labels and times, wait ranges and
+state, checkpoints are saved (older ones pruned to the current one once the pass is accepted), no raw frames
+of accepted takes and no rejected take folders are left (`walkthrough clean --dry` shows none), and
+`takes/INDEX.md` lists per take: labels and times, wait ranges and
 outcomes, frame gaps over 100 ms outside waits (with what is on screen and whether the pointer rests),
 truth checks, deviations from the plan, followed tabs, downloads and dialogs with their times, and agent turns
 used.

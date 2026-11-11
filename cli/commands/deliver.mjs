@@ -4,8 +4,9 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 import { tmpdir } from "node:os";
 import { basename, isAbsolute, join } from "node:path";
 import { num, parseArgs } from "../lib/args.mjs";
+import { reclaimable } from "../lib/clean.mjs";
 import { diskPolicy, GB } from "../lib/disk.mjs";
-import { announce } from "../lib/exec.mjs";
+import { announce, quote } from "../lib/exec.mjs";
 import { CliError, kitPath, requireProject } from "../lib/project.mjs";
 import { now, rel } from "../lib/state.mjs";
 import { fmtBytes, printTable } from "../lib/table.mjs";
@@ -36,6 +37,9 @@ prints every python/ffmpeg command it runs ("›"), writes MANIFEST.txt and runs
 Disk policy: when the project volume is short and a buffer has room, the output is written on the buffer and
 the zip is copied back to <project>/out/ (--zip is implied). Each run is appended to state.deliveries:
 { at, preset, render, out, zip, files, bytes, spilled, exit }.
+At the end it lists what \`walkthrough clean --dry\` would free now and once the client accepts the film
+(--all: checkpoints, raw frames, caches, buffer folders), with the exact line to run then. Nothing is
+removed by deliver itself.
 Presets and their numbers: delivery/presets.json; outputs: docs/DELIVERY.md.`;
 
 const size = (p) => {
@@ -125,6 +129,23 @@ export default {
       );
       ctx.log.info(`\ndeliver ${preset}: ${rep.files} files, ${fmtBytes(rep.bytes)} in ${entry.out}${zip ? `; zip ${entry.zip} (${fmtBytes(rep.zipBytes)})` : ""}; recorded in state.deliveries`);
     } else ctx.log.warn(`deliver ${preset} did not finish (exit ${r.code}); recorded in state.deliveries`);
+
+    // ---- what the project still holds that it will not need once the film is accepted
+    if (r.code === 0) {
+      const projectFlag = process.cwd() === P ? "" : ` --project ${quote(P)}`;
+      announce("walkthrough", ["clean", "--dry", "--all", ...(projectFlag ? ["--project", P] : [])]);
+      try {
+        const inv = await reclaimable(project);
+        const n = inv.now.totals.remove, a = inv.all.totals.remove;
+        ctx.log.info(
+          `\nreclaimable: ${fmtBytes(n.onDisk)} on disk now (${n.count} item(s); \`walkthrough clean --dry\` lists them)` +
+            `\nonce the client accepts the film: ${fmtBytes(a.onDisk)} on disk, logical ${fmtBytes(a.logical)} (${a.count} item(s): checkpoints, raw frames, caches, buffer folders). Then run:` +
+            `\n  walkthrough clean --all --yes${projectFlag}`,
+        );
+      } catch (err) {
+        ctx.log.warn(`could not list what is reclaimable (${String(err?.message ?? err).split("\n")[0]}); run walkthrough clean --dry`);
+      }
+    }
     return r.code;
   },
 };

@@ -133,4 +133,46 @@ clone_dir() {
 
 valid_name() { [[ "$1" =~ ^[A-Za-z0-9_-]+$ ]] || die "bad checkpoint name '$1' (letters, digits, - and _)"; }
 
+# The checkpoint last restored (restore.sh writes it): never pruned.
+current_checkpoint() { [ -f "$STUDIO_RUN/current-checkpoint" ] && cat "$STUDIO_RUN/current-checkpoint" || true; }
+
+# Checkpoint names, newest first (by the folder's birth time, else its mtime; ties by name).
+checkpoints_newest_first() {
+  local d n t
+  for d in "$STUDIO_CHECKPOINTS"/*/; do
+    [ -d "$d" ] || continue
+    d="${d%/}"; n="$(basename "$d")"
+    [[ "$n" =~ ^[A-Za-z0-9_-]+$ ]] || continue
+    t="$(stat -f %B "$d" 2>/dev/null || stat -c %W "$d" 2>/dev/null || echo 0)"
+    case "$t" in ''|0|-|*[!0-9]*) t="$(stat -f %m "$d" 2>/dev/null || stat -c %Y "$d" 2>/dev/null || echo 0)" ;; esac
+    echo "$t $n"
+  done | sort -k1,1nr -k2,2r | awk '{print $2}'
+}
+
+# prune_checkpoints <keep> <dry 0|1> [protected name ...]: removes every checkpoint but the newest
+# <keep>, the current one (current_checkpoint) and the protected names. Prints one line per checkpoint:
+# "keep <name> (why)", "removed <name>" or "would remove <name>". Clones share blocks, so the space a
+# removed checkpoint frees is only what it does not share with the data or a kept checkpoint.
+prune_checkpoints() {
+  local keep="$1" dry="$2"; shift 2
+  [[ "$keep" =~ ^[0-9]+$ ]] || die "--keep needs a whole number (got '$keep')"
+  local current i=0 name why p
+  current="$(current_checkpoint)"
+  for name in $(checkpoints_newest_first); do
+    i=$((i + 1)); why=""
+    if [ "$i" -le "$keep" ]; then why="newest $keep"
+    elif [ -n "$current" ] && [ "$name" = "$current" ]; then why="current: last restored"
+    else
+      for p in "$@"; do if [ "$p" = "$name" ]; then why="protected"; fi; done
+    fi
+    if [ -n "$why" ]; then echo "keep $name ($why)"
+    elif [ "$dry" = 1 ]; then echo "would remove $name"
+    else
+      case "$STUDIO_CHECKPOINTS/$name" in "$STUDIO_ROOT"/*) ;; *) die "checkpoint $name is outside STUDIO_ROOT; refusing" ;; esac
+      /bin/rm -rf "${STUDIO_CHECKPOINTS:?}/$name"
+      echo "removed $name"
+    fi
+  done
+}
+
 load_config

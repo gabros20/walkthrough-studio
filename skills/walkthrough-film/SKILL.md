@@ -50,6 +50,7 @@ walkthrough state lock                            # picture lock
 walkthrough sound music | beat-grid | build --deliver out/<film>.mp4
 walkthrough vo tts | assemble | listen-check …     # voiceover twin
 walkthrough deliver --preset sales|web|social|docs --video out/<film>.mp4
+walkthrough clean --dry                           # report the table; clean --all --yes once accepted
 ```
 
 The by-hand commands in each step skill are the fallback (no CLI, a flag the CLI does not pass, or
@@ -129,6 +130,8 @@ voiceover fit check → render both once.
 - Paid generations (music, speech, real agent turns in the app) are budgeted, never retried in the same turn
   after "busy", and never repeated to "try again".
 - Use `/bin/rm` and `/usr/bin/zip` by absolute path (shell aliases broke them).
+- Clean up after yourself: temporary folders never outlive the step that made them. Never leave checkpoints,
+  raw frames, frame caches or spilled work files on the owner's disk after the job (`walkthrough clean`).
 
 ## Agents and model tiers
 
@@ -205,6 +208,11 @@ the kit; the built-in `Explore` and `Plan` rows become your own read-only survey
   two packager agents in parallel; you review the hero sheet, a few stills, the README; verify; zip.
 - [ ] **14. Hand over.** Paths, durations, loudness numbers, known flaws with times, listening checks for a
   human, the open licence check for generated media, what is not in git.
+- [ ] **15. Clean up (required).** After delivery run `walkthrough clean --dry`, report the table to the
+  owner (logical vs on-disk size, what goes, what stays), and run `walkthrough clean --all --yes` once they
+  accept the film (`walkthrough deliver` prints the exact line). Never leave checkpoints, raw frames or
+  caches behind. Earlier, `walkthrough clean --yes` after picture lock is fine; it keeps the newest and the
+  current checkpoint.
 
 ## Scheduling rules learned the hard way
 

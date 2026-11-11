@@ -5,6 +5,41 @@ versions follow [semver](https://semver.org/) and are set with `scripts/version.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-11
+
+### Added
+
+- **`walkthrough clean [--dry] [--all] [--keep-checkpoints N] [--keep-takes accepted|all] [--yes]`**
+  (`cli/commands/clean.mjs`, `cli/lib/clean.mjs`): lists every reclaimable item of the project, its studio root
+  and its buffer folder with its logical size and its size on disk (APFS clones counted once, measured by
+  `cli/lib/disk-usage.py` from the APFS private size and clone groups: three clones of a 50 MB database show
+  150 MB logical, 50 MB on disk), whether it goes and why; asks before removing (`--yes` for agents). Default:
+  rejected takes, raw frames of accepted takes, checkpoints but the newest and the current one, frame caches,
+  render copies and `tmp/` on the buffer, `sound-build/.cache` and `analysis/`, `voiceover/cache-mock/`, draft
+  renders a later render replaced, stale sound drafts, sheets and cut strips of older review bundles, raw frames
+  of capture tests. `--all` (after the client accepts): every checkpoint, the whole `raw/` of every take, the
+  buffer folders, capture tests. Paths that resolve outside the project, the studio root and
+  `<buffer>/<project>/` are refused. Each run goes to `state.cleanups`.
+- **`walkthrough studio prune [--keep N] [--dry]`** and **`studio checkpoint <name> --keep N`**
+  (`studio/bin/prune.sh`, `checkpoint.sh --keep N`): older checkpoints removed, never the last restored one
+  (`restore.sh` now writes `run/current-checkpoint`) or one `state.json` names.
+
+### Changed
+
+- `walkthrough render` keeps the HyperFrames frame cache in the project (`.hyperframes/frames-cache`, or
+  `extract-cache/` on the buffer) instead of the system temp folder, and removes it after a successful render
+  (`--keep-cache` keeps it); on a spill it also removes the buffer's `tmp/` and the render copy once copied home.
+- `walkthrough take` removes `raw/frames.bin` and `raw/frames.ndjson` of every ok take of the run unless
+  `finish.keepRaw` is true (`raw/delivered.json` stays for `takes/INDEX.md`).
+- `walkthrough deliver` ends with what `clean` would free now and after acceptance, and the exact
+  `walkthrough clean --all --yes` line; `walkthrough doctor` has a "reclaimable" row (warn above 5 GB on disk)
+  and reports HyperFrames' default frame cache in the system temp folder.
+- `studio/bin/status.sh` lists checkpoints newest first with the last restored one; `walkthrough state` shows
+  the last cleanups.
+- Skills `walkthrough-film`, `record-takes`, `build-film`, `deliver-package`, agents `take-operator`,
+  `film-editor`, `delivery-packager`, `studio-builder` and `CLAUDE.md`/`AGENTS.md`: clean up after yourself,
+  temporary folders never outlive the step.
+
 ## [0.2.0] - 2026-11-09
 
 ### Added
@@ -207,6 +242,7 @@ is anonymised as Brightpost.
 - `${VAR}` is expanded in every delivery path; the example's paths come from `BRIGHTPOST_REPO`.
 - `docs/ELEVENLABS.md` downloaded files into the kit's `film/`; it now uses the film's project folder.
 
-[Unreleased]: https://github.com/gabros20/walkthrough-studio/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/gabros20/walkthrough-studio/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/gabros20/walkthrough-studio/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/gabros20/walkthrough-studio/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/gabros20/walkthrough-studio/releases/tag/v0.1.0

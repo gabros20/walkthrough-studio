@@ -1,7 +1,7 @@
 // walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [build flags]: HyperFrames
 // render with the disk policy, rebuilding first when the build on disk is not what these inputs make,
 // sidecars copied beside the render, recorded in state.renders.
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { num, parseArgs } from "../lib/args.mjs";
 import { diskPolicy, GB, MIN_FREE_BYTES, spillEnv, withCaffeinate } from "../lib/disk.mjs";
@@ -13,7 +13,7 @@ import { fmtSeconds } from "../lib/table.mjs";
 
 const HYPERFRAMES = "hyperframes@0.9.16";
 
-const usage = `walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free <GB>]
+const usage = `walkthrough render [--name final] [--fps 60] [--no-captions] [--no-build] [--placeholders] [--min-free <GB>] [--keep-cache]
                   [--aspect 16:9|9:16|1:1] [--fit-audio <placement.json> [--fit-gap <s>] [--fit-max <s>]]
                   [--brand <file>] [--takes <dir>] [render flags]
 
@@ -33,10 +33,15 @@ const usage = `walkthrough render [--name final] [--fps 60] [--no-captions] [--n
    with (or keep them in the storyboard), else it rebuilds to match what the inputs say now.
    With --no-build it renders what is there and warns about each input that differs.
 3. npx --yes ${HYPERFRAMES} render -o renders/<name>.mp4 --fps <fps>   (in the project; other flags pass through)
+   with the HyperFrames frame cache in the project: HYPERFRAMES_EXTRACT_CACHE_DIR=.hyperframes/frames-cache
+   (on a spill: <buffer>/<project>/render/extract-cache), unless you set it or pass --frames-cache-dir.
 4. Copies cues.json, edl.json, captions.srt to renders/<name>.cues.json / .edl.json / .captions.srt
    (the sound build and the voiceover tools read those), reads duration and fps with ffprobe, and
-   appends { name, file, at, fps, duration, captions, storyboardHash, seconds, spill } to state.renders
-   plus a cost row (kind render, units = wall-clock minutes).
+   appends { name, file, at, fps, duration, captions, storyboardHash, seconds, spill, frameCache }
+   to state.renders plus a cost row (kind render, units = wall-clock minutes).
+5. Cleans up after a successful render: removes the frame cache (--keep-cache keeps it for the next
+   render) and, on a spill, the buffer's TMPDIR and the render copy once it is copied home. After a
+   failed render the cache stays, so the next try is faster (\`walkthrough clean\` removes it).
 Exit code: the render's (or the build's, when the build fails).`;
 
 function probe(file) {
@@ -55,7 +60,7 @@ export default {
   async run(argv, ctx) {
     const project = requireProject(ctx);
     const { opts, unknown } = parseArgs(argv, {
-      boolean: ["captions", "build", "placeholders"],
+      boolean: ["captions", "build", "placeholders", "keep-cache"],
       string: ["name", "fps", "min-free", "aspect", "fit-audio", "fit-gap", "fit-max", "brand", "takes"],
     });
     const name = opts.name ?? "final";
@@ -109,17 +114,42 @@ export default {
     mkdirSync(join(P, "renders"), { recursive: true });
     const out = plan.action === "spill" ? join(plan.workDir, `${name}.mp4`) : `renders/${name}.mp4`;
 
-    // ---- render
+    // ---- render, with the frame cache where this command can remove it afterwards
+    const env = spillEnv(plan);
+    const userCache = Boolean(process.env.HYPERFRAMES_EXTRACT_CACHE_DIR) || unknown.some((a) => a === "--frames-cache-dir" || a.startsWith("--frames-cache-dir="));
+    let frameCache = null;
+    if (userCache) delete env.HYPERFRAMES_EXTRACT_CACHE_DIR;
+    else {
+      env.HYPERFRAMES_EXTRACT_CACHE_DIR ??= join(P, ".hyperframes", "frames-cache");
+      frameCache = env.HYPERFRAMES_EXTRACT_CACHE_DIR;
+    }
     const w = withCaffeinate("npx", ["--yes", HYPERFRAMES, "render", "-o", out, "--fps", String(fps), ...unknown]);
     const t0 = Date.now();
-    const r = await ctx.exec(w.cmd, w.args, { cwd: P, env: spillEnv(plan) });
+    const r = await ctx.exec(w.cmd, w.args, { cwd: P, env });
     const seconds = Math.round((Date.now() - t0) / 100) / 10;
-    if (r.code !== 0) return r.code;
+    if (r.code !== 0) {
+      if (frameCache && existsSync(frameCache)) ctx.log.info(`the frame cache stays for the next try: ${rel(P, frameCache)} (\`walkthrough clean\` removes it)`);
+      return r.code;
+    }
     if (plan.action === "spill") {
       announce("cp", [out, local]);
       copyFileSync(out, local);
     }
     if (!existsSync(local)) throw new CliError(`the render finished but ${local} is missing`);
+
+    // ---- clean up after yourself: the frame cache, the spill's TMPDIR and render copy
+    const temp = [];
+    if (frameCache && !opts["keep-cache"]) temp.push(frameCache);
+    if (plan.action === "spill") {
+      if (env.TMPDIR) temp.push(env.TMPDIR);
+      if (statSync(out).size === statSync(local).size) temp.push(out);
+    }
+    const gone = temp.filter((p) => existsSync(p));
+    if (gone.length) {
+      announce("/bin/rm", ["-rf", ...gone]);
+      for (const p of gone) rmSync(p, { recursive: true, force: true });
+    }
+    if (frameCache && opts["keep-cache"]) ctx.log.info(`--keep-cache: the frame cache stays in ${rel(P, frameCache)}`);
 
     // ---- sidecars, probe, state
     for (const [src, suffix] of [["cues.json", "cues.json"], ["edl.json", "edl.json"], ["captions.srt", "captions.srt"]]) {
@@ -155,6 +185,7 @@ export default {
       seconds,
       caffeinated: w.caffeinated,
       spill: plan.action === "spill" ? plan.workDir : null,
+      frameCache: frameCache ? { dir: rel(P, frameCache), kept: Boolean(opts["keep-cache"]) } : null,
     };
     project.state.renders.push(entry);
     addCost(project.state, { kind: "render", units: Math.round((seconds / 60) * 100) / 100, note: `render ${name} (wall-clock minutes)` });

@@ -21,5 +21,6 @@ for entry in "${STUDIO_DATA[@]}"; do
   how="$(clone_dir "$src/$dname" "$dst")"
   echo "  $dname: $how"
 done
+echo "$name" >"$STUDIO_RUN/current-checkpoint"   # prune.sh never removes it
 for svc in "${STUDIO_SERVICES[@]}"; do start_svc "$svc"; done
 echo "restored $name; stack is up"

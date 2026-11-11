@@ -93,6 +93,12 @@ ship a package whose README or copy still says `TODO`. The by-hand steps below a
   the README. Send fixes back.
 - [ ] `python3 -I delivery/verify.py package.config.json --loudness` passes.
 - [ ] `delivery/zip.sh <out>`; report the zip path, size and file count.
+- [ ] **Clean up (the final step).** `walkthrough deliver` ends with what is reclaimable now and once the
+  client accepts, and the exact `walkthrough clean --all --yes` line. Run `walkthrough clean --dry`, put the
+  table (logical vs on-disk size, what goes, what stays) in the handover, and once the owner says the film is
+  accepted run `walkthrough clean --all --yes`: every checkpoint, raw frames, frame caches and buffer folders
+  go; the packages in `out/`, the masters and the latest renders stay. A packager's scratch folders go when
+  its step ends. Never leave checkpoints, raw frames or caches behind.
 
 ## Verification
 
@@ -106,7 +112,8 @@ checklist in `docs/DELIVERY.md` ticked, and your own look at the items above.
 `out/<Product>_Social`, `out/<Product>_Docs` (the other presets), each with `MANIFEST.txt`, plus a handover
 message: what is in each
 folder with sizes, known flaws in the films with times, listening checks for a human, the open licence check
-for generated media, and that nothing was uploaded.
+for generated media, that nothing was uploaded, and the `walkthrough clean --dry` table with the line to run
+after acceptance.
 
 ## Pitfalls (from `docs/LESSONS.md`)
 

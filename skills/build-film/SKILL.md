@@ -146,9 +146,12 @@ node $KIT/sound/build-sound.mjs --video renders/final.mp4 --deliver out/<film>.m
   lines overrun: shorten the lines.
 - [ ] **Build and render a draft** in the foreground: `walkthrough build --audit` then `walkthrough render
   --name <name>` (it copies `cues.json`, `edl.json`, `captions.srt` beside the render as
-  `renders/<name>.cues.json`, `.edl.json`, `.captions.srt`). By hand: `node $KIT/film/build.mjs --takes $T
-  --audit`, `npx --yes hyperframes@0.9.16 check --json`, `npx --yes hyperframes@0.9.16 render -o
-  renders/<name>.mp4 --fps 60`, then copy the three sidecars yourself.
+  `renders/<name>.cues.json`, `.edl.json`, `.captions.srt`). The frame cache is removed after a successful
+  render: `walkthrough render` keeps it in `.hyperframes/frames-cache` and deletes it when the render is
+  done (`--keep-cache` keeps it while you render the same footage again; then `walkthrough clean`). By hand:
+  `node $KIT/film/build.mjs --takes $T --audit`, `npx --yes hyperframes@0.9.16 check --json`,
+  `HYPERFRAMES_EXTRACT_CACHE_DIR=.hyperframes/frames-cache npx --yes hyperframes@0.9.16 render -o
+  renders/<name>.mp4 --fps 60`, copy the three sidecars yourself and `/bin/rm -rf .hyperframes/frames-cache`.
 - [ ] **Look.** `walkthrough review --render <name>` makes the contact sheets and cut strips (skill
   `review-film`); or `python3 $KIT/film/scripts/scene-sheets.py renders/<name>.mp4 edl.json <outdir> 1 480`
   per scene. Check the pointer treatments read well, the heartbeat pixel in zoomed top-left framings,
@@ -195,3 +198,6 @@ per-scene sheets; the editor's durations table and flaw list.
   test (`npm test` in the kit), not for a film. Changes to `film/lib` move the goldens on purpose only.
 - A caption whose claim is not visible (E5): cut it or fix the app.
 - Re-timing after VO placement without a fit check (E9) costs a second render.
+- Frame caches and drafts left behind fill the owner's disk: `--keep-cache` only between renders of the same
+  footage; after picture lock `walkthrough clean --yes` drops replaced `draft*` renders and the sheets of older
+  review bundles. Temp folders never outlive the step.

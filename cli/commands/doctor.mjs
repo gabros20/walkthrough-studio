@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "../lib/args.mjs";
+import { reclaimable, systemFrameCache } from "../lib/clean.mjs";
 import { bufferOf, freeBytes, MIN_FREE_BYTES, WARN_FREE_BYTES } from "../lib/disk.mjs";
 import { capture, which } from "../lib/exec.mjs";
 import { insideKit, kitPath, resolvedConfig } from "../lib/project.mjs";
@@ -19,7 +20,9 @@ Checks this machine and the project, prints a table (ok / info / warn / fail) an
   python3 with numpy and PIL; npx ${HYPERFRAMES} --version; Playwright Chromium for recorder/;
   the HyperFrames skills (${SKILLS.join(", ")}) in ~/.claude; free disk on the project volume and the
   buffer (warn < 10 GB, fail < 5 GB unless the buffer has room); ELEVENLABS_API_KEY set or not (the
-  value is never printed); caffeinate on macOS; the project config, scenes, studio config and base URL.
+  value is never printed); caffeinate on macOS; the project config, scenes, studio config and base URL;
+  reclaimable: what \`walkthrough clean\` would free on disk now and with --all (warn above 5 GB now);
+  HyperFrames' default frame cache in the system temp folder (warn above 5 GB; never removed for you).
 --capture  also runs the 8 s capture test (recorder/capture-test.mjs new 2 idle 8) and reports the
            delivered fps, unique frames per second, the longest gap and the sync drift
 --out      where to write the JSON report (default <project>/doctor.json, else ./doctor.json; never in the kit)
@@ -161,6 +164,25 @@ export default {
         }
       }
     }
+
+    // ---- reclaimable (the same inventory as `walkthrough clean --dry`)
+    if (project) {
+      try {
+        const inv = await reclaimable(project);
+        const n = inv.now.totals.remove;
+        const a = inv.all.totals.remove;
+        add(
+          "reclaimable",
+          n.onDisk > MIN_FREE_BYTES ? "warn" : "info",
+          `${fmtBytes(n.onDisk)} on disk in ${n.count} item(s) (logical ${fmtBytes(n.logical)}): walkthrough clean --dry; after delivery, --all: ${fmtBytes(a.onDisk)}${n.onDisk > MIN_FREE_BYTES ? "; over 5 GB: run walkthrough clean" : ""}`,
+        );
+      } catch (err) {
+        add("reclaimable", "warn", `inventory failed: ${String(err?.message ?? err).split("\n")[0]}`);
+      }
+    }
+
+    const sys = systemFrameCache();
+    if (sys?.bytes) add("frame cache (system temp)", sys.bytes > MIN_FREE_BYTES ? "warn" : "info", `${fmtBytes(sys.bytes)} in ${sys.dir}: HyperFrames' default, from renders without the project cache; /bin/rm -rf it when no render runs`);
 
     // ---- capture test
     let captureResult = null;

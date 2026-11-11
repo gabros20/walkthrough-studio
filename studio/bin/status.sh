@@ -9,5 +9,6 @@ for svc in "${STUDIO_SERVICES[@]}"; do
   note=""; [ -n "$owner" ] && ! ours "$pid" "$owner" && note="  (port held by pid $owner, not ours)"
   printf '%-8s %-8s pid %-7s port %-6s %s%s\n' "$svc" "$state" "${pid:--}" "${port:--}" "$health" "$note"
 done
-echo "checkpoints in $STUDIO_CHECKPOINTS:"
-ls -1 "$STUDIO_CHECKPOINTS" 2>/dev/null | grep -v '^\.' | sed 's/^/  /' || true
+cur="$(current_checkpoint)"
+echo "checkpoints in $STUDIO_CHECKPOINTS (newest first; last restored: ${cur:-none}):"
+checkpoints_newest_first | sed 's/^/  /' || true

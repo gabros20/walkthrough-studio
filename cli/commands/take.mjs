@@ -1,11 +1,12 @@
 // walkthrough take [scene…] [--auto] [--fresh] [--from N --to N] [--parallel N]: the take runner,
 // then the takes it wrote are recorded in state.takes.
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { announce } from "../lib/exec.mjs";
 import { CliError, kitPath, requireProject, resolvedConfig } from "../lib/project.mjs";
 import { now, rel } from "../lib/state.mjs";
-import { printTable } from "../lib/table.mjs";
+import { fmtBytes, printTable } from "../lib/table.mjs";
 
 const usage = `walkthrough take [scene ...] [--auto] [--fresh] [--from N] [--to N] [--parallel N] [runner flags]
 
@@ -21,7 +22,11 @@ When the runner exits, every take it wrote in this run is recorded in state.take
     warnings, uniqueFps, dir }
 ok = the runner's verdict (no error, master sync passed, longest gap outside waits <= gate.maxGapMs).
 accepted = ok under --auto/--parallel; with go files, true when the last go file for that take was
-"next" or "stop", null when the run ended without one. Exit code: the runner's.`;
+"next" or "stop", null when the run ended without one.
+Clean up: for every ok take of this run that was not turned down (a "redo"), the raw screencast frames
+(raw/frames.bin, raw/frames.ndjson) are removed: master.mp4 is the footage, and raw/delivered.json
+stays for takes/INDEX.md. Not when walkthrough.config.mjs sets finish.keepRaw: true (to re-encode a
+master with recorder/remux.mjs). Recorded as rawRemoved in state.takes. Exit code: the runner's.`;
 
 const readJson = (p) => {
   try {
@@ -118,9 +123,27 @@ export default {
       if (checkpoint) project.state.checkpoints.push({ name: checkpoint, at: entry.recordedAt, by: "take", after: name });
       rows.push({ take: name, ok: entry.ok, accepted: entry.accepted, sync: entry.masterSync, "gap out ms": entry.gaps.outsideWaitsMs, "gap in ms": entry.gaps.insideWaitsMs, warnings: entry.warnings, checkpoint: entry.checkpoint ?? "" });
     }
+
+    // ---- clean up after yourself: raw frames of the ok takes (the master is the footage)
+    let freed = 0;
+    const cleaned = [];
+    if (!c.finish?.keepRaw)
+      for (const name of fresh) {
+        const t = project.state.takes[name];
+        if (!t?.ok || t.accepted === false) continue;
+        const files = ["frames.bin", "frames.ndjson"].map((f) => join(takesDir, name, "raw", f)).filter((f) => existsSync(f));
+        if (!files.length) continue;
+        for (const f of files) freed += statSync(f).size;
+        announce("/bin/rm", ["-f", ...files]);
+        for (const f of files) rmSync(f, { force: true });
+        t.rawRemoved = "frames";
+        cleaned.push(name);
+      }
     project.save();
     ctx.log.info("\nrecorded in state.json:");
     printTable(rows);
+    if (cleaned.length) ctx.log.info(`\nraw frames removed from ${cleaned.length} ok take(s) (${fmtBytes(freed)}): ${cleaned.join(", ")} (finish.keepRaw: true keeps them)`);
+    else if (c.finish?.keepRaw) ctx.log.info("\nfinish.keepRaw is true: raw frames kept (`walkthrough clean` removes those of accepted takes)");
     return r.code;
   },
 };

@@ -131,13 +131,20 @@ into `state.takes`). The direct `node recorder/…` commands are the fallback an
   (no agent turn) can replace a short stretch; prefer folding the fix into the next full pass.
 - [ ] **INDEX.md**: `node recorder/takes/index-data.mjs --takes <dir>` plus the operator's notes:
   labels and times, waits and outcomes, gaps with what is on screen, truth checks, deviations, turns used.
-- [ ] Announce "recording finished" to the editor. Delete raw frames of verified takes and rejected takes.
+- [ ] Announce "recording finished" to the editor. Clean up: raw frames go when a take is accepted
+  (`walkthrough take` already removes `raw/frames.bin` and `frames.ndjson` of every ok take unless
+  `finish.keepRaw` is true; `raw/delivered.json` stays for INDEX.md); once INDEX.md is written,
+  `walkthrough clean --dry` then `walkthrough clean --yes` removes rejected takes and leftover raw frames.
+  Checkpoints are pruned to the current one (`walkthrough studio prune --keep 1`, or `walkthrough studio
+  checkpoint <CP> --keep 1` as you go) once no `redo` will need an older one. Never leave raw frames or
+  extra checkpoints behind: temp folders never outlive the step.
 
 ## Verification
 
 `take.json` of every take shows sync passed and frame size 2880x1620 (1170x2532 for phone takes);
 `walkthrough state` lists every take ok and accepted; INDEX.md truth checks are all "yes";
-the studio stack is up on the last checkpoint; the owner's servers still run with the same pids.
+the studio stack is up on the last checkpoint; the owner's servers still run with the same pids;
+`walkthrough clean --dry` shows no raw frames of accepted takes and no checkpoint but the current ones.
 
 ## Outputs
 
@@ -155,3 +162,5 @@ storage state, `state.takes` in `state.json`.
 - Each agent turn costs money; keep to the budget and report turns used.
 - Parallel takes on a busy machine: capture gaps grow; record in sequence when it matters.
 - A followed tab is a hard cut; prefer `same-tab` unless the new tab is the point of the scene.
+- Finder shows each checkpoint at full size (ten looked like 9 GB); they are APFS clones and cost far less.
+  Read the "on disk" column of `walkthrough clean --dry`, not Finder, before telling the owner what it costs.

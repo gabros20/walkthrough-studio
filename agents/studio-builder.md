@@ -25,6 +25,11 @@ reviews your report.
 - No telemetry leaves the studio instance.
 - Scripts are safe to run repeatedly and only ever kill pids they started.
 - Prove the studio core can never open the developer's database (log the path it opened).
+- Clean up after yourself: temp folders never outlive the step. Database copies you compared, failed clones
+  and old trees go when the step ends (inside the studio root only). Checkpoints are APFS clones: report
+  their size from `walkthrough clean --dry` (on disk), not Finder; keep the newest and the current one
+  (`walkthrough studio checkpoint <CP> --keep N`, `walkthrough studio prune`) and never prune one a take may
+  still `restore`.
 
 ## Steps
 

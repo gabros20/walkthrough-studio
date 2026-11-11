@@ -1,6 +1,6 @@
 {
   "name": "walkthrough-studio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Agent-driven toolkit for app walkthrough films: studio instance, recorder, HyperFrames film, sound, voiceover, delivery.",

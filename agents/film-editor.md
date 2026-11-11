@@ -63,6 +63,11 @@ and `fitAudio` in the storyboard: render rebuilds when the build on disk differs
 - When timing changes after the voiceover is placed, do `--dry --dry-out <dir>`, send the paths and an
   old-versus-new time table to the voiceover producer, and render only after "all lines fit".
 - Do not edit `sound/`, `voiceover/`, the recorder or the app. Do not spawn sub-agents. No commits unless asked.
+- Clean up after yourself: temp folders never outlive the step. `walkthrough render` removes its frame cache
+  after a successful render; use `--keep-cache` only between renders of the same footage and run
+  `walkthrough clean` when you are done. After picture lock, `walkthrough clean --dry` then `--yes` drops
+  replaced `draft*` renders, stale sound drafts and the sheets of older review bundles; never remove a
+  render, sidecar or `*.picture-only.mp4` the sound build or delivery still reads.
 
 ## Before every report
 

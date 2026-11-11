@@ -73,9 +73,14 @@ sound build, and a silent film stops every preset. Check each folder with `pytho
 - Plain words, short sentences, the film's spelling convention, no hype; every number checked.
 - No secrets, one-time links or personal emails in any file. Do not upload or share anything.
 - Use `/bin/rm` and `/usr/bin/zip` by absolute path. Do not spawn sub-agents. No commits.
+- Clean up after yourself: temp folders never outlive the step. Remove your scratch renders and contact
+  sheets when the package is verified. The last step of a delivery is `walkthrough clean --dry`: put its
+  table (logical vs on disk) and the `walkthrough clean --all --yes` line `walkthrough deliver` prints in your
+  report; the lead runs it once the owner accepts the film. Never leave checkpoints, raw frames or caches.
 
 ## How to report
 
 What is in each folder with sizes; clip cut points you moved and why; stills replaced; facts you could not
 verify and left out; anything that looks wrong in the films (with times); paths of the 3-4 images the lead
-should look at. Long reports to a scratchpad file; send the path.
+should look at; the `walkthrough clean --dry` totals and the line to run after acceptance. Long reports to a
+scratchpad file; send the path.
